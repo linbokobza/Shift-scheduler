@@ -259,32 +259,3 @@ td, th {
     @apply p-4 lg:p-6 max-h-[90vh] overflow-y-auto;
   }
 }
-  /* Sticky positioning utilities */
-  .sticky-header {
-    @apply sticky top-0 z-10 bg-white;
-  }
-
-  .sticky-col {
-    @apply sticky left-0 z-10 bg-white;
-  }
-
-  /* Enhanced mobile scrollbar */
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 #f1f5f9;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar {
-    height: 6px;
-    width: 6px;
-  }
-
-  /* Touch-friendly interactive elements */
-  .touch-target {
-    @apply min-h-[44px] min-w-[44px];
-  }
-
-  /* Responsive modal container */
-  .modal-container {
-    @apply p-4 lg:p-6 max-h-[90vh] overflow-y-auto;
-  }
