@@ -1,0 +1,33 @@
+/* RTL support for react-datepicker */
+.react-datepicker {
+  font-family: inherit;
+  direction: rtl;
+}
+
+.react-datepicker__header {
+  text-align: center;
+}
+
+.react-datepicker__day-name,
+.react-datepicker__day,
+.react-datepicker__time-name {
+  margin: 0.166rem;
+}
+
+.react-datepicker__current-month {
+  font-weight: bold;
+}
+
+.react-datepicker__navigation {
+  top: 10px;
+}
+
+.react-datepicker__navigation--previous {
+  left: auto;
+  right: 10px;
+}
+
+.react-datepicker__navigation--next {
+  right: auto;
+  left: 10px;
+}

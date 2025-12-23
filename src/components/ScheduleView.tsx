@@ -1,0 +1,568 @@
+import React, { useState, useRef } from 'react';
+import { User as UserIcon, Lock, Unlock, Save, X } from 'lucide-react';
+import { Schedule, User, Holiday, Availability } from '../types';
+import { SHIFTS, DAYS } from '../data/mockData';
+import { formatDateHebrew, getWeekDates, formatDate } from '../utils/dateUtils';
+import ShiftDropdown from './ShiftDropdown';
+
+// Color palette for employees
+const EMPLOYEE_COLORS = [
+  'bg-blue-100 text-blue-800 border-blue-200',
+  'bg-green-100 text-green-800 border-green-200',
+  'bg-purple-100 text-purple-800 border-purple-200',
+  'bg-orange-100 text-orange-800 border-orange-200',
+  'bg-pink-100 text-pink-800 border-pink-200',
+  'bg-indigo-100 text-indigo-800 border-indigo-200',
+  'bg-teal-100 text-teal-800 border-teal-200',
+  'bg-red-100 text-red-800 border-red-200',
+];
+
+interface ScheduleViewProps {
+  schedule: Schedule | null;
+  employees: User[];
+  availabilities?: Availability[];
+  holidays: Holiday[];
+  weekStart: Date;
+  onAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
+  onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => Promise<void>;
+  onLockToggle?: (day: string, shiftId: string, locked: boolean) => void;
+  readonly?: boolean;
+  showLockControls?: boolean;
+}
+
+const ScheduleView: React.FC<ScheduleViewProps> = ({
+  schedule,
+  employees,
+  availabilities = [],
+  holidays,
+  weekStart,
+  onAssignmentChange,
+  onBulkAssignmentChange,
+  onLockToggle,
+  readonly = false,
+  showLockControls = false
+}) => {
+  const weekDates = getWeekDates(weekStart);
+  const weekStartString = formatDate(weekStart);
+  const activeEmployees = employees.filter(emp => emp.role === 'employee' && emp.isActive);
+
+  // State לניהול רשימה נפתחת
+  const [openDropdown, setOpenDropdown] = useState<{
+    day: string;
+    shiftId: string;
+  } | null>(null);
+
+  // State למעקב אחר שינויים שלא נשמרו
+  const [pendingChanges, setPendingChanges] = useState<Array<{
+    day: string;
+    shiftId: string;
+    employeeId: string | null;
+  }>>([]);
+
+  // State לטעינה בזמן שמירה
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Get available employees for a specific day and shift
+  const getAvailableEmployeesForShift = (dayIndex: number, shiftId: string): User[] => {
+    const dayStr = dayIndex.toString();
+    return activeEmployees.filter(emp => {
+      // Find availability for this employee AND this specific week
+      const empAvailability = availabilities.find(
+        a => a.employeeId === emp.id && a.weekStart === weekStartString
+      );
+      if (!empAvailability) return false;
+      const shiftStatus = empAvailability.shifts[dayStr]?.[shiftId]?.status;
+      return shiftStatus === 'available';
+    });
+  };
+
+  const getEmployeeName = (employeeId: string | null): string => {
+    if (!employeeId) return '';
+    // Note: employees array should only contain role='employee' from backend
+    // If you see "עובד לא נמצא", check that backend filters by role='employee' correctly
+    const employee = employees.find(emp => emp.id === employeeId);
+    if (!employee) {
+      console.error(`[ScheduleView] Employee not found for ID: ${employeeId}`, {
+        employeeId,
+        availableEmployeeIds: employees.map(e => e.id),
+        employeesList: employees
+      });
+    }
+    return employee?.name || `עובד לא נמצא (${employeeId})`;
+  };
+
+  const getEmployeeColor = (employeeId: string | null): string => {
+    if (!employeeId) return '';
+    const employee = employees.find(emp => emp.id === employeeId);
+    if (!employee) return 'bg-gray-100 text-gray-800 border-gray-200';
+    
+    const employeeIndex = activeEmployees.findIndex(emp => emp.id === employeeId);
+    if (employeeIndex === -1) return 'bg-gray-100 text-gray-800 border-gray-200';
+    return EMPLOYEE_COLORS[employeeIndex % EMPLOYEE_COLORS.length];
+  };
+
+  const getHolidayForDay = (dayIndex: number) => {
+    const date = weekDates[dayIndex];
+    const dateString = formatDate(date);
+    return holidays.find(h => h.date === dateString);
+  };
+
+  const isHolidayShiftBlocked = (dayIndex: number, shiftId: string) => {
+    const holiday = getHolidayForDay(dayIndex);
+    if (!holiday) return false;
+    
+    if (holiday.type === 'no-work') return true;
+    if (holiday.type === 'morning-only' && (shiftId === 'evening' || shiftId === 'night')) return true;
+    
+    return false;
+  };
+
+  const handleAssignmentClick = (day: string, shiftId: string) => {
+    if (readonly || !onAssignmentChange) return;
+
+    // Don't allow changes to Friday evening/night and Saturday
+    const dayNum = parseInt(day);
+    const isRestrictedTime = (dayNum === 5 && (shiftId === 'evening' || shiftId === 'night')) || dayNum === 6;
+    const isHolidayBlocked = isHolidayShiftBlocked(dayNum, shiftId);
+    const isLocked = schedule?.lockedAssignments?.[day]?.[shiftId];
+
+    if (isRestrictedTime || isHolidayBlocked || isLocked) return;
+
+    const currentAssignment = schedule?.assignments[day]?.[shiftId];
+
+    // Cycle through available employees
+    if (!currentAssignment) {
+      // No assignment - assign first active employee
+      const firstEmployee = activeEmployees[0];
+      onAssignmentChange(day, shiftId, firstEmployee?.id || null);
+    } else {
+      // Find current employee index
+      const currentIndex = activeEmployees.findIndex(emp => emp.id === currentAssignment);
+      if (currentIndex === -1) {
+        // Current employee not found in active list - assign first active employee
+        const firstEmployee = activeEmployees[0];
+        onAssignmentChange(day, shiftId, firstEmployee?.id || null);
+      } else if (currentIndex === activeEmployees.length - 1) {
+        // Last employee - go to unassigned
+        onAssignmentChange(day, shiftId, null);
+      } else {
+        // Go to next employee
+        const nextEmployee = activeEmployees[currentIndex + 1];
+        onAssignmentChange(day, shiftId, nextEmployee?.id || null);
+      }
+    }
+  };
+
+  const handleLockToggle = (day: string, shiftId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (!onLockToggle || readonly) return;
+
+    const currentLock = schedule?.lockedAssignments?.[day]?.[shiftId];
+    onLockToggle(day, shiftId, !currentLock);
+  };
+
+  // קבלת ערך משמרת (מקורי או עם שינוי ממתין)
+  const getCurrentAssignment = (day: string, shiftId: string): string | null => {
+    const pendingChange = pendingChanges.find(c => c.day === day && c.shiftId === shiftId);
+    if (pendingChange) return pendingChange.employeeId;
+    return schedule?.assignments[day]?.[shiftId] || null;
+  };
+
+  // בדיקה האם יש שינוי ממתין לתא זה
+  const hasPendingChange = (day: string, shiftId: string): boolean => {
+    return pendingChanges.some(c => c.day === day && c.shiftId === shiftId);
+  };
+
+  // טיפול בלחיצה על תא - פתיחת רשימה נפתחת
+  const handleCellClick = (day: string, shiftId: string) => {
+    if (readonly) return;
+
+    // לא לאפשר שינויים בזמנים מוגבלים, חגים ומשמרות נעולות
+    const dayNum = parseInt(day);
+    const isRestrictedTime = (dayNum === 5 && (shiftId === 'evening' || shiftId === 'night')) || dayNum === 6;
+    const isHolidayBlocked = isHolidayShiftBlocked(dayNum, shiftId);
+    const isLocked = schedule?.lockedAssignments?.[day]?.[shiftId];
+
+    if (isRestrictedTime || isHolidayBlocked || isLocked) return;
+
+    // פתיחת הרשימה הנפתחת
+    setOpenDropdown({ day, shiftId });
+  };
+
+  // טיפול בבחירת עובד מהרשימה
+  const handleEmployeeSelect = (day: string, shiftId: string, employeeId: string | null) => {
+    // בדיקה אם זה שונה מהערך המקורי
+    const originalValue = schedule?.assignments[day]?.[shiftId] || null;
+
+    if (originalValue === employeeId) {
+      // אם זהה לערך המקורי, נמחק שינוי קודם (אם יש)
+      setPendingChanges(prev => prev.filter(c => !(c.day === day && c.shiftId === shiftId)));
+    } else {
+      // הוספה או עדכון של שינוי
+      setPendingChanges(prev => {
+        const filtered = prev.filter(c => !(c.day === day && c.shiftId === shiftId));
+        return [...filtered, { day, shiftId, employeeId }];
+      });
+    }
+
+    setOpenDropdown(null);
+  };
+
+  // שמירת כל השינויים
+  const handleSaveChanges = async () => {
+    if (pendingChanges.length === 0 || !onBulkAssignmentChange) return;
+
+    setIsSaving(true);
+    try {
+      await onBulkAssignmentChange(pendingChanges);
+      setPendingChanges([]);
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      alert('שגיאה בשמירת השינויים. נסה שוב.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ביטול כל השינויים
+  const handleCancelChanges = () => {
+    setPendingChanges([]);
+    setOpenDropdown(null);
+  };
+
+  if (!schedule) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+        <UserIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">אין סידור לשבוע זה</h3>
+        <p className="text-gray-600">לא נוצר עדיין סידור עבודה לשבוע זה</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div className="bg-green-50 border-b border-green-200 p-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-semibold text-green-900 flex items-center">
+              <UserIcon className="w-5 h-5 ml-2" />
+              סידור עבודה
+            </h3>
+            <p className="text-sm text-green-700 mt-1">
+              נוצר ב-{new Date(schedule.createdAt).toLocaleDateString('he-IL')}
+            </p>
+          </div>
+
+          {/* Save/Cancel buttons */}
+          {pendingChanges.length > 0 && onBulkAssignmentChange && !readonly && (
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 lg:p-0">
+              <span className="text-sm text-blue-700 font-medium text-center">
+                {pendingChanges.length} שינויים ממתינים
+              </span>
+              <button
+                onClick={handleCancelChanges}
+                disabled={isSaving}
+                className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50"
+              >
+                <X className="w-4 h-4" />
+                ביטול
+              </button>
+              <button
+                onClick={handleSaveChanges}
+                disabled={isSaving}
+                className="flex items-center justify-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    שומר...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    שמור שינויים
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Compact Table View */}
+      <div className="lg:hidden overflow-x-auto -mx-4 scrollbar-thin">
+        <div className="min-w-[600px]">
+        <table className="w-full text-xs">
+          <thead className="bg-gray-50 sticky-header">
+            <tr>
+              <th className="px-2 py-2 text-right font-medium text-gray-700 border-b sticky-col bg-gray-50 z-20">
+                משמרת
+              </th>
+              {DAYS.map((day, index) => (
+                <th key={index} className="px-2 py-2 text-center font-medium text-gray-700 border-b min-w-[80px]">
+                  <div className="text-xs">{day}</div>
+                  <div className="text-[10px] text-gray-500 font-normal">
+                    {new Date(weekDates[index]).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' })}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {SHIFTS.map((shift) => (
+              <tr key={shift.id} className="hover:bg-gray-50">
+                <td className="px-2 py-2 border-b sticky-col bg-white z-20">
+                  <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${shift.color}`}>
+                    {shift.name}
+                  </div>
+                </td>
+                {weekDates.map((date, dayIndex) => {
+                  const dayStr = dayIndex.toString();
+                  const currentAssignment = getCurrentAssignment(dayStr, shift.id);
+                  const employeeName = getEmployeeName(currentAssignment);
+                  const employeeColor = getEmployeeColor(currentAssignment);
+                  const holiday = getHolidayForDay(dayIndex);
+                  const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
+                  const isRestrictedTime = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night')) || dayIndex === 6;
+                  const isPending = hasPendingChange(dayStr, shift.id);
+                  const isDropdownOpen = openDropdown?.day === dayStr && openDropdown?.shiftId === shift.id;
+                  const isLocked = schedule?.lockedAssignments?.[dayStr]?.[shift.id];
+                  const availableEmployees = getAvailableEmployeesForShift(dayIndex, shift.id);
+
+                  return (
+                    <ShiftCell
+                      key={dayIndex}
+                      dayStr={dayStr}
+                      dayIndex={dayIndex}
+                      shiftId={shift.id}
+                      currentAssignment={currentAssignment}
+                      employeeName={employeeName}
+                      employeeColor={employeeColor}
+                      holiday={holiday}
+                      isHolidayBlocked={isHolidayBlocked}
+                      isRestrictedTime={isRestrictedTime}
+                      availableEmployees={availableEmployees}
+                      isPending={isPending}
+                      isDropdownOpen={isDropdownOpen}
+                      isLocked={isLocked}
+                      readonly={readonly}
+                      showLockControls={showLockControls}
+                      employees={employees}
+                      onCellClick={handleCellClick}
+                      onEmployeeSelect={handleEmployeeSelect}
+                      onDropdownClose={() => setOpenDropdown(null)}
+                      onLockToggle={handleLockToggle}
+                    />
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 border-b">
+                משמרת
+              </th>
+              {DAYS.map((day, index) => (
+                <th key={index} className="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b min-w-32">
+                  <div>{day}</div>
+                  <div className="text-xs text-gray-500 font-normal">
+                    {formatDateHebrew(weekDates[index])}
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {SHIFTS.map((shift) => (
+              <tr key={shift.id} className="hover:bg-gray-50">
+                <td className="px-4 py-4 border-b">
+                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${shift.color}`}>
+                    {shift.name}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {shift.startTime} - {shift.endTime}
+                  </div>
+                </td>
+                {DAYS.map((_, dayIndex) => {
+                  const dayStr = dayIndex.toString();
+                  const currentAssignment = getCurrentAssignment(dayStr, shift.id);
+                  const employeeName = getEmployeeName(currentAssignment);
+                  const employeeColor = getEmployeeColor(currentAssignment);
+                  const holiday = getHolidayForDay(dayIndex);
+                  const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
+                  const isRestrictedTime = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night')) || dayIndex === 6;
+                  const availableEmployees = getAvailableEmployeesForShift(dayIndex, shift.id);
+                  const isPending = hasPendingChange(dayStr, shift.id);
+                  const isDropdownOpen = openDropdown?.day === dayStr && openDropdown?.shiftId === shift.id;
+
+                  const isLocked = schedule?.lockedAssignments?.[dayStr]?.[shift.id];
+
+                  return (
+                    <ShiftCell
+                      key={dayIndex}
+                      dayStr={dayStr}
+                      dayIndex={dayIndex}
+                      shiftId={shift.id}
+                      currentAssignment={currentAssignment}
+                      employeeName={employeeName}
+                      employeeColor={employeeColor}
+                      holiday={holiday}
+                      isHolidayBlocked={isHolidayBlocked}
+                      isRestrictedTime={isRestrictedTime}
+                      availableEmployees={availableEmployees}
+                      isPending={isPending}
+                      isDropdownOpen={isDropdownOpen}
+                      isLocked={isLocked}
+                      readonly={readonly}
+                      showLockControls={showLockControls}
+                      employees={employees}
+                      onCellClick={handleCellClick}
+                      onEmployeeSelect={handleEmployeeSelect}
+                      onDropdownClose={() => setOpenDropdown(null)}
+                      onLockToggle={handleLockToggle}
+                    />
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// Shift Cell Component - קומפוננטה עצמאית לתא בטבלה
+interface ShiftCellProps {
+  dayStr: string;
+  dayIndex: number;
+  shiftId: string;
+  currentAssignment: string | null;
+  employeeName: string;
+  employeeColor: string;
+  holiday: Holiday | undefined;
+  isHolidayBlocked: boolean;
+  isRestrictedTime: boolean;
+  availableEmployees: User[];
+  isPending: boolean;
+  isDropdownOpen: boolean;
+  isLocked: boolean;
+  readonly: boolean;
+  showLockControls: boolean;
+  employees: User[];
+  onCellClick: (day: string, shiftId: string) => void;
+  onEmployeeSelect: (day: string, shiftId: string, employeeId: string | null) => void;
+  onDropdownClose: () => void;
+  onLockToggle: (day: string, shiftId: string, event: React.MouseEvent) => void;
+}
+
+const ShiftCell: React.FC<ShiftCellProps> = ({
+  dayStr,
+  dayIndex,
+  shiftId,
+  currentAssignment,
+  employeeName,
+  employeeColor,
+  holiday,
+  isHolidayBlocked,
+  isRestrictedTime,
+  availableEmployees,
+  isPending,
+  isDropdownOpen,
+  isLocked,
+  readonly,
+  showLockControls,
+  employees,
+  onCellClick,
+  onEmployeeSelect,
+  onDropdownClose,
+  onLockToggle,
+}) => {
+  const cellRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <td className="px-1 lg:px-2 py-2 lg:py-4 border-b">
+      <div className="relative" ref={cellRef}>
+        <div
+          className={`
+            min-h-[48px] lg:h-16 rounded border lg:border-2 flex items-center justify-center transition-all cursor-pointer text-[10px] lg:text-xs
+            ${isRestrictedTime
+              ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
+              : isHolidayBlocked
+              ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed'
+              : isLocked
+              ? `${employeeColor} border-2 lg:border-4 border-yellow-500 shadow-sm lg:shadow-md`
+              : isPending
+              ? `${employeeColor} border-2 lg:border-4 border-blue-500 shadow-sm lg:shadow-md`
+              : currentAssignment
+              ? `${employeeColor} hover:opacity-80 shadow-sm`
+              : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+            }
+            ${readonly || isRestrictedTime || isHolidayBlocked || isLocked ? 'cursor-not-allowed' : ''}
+          `}
+          onClick={() => onCellClick(dayStr, shiftId)}
+        >
+          <div className="text-center px-1 lg:px-2">
+            <div className={`font-medium leading-tight ${currentAssignment ? 'font-semibold' : ''}`}>
+              {isRestrictedTime
+                ? '×'
+                : isHolidayBlocked
+                  ? 'חג'
+                  : currentAssignment
+                    ? (employeeName.split(' ')[0] || employeeName)
+                    : '-'
+              }
+            </div>
+            {isLocked && (
+              <Lock className="w-2.5 h-2.5 lg:w-3 lg:h-3 mx-auto mt-0.5 text-yellow-700" />
+            )}
+          </div>
+        </div>
+
+        {/* Dropdown Component */}
+        {isDropdownOpen && !readonly && !isRestrictedTime && !isHolidayBlocked && !isLocked && (
+          <ShiftDropdown
+            availableEmployees={availableEmployees}
+            allEmployees={employees}
+            currentEmployeeId={currentAssignment}
+            onSelect={(employeeId) => onEmployeeSelect(dayStr, shiftId, employeeId)}
+            onClose={onDropdownClose}
+            cellRef={cellRef}
+          />
+        )}
+
+        {/* Lock/Unlock button */}
+        {showLockControls && !readonly && !isRestrictedTime && !isHolidayBlocked && currentAssignment && (
+          <button
+            onClick={(e) => onLockToggle(dayStr, shiftId, e)}
+            className={`
+              absolute top-0.5 lg:top-1 left-0.5 lg:left-1 p-0.5 lg:p-1 rounded transition-all hidden lg:block
+              ${isLocked
+                ? 'bg-yellow-500 text-white hover:bg-yellow-600'
+                : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+              }
+            `}
+            title={isLocked ? 'לחץ לפתיחת נעילה' : 'לחץ לנעילת משמרת'}
+          >
+            {isLocked ? (
+              <Lock className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
+            ) : (
+              <Unlock className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
+            )}
+          </button>
+        )}
+      </div>
+    </td>
+  );
+};
+
+export default ScheduleView;

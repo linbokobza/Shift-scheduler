@@ -1,0 +1,173 @@
+{
+  "employees": [
+    {
+      "id": "emp1",
+      "name": "Alice",
+      "email": "alice@example.com",
+      "role": "employee",
+      "isActive": true
+    },
+    {
+      "id": "emp2",
+      "name": "Bob",
+      "email": "bob@example.com",
+      "role": "employee",
+      "isActive": true
+    },
+    {
+      "id": "emp3",
+      "name": "Charlie",
+      "email": "charlie@example.com",
+      "role": "employee",
+      "isActive": true
+    },
+    {
+      "id": "emp4",
+      "name": "Diana",
+      "email": "diana@example.com",
+      "role": "employee",
+      "isActive": true
+    }
+  ],
+  "availabilities": [
+    {
+      "employeeId": "emp1",
+      "weekStart": "2025-11-03",
+      "shifts": {
+        "0": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "1": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "unavailable" }
+        },
+        "2": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "3": {
+          "morning": { "status": "available" },
+          "evening": { "status": "unavailable" },
+          "night": { "status": "available" }
+        },
+        "4": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "5": {
+          "morning": { "status": "available" }
+        }
+      }
+    },
+    {
+      "employeeId": "emp2",
+      "weekStart": "2025-11-03",
+      "shifts": {
+        "0": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "1": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "2": {
+          "morning": { "status": "unavailable" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "3": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "4": {
+          "morning": { "status": "available" },
+          "evening": { "status": "unavailable" },
+          "night": { "status": "available" }
+        },
+        "5": {
+          "morning": { "status": "available" }
+        }
+      }
+    },
+    {
+      "employeeId": "emp3",
+      "weekStart": "2025-11-03",
+      "shifts": {
+        "0": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "unavailable" }
+        },
+        "1": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "2": {
+          "morning": { "status": "available" },
+          "evening": { "status": "unavailable" },
+          "night": { "status": "available" }
+        },
+        "3": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "4": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "unavailable" }
+        },
+        "5": {
+          "morning": { "status": "available" }
+        }
+      }
+    },
+    {
+      "employeeId": "emp4",
+      "weekStart": "2025-11-03",
+      "shifts": {
+        "0": {
+          "morning": { "status": "available" },
+          "evening": { "status": "unavailable" },
+          "night": { "status": "available" }
+        },
+        "1": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "2": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "3": {
+          "morning": { "status": "unavailable" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "4": {
+          "morning": { "status": "available" },
+          "evening": { "status": "available" },
+          "night": { "status": "available" }
+        },
+        "5": {
+          "morning": { "status": "available" }
+        }
+      }
+    }
+  ],
+  "vacations": [],
+  "holidays": [],
+  "weekStart": "2025-11-03"
+}

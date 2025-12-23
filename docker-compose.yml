@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: shift-scheduler-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+      MONGO_INITDB_DATABASE: shift-scheduler
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - shift-scheduler-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: shift-scheduler-backend
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      NODE_ENV: production
+      PORT: 5001
+      MONGODB_URI: mongodb://admin:adminpassword@mongodb:27017/shift-scheduler?authSource=admin
+      JWT_SECRET: production-secret-change-this-in-real-deployment
+      JWT_EXPIRES_IN: 7d
+      CORS_ORIGIN: http://localhost:5176
+      LOG_LEVEL: info
+    depends_on:
+      - mongodb
+    networks:
+      - shift-scheduler-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Frontend (React + Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: shift-scheduler-frontend
+    restart: unless-stopped
+    ports:
+      - "5176:5176"
+    environment:
+      VITE_API_URL: http://localhost:5001/api
+    depends_on:
+      - backend
+    networks:
+      - shift-scheduler-network
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+    command: npm run dev -- --host
+
+networks:
+  shift-scheduler-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
