@@ -12,6 +12,7 @@ interface AvailabilityGridProps {
   onCommentChange: (day: string, shiftId: string, comment: string) => void;
   readonly?: boolean;
   weekStart: Date;
+  forceViewMode?: 'cards' | 'table'; // New prop to force view mode on mobile
 }
 
 const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
@@ -21,7 +22,8 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
   onAvailabilityChange,
   onCommentChange,
   readonly = false,
-  weekStart
+  weekStart,
+  forceViewMode
 }) => {
   const [selectedCell, setSelectedCell] = useState<{ day: string; shift: string } | null>(null);
   const [commentText, setCommentText] = useState('');
