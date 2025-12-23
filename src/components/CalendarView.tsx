@@ -107,13 +107,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full h-full sm:h-auto sm:max-h-[95vh] max-w-7xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4">
+      <div className="bg-white rounded-none sm:rounded-lg shadow-xl w-full h-full sm:h-auto sm:max-h-[95vh] max-w-7xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-blue-50 border-b border-blue-200 p-3 sm:p-4 flex-shrink-0">
+        <div className="bg-blue-50 border-b border-blue-200 p-2 sm:p-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base sm:text-lg font-semibold text-blue-900 flex items-center">
+              <h3 className="text-sm sm:text-lg font-semibold text-blue-900 flex items-center">
                 <Calendar className="w-5 h-5 ml-2" />
                 לוח שנה - משמרות, חופשות וחגים
               </h3>
@@ -131,7 +131,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
 
         {/* Calendar Navigation */}
-        <div className="bg-gray-50 border-b p-3 sm:p-4 flex-shrink-0">
+        <div className="bg-gray-50 border-b p-2 sm:p-4 flex-shrink-0">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center space-x-1 sm:space-x-2">
               <button
@@ -148,7 +148,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               </button>
             </div>
 
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 order-first sm:order-none w-full sm:w-auto text-center sm:text-center">
+            <h2 className="text-base sm:text-xl font-semibold text-gray-900 order-first sm:order-none w-full sm:w-auto text-center">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
 
@@ -162,11 +162,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
 
         {/* Calendar Grid */}
-        <div className="flex-1 overflow-y-auto p-2 sm:p-4">
-          <div className="grid grid-cols-7 gap-0.5 sm:gap-1 min-h-0">
+        <div className="flex-1 overflow-y-auto p-1 sm:p-4">
+          <div className="grid grid-cols-7 gap-px sm:gap-1 min-w-0">
             {/* Day headers */}
             {dayNames.map((day, index) => (
-              <div key={index} className="p-1 sm:p-2 text-center font-medium text-gray-700 bg-gray-100 rounded text-xs sm:text-sm">
+              <div key={index} className="p-0.5 sm:p-2 text-center font-medium text-gray-700 bg-gray-100 rounded text-[10px] sm:text-sm">
                 {day}
               </div>
             ))}
@@ -174,7 +174,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             {/* Calendar days */}
             {days.map((day, index) => {
               if (!day) {
-                return <div key={index} className="p-1 sm:p-2 min-h-[90px] sm:min-h-[110px]"></div>;
+                return <div key={index} className="p-1 sm:p-2 min-h-[70px] sm:min-h-[110px]"></div>;
               }
 
               const vacations = getVacationsForDate(day);
@@ -184,14 +184,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               return (
                 <div
                   key={index}
-                  className={`p-1 sm:p-2 min-h-[90px] sm:min-h-[110px] border rounded-lg relative overflow-hidden ${
+                  className={`p-0.5 sm:p-2 min-h-[70px] sm:min-h-[110px] border rounded relative overflow-hidden ${
                     isToday
                       ? 'bg-blue-100 border-blue-300'
                       : 'bg-white border-gray-200 hover:bg-gray-50'
                   }`}
                 >
                   {/* Day number */}
-                  <div className={`text-xs sm:text-sm font-medium mb-0.5 sm:mb-1 ${
+                  <div className={`text-xs sm:text-sm font-medium mb-0.5 ${
                     isToday ? 'text-blue-900' : 'text-gray-900'
                   }`}>
                     {day.getDate()}
@@ -200,7 +200,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                   {/* Holiday */}
                   {holiday && (
                     <div className="mb-0.5">
-                      <div className="flex items-center text-[11px] sm:text-xs bg-purple-100 text-purple-800 px-1 py-0.5 rounded leading-tight">
+                      <div className="flex items-center text-[9px] sm:text-xs bg-purple-100 text-purple-800 px-1 py-0.5 rounded leading-tight">
                         <Star className="w-2 h-2 ml-0.5 flex-shrink-0" />
                         <span className="truncate">{holiday.name}</span>
                       </div>
@@ -213,7 +213,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                     if (!shifts) return null;
 
                     return (
-                      <div className="mt-0.5 space-y-0.5">
+                      <div className="mt-0.5 space-y-px">
                         {SHIFT_DISPLAY_ORDER.map((shiftType) => {
                           const employeeName = shifts[shiftType];
                           if (!employeeName) return null;
@@ -230,7 +230,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                           return (
                             <div
                               key={shiftType}
-                              className={`text-[11px] sm:text-xs px-1 py-0.5 rounded border ${shiftColor} truncate leading-tight`}
+                              className={`text-[9px] sm:text-xs px-1 py-0.5 rounded border ${shiftColor} truncate leading-tight`}
                               title={`${SHIFT_NAMES_HEBREW[shiftType]}: ${employeeName}`}
                             >
                               <span className="font-medium">{SHIFT_NAMES_HEBREW[shiftType]}:</span>{' '}
@@ -248,7 +248,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                       {vacations.slice(0, 2).map((vacation) => (
                         <div
                           key={vacation.id}
-                          className={`flex items-center text-[11px] sm:text-xs px-1 py-0.5 rounded leading-tight ${
+                          className={`flex items-center text-[9px] sm:text-xs px-1 py-0.5 rounded leading-tight ${
                             vacation.type === 'vacation'
                               ? 'bg-blue-100 text-blue-800'
                               : 'bg-red-100 text-red-800'

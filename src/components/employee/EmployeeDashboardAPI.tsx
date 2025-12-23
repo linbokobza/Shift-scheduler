@@ -210,7 +210,7 @@ const EmployeeDashboardAPI = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto container-mobile">
+    <div className="max-w-7xl mx-auto container-mobile overflow-hidden">
       {/* Header with Calendar Button */}
       <div className="mb-4 lg:mb-6 bg-white rounded-lg shadow-sm border p-4 lg:p-6">
         <div className="flex items-center justify-between">
@@ -245,7 +245,7 @@ const EmployeeDashboardAPI = () => {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setShowSchedule(false)}
-              className={`flex items-center px-4 py-2 rounded-lg transition-all ${
+              className={`flex items-center px-3 lg:px-4 py-2 text-sm lg:text-base rounded-lg transition-all ${
                 !showSchedule
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -257,7 +257,7 @@ const EmployeeDashboardAPI = () => {
 
             <button
               onClick={() => setShowSchedule(true)}
-              className={`flex items-center px-4 py-2 rounded-lg transition-all ${
+              className={`flex items-center px-3 lg:px-4 py-2 text-sm lg:text-base rounded-lg transition-all ${
                 showSchedule
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
