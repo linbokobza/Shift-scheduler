@@ -12,23 +12,6 @@
 ## 🎯 Overview
 
 A sophisticated shift scheduling system that automates workforce planning using **constraint programming** and **optimization algorithms**. The system respects complex constraints (availability, vacation days, labor laws) while maximizing fairness and coverage.
-
-### Business Problem Solved
-
-- **Manual scheduling** takes hours and often results in unfair distribution
-- **Hard to respect** all employee preferences and legal constraints
-- **No visibility** into schedule quality or constraint violations
-- **Difficult to track** changes and maintain audit logs
-
-### Solution
-
-An intelligent system that:
-1. ✅ Generates optimal schedules in seconds
-2. ✅ Respects 100% of hard constraints (availability, labor laws)
-3. ✅ Optimizes soft constraints (fairness, balance, preferences)
-4. ✅ Provides detailed warnings and quality metrics
-5. ✅ Maintains complete audit trail of all changes
-
 ---
 
 ## 🌟 Key Features
@@ -62,65 +45,20 @@ An intelligent system that:
 - **Token expiration** and automatic logout
 - **Secure password storage** (never stored in plain text)
 
-### 📊 Audit Logging
-
-Every action is logged:
-- Who made the change
-- What was changed (before/after values)
-- When it happened
-- IP address and user agent
-- Queryable audit trail for compliance
-
-### 🎨 User Interface
-
-- **Manager Dashboard**:
-  - Generate/regenerate schedules
-  - Lock/unlock specific shifts
-  - Toggle employee active status
-  - View optimization warnings
-  - See availability summary
-
-- **Employee Dashboard**:
-  - Submit weekly availability
-  - Add vacation/sick days
-  - View published schedules
-  - Add comments to specific shifts
-
 ---
 
 ## 🛠️ Technology Stack
 
-### Frontend
+**Frontend:** React 18 • TypeScript • Vite • Tailwind CSS • React Query • Axios • Lucide Icons
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **React** | 18.3.1 | UI framework |
-| **TypeScript** | 5.5.3 | Type safety |
-| **Vite** | 5.4.2 | Build tool & dev server |
-| **Tailwind CSS** | 3.4.1 | Styling |
-| **React Query** | Latest | Server state management |
-| **Axios** | Latest | HTTP client |
-| **Lucide React** | 0.344.0 | Icons |
+**Backend:** Node.js • Express • TypeScript • MongoDB Atlas • Mongoose • JWT • bcrypt • Winston
 
-### Backend
-
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Node.js** | 20+ | Runtime |
-| **Express** | 4.21.2 | Web framework |
-| **TypeScript** | 5.9.3 | Type safety |
-| **MongoDB** | Atlas | Database |
-| **Mongoose** | 8.19.2 | ODM |
-| **JWT** | 9.0.2 | Authentication |
-| **bcryptjs** | 3.0.2 | Password hashing |
-| **Winston** | 3.18.3 | Logging |
-| **Zod** | 4.1.12 | Validation |
-
-### DevOps (Planned)
-
-- Docker & Docker Compose
-- GitHub Actions for CI/CD
-- MongoDB Atlas for production database
+**Key Features:**
+- 🔐 JWT Authentication with bcrypt password hashing
+- 🗄️ MongoDB Atlas cloud database with Mongoose ODM
+- 🧮 Custom constraint programming optimization algorithm
+- 📊 React Query for efficient server state management
+- ✅ Zod for runtime type validation and data integrity
 
 ---
 
@@ -190,136 +128,59 @@ Every action is logged:
 
 ## 🚀 Getting Started
 
-### Prerequisites
-
-- **Node.js** 20+ and npm
-- **MongoDB Atlas** account (free tier is fine)
-
-### 1. MongoDB Atlas Setup
-
-Follow the guide in [`backend/MONGODB_SETUP.md`](backend/MONGODB_SETUP.md) to:
-1. Create MongoDB Atlas account
-2. Create cluster (M0 free tier)
-3. Create database user
-4. Whitelist IP (0.0.0.0/0 for development)
-5. Get connection string
-
-### 2. Backend Setup
+**Prerequisites:** Node.js 20+ • MongoDB Atlas account ([setup guide](backend/MONGODB_SETUP.md))
 
 ```bash
+# 1. Backend Setup
 cd backend
-
-# Install dependencies
 npm install
-
-# Configure environment
 cp .env.example .env
-# Edit .env and add your MongoDB connection string
+# Edit .env with your MongoDB connection string
+npm run dev  # Runs on http://localhost:5001
 
-# Start development server
-npm run dev
-```
-
-Backend will run on **http://localhost:5001**
-
-### 3. Frontend Setup
-
-```bash
-cd ..  # Back to root directory
-
-# Install dependencies
+# 2. Frontend Setup (new terminal)
+cd ..
 npm install
-
-# Start development server
-npm run dev
+npm run dev  # Runs on http://localhost:5176
 ```
 
-Frontend will run on **http://localhost:5176**
-
-### 4. Create First User
-
-Use the API or register through the UI:
-
+**Create First User:**
 ```bash
-# Register manager account
 curl -X POST http://localhost:5001/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{
-    "name": "Manager Admin",
-    "email": "manager@company.com",
-    "password": "password123",
-    "role": "manager"
-  }'
+  -d '{"name":"Manager","email":"manager@company.com","password":"password123","role":"manager"}'
 ```
 
 ---
 
 ## 📚 API Documentation
 
-### Base URL
+**Base URL:** `http://localhost:5001/api`
 
-```
-http://localhost:5001/api
-```
+**Authentication:** All protected routes require `Authorization: Bearer <token>` header
 
-### Authentication
+### Main Endpoints
 
-All protected routes require JWT token in header:
-
-```
-Authorization: Bearer <token>
-```
-
-### Endpoints
-
-#### Auth
-
+**Auth**
 - `POST /auth/register` - Register new user
-- `POST /auth/login` - Login (returns JWT)
-- `GET /auth/me` - Get current user (requires auth)
-- `POST /auth/logout` - Logout (audit log only)
+- `POST /auth/login` - Login and get JWT token
 
-#### Employees
+**Employees**
+- `GET /employees` - List all employees
+- `PATCH /employees/:id/toggle-active` - Toggle employee status (manager)
 
-- `GET /employees` - Get all employees
-- `GET /employees/:id` - Get employee by ID
-- `PUT /employees/:id` - Update employee (manager only)
-- `PATCH /employees/:id/toggle-active` - Toggle active status (manager only)
-
-#### Availabilities
-
-- `GET /availabilities?weekStart=YYYY-MM-DD` - Get all availabilities for week
-- `GET /availabilities/:employeeId?weekStart=YYYY-MM-DD` - Get employee availability
+**Availabilities**
+- `GET /availabilities?weekStart=YYYY-MM-DD` - Get weekly availability
 - `POST /availabilities` - Submit availability
-- `PUT /availabilities/:id` - Update availability
-- `DELETE /availabilities/:id` - Delete availability
 
-#### Schedules
+**Schedules**
+- `POST /schedules/generate` - Generate optimized schedule (manager)
+- `GET /schedules/week?weekStart=YYYY-MM-DD` - Get weekly schedule
+- `PATCH /schedules/:id/publish` - Publish schedule (manager)
 
-- `GET /schedules?weekStart=YYYY-MM-DD` - Get schedules
-- `GET /schedules/week?weekStart=YYYY-MM-DD` - Get schedule for specific week
-- `POST /schedules/generate` - Generate optimized schedule (manager only)
-- `PUT /schedules/:id` - Update schedule (manager only)
-- `PATCH /schedules/:id/publish` - Publish schedule (manager only)
-- `PATCH /schedules/:id/lock` - Lock/unlock shift (manager only)
-
-#### Vacations
-
-- `GET /vacations?employeeId=...&startDate=...&endDate=...` - Get vacations
-- `POST /vacations` - Create vacation (manager only)
-- `DELETE /vacations/:id` - Delete vacation (manager only)
-
-#### Holidays
-
-- `GET /holidays?year=2025` - Get holidays
-- `POST /holidays` - Create holiday (manager only)
-- `PUT /holidays/:id` - Update holiday (manager only)
-- `DELETE /holidays/:id` - Delete holiday (manager only)
-
-#### Audit Logs
-
-- `GET /audit?entityType=...&entityId=...&userId=...&limit=50` - Query audit logs (manager only)
-- `GET /audit/:entityType/:entityId` - Get logs for specific entity (manager only)
+**Vacations & Holidays**
+- `POST /vacations` - Add vacation (manager)
+- `POST /holidays` - Add holiday (manager)
 
 ---
 
