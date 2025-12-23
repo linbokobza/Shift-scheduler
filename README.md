@@ -155,7 +155,9 @@ curl -X POST http://localhost:5001/api/auth/register \
 
 ## 📚 API Documentation
 
-**Base URL:** `http://localhost:5001/api`
+**Base URL:**
+- Development: `http://localhost:5001/api`
+- Production: `https://your-domain.com/api` (update after deployment)
 
 **Authentication:** All protected routes require `Authorization: Bearer <token>` header
 
