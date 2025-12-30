@@ -17,7 +17,7 @@ export const TabBar: React.FC<TabBarProps> = ({
   tabs,
   activeTab,
   onTabChange,
-  scrollable = tabs.length > 4 // Auto-enable scrollable if more than 4 tabs
+  scrollable = tabs.length > 5 // Auto-enable scrollable if more than 5 tabs
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
@@ -42,7 +42,7 @@ export const TabBar: React.FC<TabBarProps> = ({
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30 safe-area-pb">
       <div
         ref={scrollContainerRef}
-        className={`flex ${scrollable ? 'overflow-x-auto scrollbar-hide' : 'justify-around'}`}
+        className={`flex ${scrollable ? 'overflow-x-auto scrollbar-hide' : 'justify-evenly'}`}
         style={scrollable ? { scrollSnapType: 'x mandatory' } : undefined}
       >
         {tabs.map((tab) => {

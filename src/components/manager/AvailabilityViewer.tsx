@@ -25,8 +25,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
 }) => {
   const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [selectedCell, setSelectedCell] = useState<{ day: string; shift: string } | null>(null);
-  const [commentText, setCommentText] = useState('');
+  const [selectedCell, setSelectedCell] = useState<{ day: string; shift: string; comment: string } | null>(null);
 
   // Use the submission week from the props
   const submissionWeekStart = weekStart;
@@ -112,27 +111,9 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
     onAvailabilityChange(selectedEmployee, day, shiftId, nextStatus);
   };
 
-  const handleCommentClick = (day: string, shiftId: string, e: React.MouseEvent) => {
+  const handleCommentClick = (day: string, shiftId: string, comment: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!selectedEmployee) return;
-
-    const dayIndex = parseInt(day);
-    if (isVacationDay(selectedEmployee, dayIndex) || isHolidayShiftBlocked(dayIndex, shiftId)) return;
-
-    const isRestrictedTime = (dayIndex === 5 && (shiftId === 'evening' || shiftId === 'night')) || dayIndex === 6;
-    if (isRestrictedTime) return;
-
-    setSelectedCell({ day, shift: shiftId });
-    const employeeAvailability = getEmployeeAvailability(selectedEmployee);
-    setCommentText(employeeAvailability?.shifts[day]?.[shiftId]?.comment || '');
-  };
-
-  const saveComment = () => {
-    if (selectedCell && selectedEmployee) {
-      onCommentChange(selectedEmployee, selectedCell.day, selectedCell.shift, commentText);
-      setSelectedCell(null);
-      setCommentText('');
-    }
+    setSelectedCell({ day, shift: shiftId, comment });
   };
 
   if (activeEmployees.length === 0) {
@@ -249,18 +230,18 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                       const hasComment = cellData?.comment && cellData.comment.length > 0;
 
                       return (
-                        <td key={dayIndex} className="px-2 py-4 border-b">
+                        <td key={dayIndex} className="px-4 py-4 border-b">
                           <div
                             className={`
-                              relative h-16 rounded-lg border-2 transition-all
+                              relative min-h-[64px] lg:h-16 rounded-lg border-2 transition-all
                               ${editMode ? 'cursor-pointer hover:shadow-md' : 'cursor-default'}
                               ${isRestrictedTime
                                 ? 'bg-gray-200 text-gray-500 border-gray-300'
                                 : isHolidayBlocked
                                 ? 'bg-indigo-200 text-indigo-800 border-indigo-300'
-                                : isVacation 
-                                ? 'bg-blue-100 text-blue-800 border-blue-200' 
-                                : cellData 
+                                : isVacation
+                                ? 'bg-blue-100 text-blue-800 border-blue-200'
+                                : cellData
                                   ? getStatusColor(cellData.status)
                                   : 'bg-gray-50 text-gray-400 border-gray-200'
                               }
@@ -269,34 +250,24 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                           >
                             <div className="flex items-center justify-center h-full text-center px-2">
                               <div className="text-xs font-medium">
-                                {isRestrictedTime 
-                                  ? 'לא זמין' 
+                                {isRestrictedTime
+                                  ? 'לא זמין'
                                   : isHolidayBlocked
                                     ? `חג: ${holiday?.name}`
-                                  : isVacation 
-                                    ? 'חופשה/מחלה' 
+                                  : isVacation
+                                    ? 'חופשה/מחלה'
                                     : getStatusText(cellData?.status || 'available')
                                 }
                               </div>
                             </div>
-                            
+
                             {hasComment && !isHolidayBlocked && (
                               <button
-                                onClick={(e) => handleCommentClick(dayStr, shift.id, e)}
+                                onClick={(e) => handleCommentClick(dayStr, shift.id, cellData?.comment || '', e)}
                                 className="absolute bottom-1 right-1 text-blue-600 hover:text-blue-800 transition-colors z-10"
-                                title={editMode ? "ערוך הערה" : cellData?.comment}
+                                title={cellData?.comment}
                               >
                                 <MessageSquare className="w-3 h-3 fill-current" />
-                              </button>
-                            )}
-                            
-                            {editMode && !isVacation && !hasComment && !isRestrictedTime && !isHolidayBlocked && (
-                              <button
-                                onClick={(e) => handleCommentClick(dayStr, shift.id, e)}
-                                className="absolute bottom-1 right-1 text-gray-400 hover:text-blue-600 opacity-0 hover:opacity-100 transition-all z-10"
-                                title="הוסף הערה"
-                              >
-                                <MessageSquare className="w-3 h-3" />
                               </button>
                             )}
                           </div>
@@ -318,50 +289,21 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
         )}
       </div>
 
-      {/* Comment Modal */}
+      {/* Comment Modal - View Only */}
       {selectedCell && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedCell(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4">{editMode ? 'עריכת הערה' : 'צפייה בהערה'}</h3>
-            <textarea
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="הכניסו הערה..."
-              className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              dir="rtl"
-              readOnly={!editMode}
-            />
-            <div className="flex justify-end space-x-3 mt-4">
+            <h3 className="text-lg font-semibold mb-4">הערה</h3>
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg min-h-[96px] whitespace-pre-wrap" dir="rtl">
+              {selectedCell.comment || 'אין הערה'}
+            </div>
+            <div className="flex justify-end mt-4">
               <button
                 onClick={() => setSelectedCell(null)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors ml-3"
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
-                {editMode ? 'ביטול' : 'סגור'}
+                סגור
               </button>
-              {editMode && (
-                <>
-                  <button
-                    onClick={saveComment}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    שמירה
-                  </button>
-                  {commentText && (
-                    <button
-                      onClick={() => {
-                        setCommentText('');
-                        if (selectedCell && selectedEmployee) {
-                          onCommentChange(selectedEmployee, selectedCell.day, selectedCell.shift, '');
-                        }
-                        setSelectedCell(null);
-                      }}
-                      className="px-4 py-2 text-red-600 hover:text-red-700 transition-colors"
-                    >
-                      מחק הערה
-                    </button>
-                  )}
-                </>
-              )}
             </div>
           </div>
         </div>

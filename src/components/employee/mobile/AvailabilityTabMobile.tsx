@@ -92,6 +92,7 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
         onCommentChange={onCommentChange}
         readonly={readonly}
         weekStart={weekStart}
+        forceViewMode={viewMode}
       />
 
       {/* Legend */}

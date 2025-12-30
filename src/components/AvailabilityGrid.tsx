@@ -112,10 +112,15 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     }
   };
 
+  // Determine which view to show based on forceViewMode or default responsive behavior
+  const showCardsView = forceViewMode === 'cards' || (!forceViewMode);
+  const showTableView = forceViewMode === 'table' || (!forceViewMode);
+
   return (
     <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-      {/* Mobile Day-by-Day View */}
-      <div className="lg:hidden p-4">
+      {/* Mobile Day-by-Day View (Cards) */}
+      {showCardsView && forceViewMode !== 'table' && (
+        <div className={forceViewMode === 'cards' ? 'p-4' : 'lg:hidden p-4'}>
         {/* Day Navigator */}
         <div className="flex justify-between items-center mb-4 bg-gray-50 p-2 lg:p-3 rounded-lg">
           <button
@@ -221,20 +226,22 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
         <div className="text-center text-sm text-gray-500 mt-4">
           יום {currentDayIndex + 1} מתוך 7
         </div>
-      </div>
+        </div>
+      )}
 
-      {/* Desktop Table View */}
-      <div className="hidden lg:block overflow-x-auto">
+      {/* Desktop/Mobile Table View */}
+      {showTableView && forceViewMode !== 'cards' && (
+        <div className={forceViewMode === 'table' ? 'overflow-x-auto' : 'hidden lg:block overflow-x-auto'}>
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 border-b">
+              <th className={`text-right text-sm font-medium text-gray-700 border-b ${forceViewMode === 'table' ? 'px-4 py-2' : 'px-4 py-3'}`}>
                 משמרת
               </th>
               {DAYS.map((day, index) => (
-                <th key={index} className="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b min-w-24">
-                  <div>{day}</div>
-                  <div className="text-xs text-gray-500 font-normal">
+                <th key={index} className={`text-center text-sm font-medium text-gray-700 border-b ${forceViewMode === 'table' ? 'px-2 py-2 min-w-16' : 'px-4 py-3 min-w-24'}`}>
+                  <div className={forceViewMode === 'table' ? 'text-xs' : ''}>{day}</div>
+                  <div className={`text-xs text-gray-500 font-normal ${forceViewMode === 'table' ? 'text-[10px]' : ''}`}>
                     {formatDateHebrew(weekDates[index])}
                   </div>
                 </th>
@@ -244,11 +251,11 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
           <tbody>
             {SHIFTS.map((shift) => (
               <tr key={shift.id} className="hover:bg-gray-50">
-                <td className="px-4 py-4 border-b">
-                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${shift.color}`}>
+                <td className={`border-b ${forceViewMode === 'table' ? 'px-4 py-2' : 'px-4 py-4'}`}>
+                  <div className={`inline-flex items-center rounded-full font-medium ${shift.color} ${forceViewMode === 'table' ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm'}`}>
                     {shift.name}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className={`text-gray-500 ${forceViewMode === 'table' ? 'text-[10px] mt-0.5' : 'text-xs mt-1'}`}>
                     {shift.startTime} - {shift.endTime}
                   </div>
                 </td>
@@ -259,29 +266,29 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
                   const isWeekend = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night')) || dayIndex === 6; // Friday evening/night and Saturday
-                  const hasComment = cellData?.comment && cellData.comment.length > 0;
 
                   return (
-                    <td key={dayIndex} className="px-2 py-4 border-b">
+                    <td key={dayIndex} className={`border-b ${forceViewMode === 'table' ? 'px-2 py-2' : 'px-4 py-4'}`}>
                       <div
                         className={`
-                          relative min-h-[64px] lg:h-16 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md
+                          relative rounded-lg border-2 transition-all
+                          ${forceViewMode === 'table' ? 'min-h-[48px] h-12' : 'min-h-[64px] lg:h-16'}
                           ${isWeekend
                             ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
                             : isHolidayBlocked
                             ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed'
-                            : isVacation 
-                            ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed' 
-                            : cellData 
+                            : isVacation
+                            ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed'
+                            : cellData
                               ? getStatusColor(cellData.status)
                               : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300'
                           }
-                          ${readonly || isWeekend || isHolidayBlocked ? 'cursor-default' : ''}
+                          ${readonly || isWeekend || isHolidayBlocked ? 'cursor-default' : 'cursor-pointer hover:shadow-md'}
                         `}
-                        onClick={() => handleCellClick(dayStr, shift.id)}
+                        onClick={() => !readonly && !isWeekend && !isHolidayBlocked && handleCellClick(dayStr, shift.id)}
                       >
-                        <div className="flex items-center justify-center h-full text-center px-2">
-                          <div className="text-xs font-medium">
+                        <div className={`flex items-center justify-center h-full text-center ${forceViewMode === 'table' ? 'px-1' : 'px-2'}`}>
+                          <div className={`font-medium ${forceViewMode === 'table' ? 'text-[10px]' : 'text-xs'}`}>
                             {isWeekend
                               ? 'לא זמין'
                               : isHolidayBlocked
@@ -294,26 +301,6 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                             }
                           </div>
                         </div>
-                        
-                        {hasComment && !readonly && !isVacation && !isHolidayBlocked && (
-                          <button
-                            onClick={(e) => handleCommentClick(dayStr, shift.id, e)}
-                            className="absolute bottom-1 right-1 text-blue-600 hover:text-blue-800 transition-colors z-10"
-                            title="ערוך הערה"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5 fill-current" />
-                          </button>
-                        )}
-                        
-                        {!readonly && !isVacation && !hasComment && !isWeekend && !isHolidayBlocked && (
-                          <button
-                            onClick={(e) => handleCommentClick(dayStr, shift.id, e)}
-                            className="absolute bottom-1 right-1 text-gray-400 hover:text-blue-600 transition-all z-10"
-                            title="הוסף הערה"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                          </button>
-                        )}
                       </div>
                     </td>
                   );
@@ -322,7 +309,8 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
             ))}
           </tbody>
         </table>
-      </div>
+        </div>
+      )}
 
       {/* Comment Modal */}
       {selectedCell && (

@@ -125,6 +125,16 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
         </div>
       )}
 
+      {/* Generate Schedule Button */}
+      <button
+        onClick={onGenerateSchedule}
+        disabled={isGenerating}
+        className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium mb-4 flex items-center justify-center gap-2"
+      >
+        <Calendar className="w-5 h-5" />
+        {isGenerating ? 'יוצר...' : (schedule ? 'צור סידור חדש' : 'צור סידור')}
+      </button>
+
       {/* View Mode Toggle */}
       <div className="flex gap-2 mb-4">
         <button

@@ -3,24 +3,19 @@ import { useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '../../api/axios.config';
 import { scheduleAPI } from '../../api/schedule.api';
 import { useEmployees, useToggleEmployeeActive, useCreateEmployee } from '../../hooks/useEmployees';
-import { useAvailabilities } from '../../hooks/useAvailabilities';
+import { useAvailabilities, useUpdateAvailability } from '../../hooks/useAvailabilities';
 import { useScheduleByWeek, useGenerateSchedule } from '../../hooks/useSchedules';
 import { useVacations, useCreateVacation, useDeleteVacation, useHolidays, useCreateHoliday, useDeleteHoliday } from '../../hooks/useVacations';
 import { formatDate, getSubmissionWeek, isSubmissionDeadlinePassed } from '../../utils/dateUtils';
 import { ManagerDashboardMobile } from './mobile/ManagerDashboardMobile';
 import { ManagerDashboardDesktop } from './desktop/ManagerDashboardDesktop';
+import { AvailabilityStatus } from '../../types';
 
 type MenuOption = 'employees' | 'vacations' | 'holidays';
 
-interface ManagerDashboardAPIProps {
-  isMobileMenuOpen?: boolean;
-  onMobileMenuClose?: () => void;
-}
+interface ManagerDashboardAPIProps {}
 
-const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = ({
-  isMobileMenuOpen: externalMobileMenuOpen = false,
-  onMobileMenuClose: externalOnMobileMenuClose
-}) => {
+const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   const queryClient = useQueryClient();
 
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
@@ -37,10 +32,6 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = ({
   });
   const [activeMenu, setActiveMenu] = useState<MenuOption>('employees');
   const [isPublishing, setIsPublishing] = useState(false);
-
-  // Use external mobile menu state from App.tsx
-  const isMobileMenuOpen = externalMobileMenuOpen;
-  const onMobileMenuClose = externalOnMobileMenuClose || (() => {});
 
   const weekStartString = formatDate(currentWeekStart);
 
@@ -60,6 +51,7 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = ({
   const deleteVacationMutation = useDeleteVacation();
   const createHolidayMutation = useCreateHoliday();
   const deleteHolidayMutation = useDeleteHoliday();
+  const updateAvailabilityMutation = useUpdateAvailability();
 
   const activeEmployees = employees.filter(emp => emp.role === 'employee' && emp.isActive);
 
@@ -196,6 +188,70 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = ({
     // TODO: Implement password reset
   };
 
+  const handleAvailabilityChange = async (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => {
+    // Find the employee's availability for the current week
+    const employeeAvailability = availabilities.find(
+      a => a.employeeId === employeeId && a.weekStart === weekStartString
+    );
+
+    if (!employeeAvailability) {
+      console.error('No availability found for employee');
+      return;
+    }
+
+    // Create updated shifts object
+    const updatedShifts = { ...employeeAvailability.shifts };
+    if (!updatedShifts[day]) {
+      updatedShifts[day] = {};
+    }
+    updatedShifts[day][shiftId] = {
+      ...updatedShifts[day][shiftId],
+      status
+    };
+
+    try {
+      await updateAvailabilityMutation.mutateAsync({
+        id: employeeAvailability.id,
+        shifts: updatedShifts
+      });
+    } catch (error) {
+      console.error('Error updating availability:', error);
+      alert('שגיאה בעדכון הזמינות');
+    }
+  };
+
+  const handleCommentChange = async (employeeId: string, day: string, shiftId: string, comment: string) => {
+    // Find the employee's availability for the current week
+    const employeeAvailability = availabilities.find(
+      a => a.employeeId === employeeId && a.weekStart === weekStartString
+    );
+
+    if (!employeeAvailability) {
+      console.error('No availability found for employee');
+      return;
+    }
+
+    // Create updated shifts object
+    const updatedShifts = { ...employeeAvailability.shifts };
+    if (!updatedShifts[day]) {
+      updatedShifts[day] = {};
+    }
+    updatedShifts[day][shiftId] = {
+      ...updatedShifts[day][shiftId],
+      comment
+    };
+
+    try {
+      await updateAvailabilityMutation.mutateAsync({
+        id: employeeAvailability.id,
+        shifts: updatedShifts
+      });
+    } catch (error) {
+      console.error('Error updating comment:', error);
+      alert('שגיאה בעדכון ההערה');
+    }
+  };
+
   // Loading state
   if (employeesLoading || availabilitiesLoading) {
     return (
@@ -220,7 +276,6 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = ({
     currentWeekAvailabilities,
     scheduleLoading,
     activeMenu,
-    isMobileMenuOpen,
     onWeekChange: handleWeekChange,
     onGenerateSchedule: handleGenerateSchedule,
     onPublishSchedule: handlePublishSchedule,
@@ -233,8 +288,9 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = ({
     onAddHoliday: handleAddHoliday,
     onRemoveHoliday: handleRemoveHoliday,
     onBulkAssignmentChange: handleBulkAssignmentChange,
+    onAvailabilityChange: handleAvailabilityChange,
+    onCommentChange: handleCommentChange,
     onMenuChange: setActiveMenu,
-    onMobileMenuClose,
     isGenerating: generateScheduleMutation.isPending,
     isPublishing
   };

@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { Clock, Eye, Save, Calendar, AlertCircle, CheckCircle, CalendarDays, BarChart3, ShieldAlert } from 'lucide-react';
+import { Clock, Eye, Save, Calendar, AlertCircle, CheckCircle, CalendarDays } from 'lucide-react';
 import { TabBar } from '../../ui/TabBar';
 import { FloatingActionButton } from '../../ui/FloatingActionButton';
 import { PullToRefresh } from '../../ui/PullToRefresh';
 import WeekNavigator from '../../WeekNavigator';
 import { ScheduleTabMobile } from './ScheduleTabMobile';
 import { AvailabilityTabMobile } from './AvailabilityTabMobile';
-import { SummaryTabMobile } from './SummaryTabMobile';
-import { ConstraintsTabMobile } from './ConstraintsTabMobile';
 import CalendarView from '../../CalendarView';
 import { Availability, AvailabilityStatus, Schedule, User, VacationDay, Holiday } from '../../../types';
 import { useQueryClient } from '@tanstack/react-query';
@@ -57,7 +55,7 @@ export const EmployeeDashboardMobile: React.FC<EmployeeDashboardMobileProps> = (
   isCurrentWeekSubmissionWeek,
   getDeadlineText
 }) => {
-  const [activeTab, setActiveTab] = useState<'availability' | 'schedule' | 'summary' | 'constraints'>('availability');
+  const [activeTab, setActiveTab] = useState<'availability' | 'schedule'>('availability');
   const [showCalendar, setShowCalendar] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const queryClient = useQueryClient();
@@ -168,30 +166,16 @@ export const EmployeeDashboardMobile: React.FC<EmployeeDashboardMobileProps> = (
           </PullToRefresh>
         )}
 
-        {activeTab === 'summary' && (
-          <PullToRefresh onRefresh={handleRefreshAvailability}>
-            <SummaryTabMobile
-              availability={availability}
-              weekStart={currentWeekStart}
-            />
-          </PullToRefresh>
-        )}
-
-        {activeTab === 'constraints' && (
-          <ConstraintsTabMobile userName={user?.name || 'משתמש'} />
-        )}
       </main>
 
       {/* Bottom Tab Navigation */}
       <TabBar
         tabs={[
           { id: 'availability', label: 'הגשת זמינות', icon: <Clock className="w-5 h-5" /> },
-          { id: 'schedule', label: 'סידור שלי', icon: <Eye className="w-5 h-5" /> },
-          { id: 'summary', label: 'סיכום זמינות', icon: <BarChart3 className="w-5 h-5" /> },
-          { id: 'constraints', label: 'אילוצים', icon: <ShieldAlert className="w-5 h-5" /> }
+          { id: 'schedule', label: 'סידור שלי', icon: <Eye className="w-5 h-5" /> }
         ]}
         activeTab={activeTab}
-        onTabChange={(tabId) => setActiveTab(tabId as 'availability' | 'schedule' | 'summary' | 'constraints')}
+        onTabChange={(tabId) => setActiveTab(tabId as 'availability' | 'schedule')}
       />
 
       {/* Floating Action Button (Save) */}

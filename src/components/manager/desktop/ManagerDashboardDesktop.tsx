@@ -6,7 +6,7 @@ import Sidebar from '../Sidebar';
 import AvailabilityViewer from '../AvailabilityViewer';
 import AvailabilitySummary from '../../AvailabilitySummary';
 import CalendarView from '../../CalendarView';
-import { Availability, Schedule, User, VacationDay, Holiday } from '../../../types';
+import { Availability, Schedule, User, VacationDay, Holiday, AvailabilityStatus } from '../../../types';
 
 interface ManagerDashboardDesktopProps {
   // Data
@@ -20,7 +20,7 @@ interface ManagerDashboardDesktopProps {
   currentWeekAvailabilities: Availability[];
   scheduleLoading: boolean;
   activeMenu: 'employees' | 'vacations' | 'holidays';
-  isMobileMenuOpen: boolean;
+  isMobileMenuOpen?: boolean;
 
   // Handlers
   onWeekChange: (weekStart: Date) => void;
@@ -35,8 +35,10 @@ interface ManagerDashboardDesktopProps {
   onAddHoliday: (date: string, name: string, type: 'no-work' | 'morning-only') => void;
   onRemoveHoliday: (holidayId: string) => void;
   onBulkAssignmentChange: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => void;
+  onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
+  onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
   onMenuChange: (menu: 'employees' | 'vacations' | 'holidays') => void;
-  onMobileMenuClose: () => void;
+  onMobileMenuClose?: () => void;
 
   // Loading states
   isGenerating?: boolean;
@@ -67,6 +69,8 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
   onAddHoliday,
   onRemoveHoliday,
   onBulkAssignmentChange,
+  onAvailabilityChange,
+  onCommentChange,
   onMenuChange,
   onMobileMenuClose,
   isGenerating = false,
@@ -228,8 +232,8 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                   vacationDays={vacations}
                   holidays={holidays}
                   weekStart={currentWeekStart}
-                  onAvailabilityChange={() => {}}
-                  onCommentChange={() => {}}
+                  onAvailabilityChange={onAvailabilityChange}
+                  onCommentChange={onCommentChange}
                 />
               </div>
 
@@ -250,8 +254,8 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                 vacationDays={vacations}
                 holidays={holidays}
                 weekStart={currentWeekStart}
-                onAvailabilityChange={() => {}}
-                onCommentChange={() => {}}
+                onAvailabilityChange={onAvailabilityChange}
+                onCommentChange={onCommentChange}
               />
             </div>
           )}

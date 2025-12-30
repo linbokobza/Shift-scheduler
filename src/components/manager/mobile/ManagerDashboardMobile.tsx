@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, Plane, PartyPopper, CalendarDays } from 'lucide-react';
 import { TabBar } from '../../ui/TabBar';
-import { FloatingActionButton } from '../../ui/FloatingActionButton';
 import { PullToRefresh } from '../../ui/PullToRefresh';
 import WeekNavigator from '../../WeekNavigator';
 import { ScheduleTabMobile } from './ScheduleTabMobile';
@@ -10,7 +9,7 @@ import { EmployeesTabMobile } from './EmployeesTabMobile';
 import { VacationsTabMobile } from './VacationsTabMobile';
 import { HolidaysTabMobile } from './HolidaysTabMobile';
 import CalendarView from '../../CalendarView';
-import { Availability, Schedule, User, VacationDay, Holiday } from '../../../types';
+import { Availability, Schedule, User, VacationDay, Holiday, AvailabilityStatus } from '../../../types';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface ManagerDashboardMobileProps {
@@ -37,6 +36,8 @@ interface ManagerDashboardMobileProps {
   onAddHoliday: (date: string, name: string, type: 'no-work' | 'morning-only') => void;
   onRemoveHoliday: (holidayId: string) => void;
   onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => void;
+  onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
+  onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
 
   // Loading states
   isGenerating?: boolean;
@@ -64,6 +65,8 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
   onAddHoliday,
   onRemoveHoliday,
   onBulkAssignmentChange,
+  onAvailabilityChange,
+  onCommentChange,
   isGenerating = false,
   isPublishing = false
 }) => {
@@ -90,25 +93,6 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
   const handleRefreshHolidays = async () => {
     await queryClient.refetchQueries({ queryKey: ['holidays'] });
   };
-
-  // Determine FAB action based on active tab and schedule state
-  const getFABConfig = () => {
-    if (activeTab === 'schedule') {
-      if (!currentSchedule) {
-        return {
-          show: true,
-          icon: <Calendar className="w-5 h-5" />,
-          onClick: onGenerateSchedule,
-          disabled: isGenerating,
-          label: 'צור סידור'
-        };
-      }
-      return { show: false };
-    }
-    return { show: false };
-  };
-
-  const fabConfig = getFABConfig();
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -181,6 +165,8 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
               vacationDays={vacations}
               holidays={holidays}
               weekStart={currentWeekStart}
+              onAvailabilityChange={onAvailabilityChange}
+              onCommentChange={onCommentChange}
             />
           </PullToRefresh>
         )}
@@ -219,7 +205,7 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
         )}
       </main>
 
-      {/* Bottom Tab Navigation (5 tabs = horizontal scrolling) */}
+      {/* Bottom Tab Navigation */}
       <TabBar
         tabs={[
           { id: 'schedule', label: 'סידור משמרות', icon: <Calendar className="w-5 h-5" /> },
@@ -231,16 +217,6 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
         activeTab={activeTab}
         onTabChange={(tabId) => setActiveTab(tabId as 'schedule' | 'availability' | 'employees' | 'vacations' | 'holidays')}
       />
-
-      {/* Floating Action Button */}
-      {fabConfig.show && (
-        <FloatingActionButton
-          icon={fabConfig.icon}
-          onClick={fabConfig.onClick}
-          disabled={fabConfig.disabled}
-          ariaLabel={fabConfig.label}
-        />
-      )}
 
       {/* Calendar Modal */}
       {showCalendar && (
