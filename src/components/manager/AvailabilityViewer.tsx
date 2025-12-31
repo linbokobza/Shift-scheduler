@@ -192,16 +192,16 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
 
         {selectedEmployee && (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-xs">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 border-b">
+                  <th className="px-2 py-2 text-right font-medium text-gray-700 border-b">
                     משמרת
                   </th>
                   {DAYS.map((day, index) => (
-                    <th key={index} className="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b min-w-24">
-                      <div>{day}</div>
-                      <div className="text-xs text-gray-500 font-normal">
+                    <th key={index} className="px-2 py-2 text-center font-medium text-gray-700 border-b min-w-[80px]">
+                      <div className="text-xs">{day}</div>
+                      <div className="text-[10px] text-gray-500 font-normal">
                         {formatDateHebrew(weekDates[index])}
                       </div>
                     </th>
@@ -211,12 +211,9 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
               <tbody>
                 {SHIFTS.map((shift) => (
                   <tr key={shift.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 border-b">
-                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${shift.color}`}>
+                    <td className="px-2 py-2 border-b">
+                      <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${shift.color}`}>
                         {shift.name}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {shift.startTime} - {shift.endTime}
                       </div>
                     </td>
                     {DAYS.map((_, dayIndex) => {
@@ -230,28 +227,28 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                       const hasComment = cellData?.comment && cellData.comment.length > 0;
 
                       return (
-                        <td key={dayIndex} className="px-4 py-4 border-b">
+                        <td key={dayIndex} className="px-1 lg:px-2 py-2 lg:py-4 border-b">
                           <div
                             className={`
-                              relative min-h-[64px] lg:h-16 rounded-lg border-2 transition-all
-                              ${editMode ? 'cursor-pointer hover:shadow-md' : 'cursor-default'}
+                              relative min-h-[48px] lg:h-16 rounded border lg:border-2 flex items-center justify-center transition-all text-[10px] lg:text-xs
+                              ${editMode ? 'cursor-pointer' : 'cursor-default'}
                               ${isRestrictedTime
-                                ? 'bg-gray-200 text-gray-500 border-gray-300'
+                                ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
                                 : isHolidayBlocked
-                                ? 'bg-indigo-200 text-indigo-800 border-indigo-300'
+                                ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed'
                                 : isVacation
-                                ? 'bg-blue-100 text-blue-800 border-blue-200'
+                                ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed'
                                 : cellData
-                                  ? getStatusColor(cellData.status)
-                                  : 'bg-gray-50 text-gray-400 border-gray-200'
+                                  ? `${getStatusColor(cellData.status)} hover:opacity-80 shadow-sm`
+                                  : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
                               }
                             `}
                             onClick={() => handleCellClick(dayStr, shift.id)}
                           >
-                            <div className="flex items-center justify-center h-full text-center px-2">
-                              <div className="text-xs font-medium">
+                            <div className="text-center px-1 lg:px-2">
+                              <div className={`font-medium leading-tight ${cellData ? 'font-semibold' : ''}`}>
                                 {isRestrictedTime
-                                  ? 'לא זמין'
+                                  ? '×'
                                   : isHolidayBlocked
                                     ? `חג: ${holiday?.name}`
                                   : isVacation
