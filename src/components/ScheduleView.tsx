@@ -4,6 +4,7 @@ import { Schedule, User, Holiday, Availability } from '../types';
 import { SHIFTS, DAYS } from '../data/mockData';
 import { formatDateHebrew, getWeekDates, formatDate } from '../utils/dateUtils';
 import ShiftDropdown from './ShiftDropdown';
+import ShiftReplacementModal from './manager/ShiftReplacementModal';
 
 // Color palette for employees
 const EMPLOYEE_COLORS = [
@@ -62,6 +63,12 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   // State לטעינה בזמן שמירה
   const [isSaving, setIsSaving] = useState(false);
 
+  // State למודל החלפת עובדים
+  const [replacementModal, setReplacementModal] = useState<{
+    day: string;
+    shiftId: string;
+  } | null>(null);
+
   // Get available employees for a specific day and shift
   const getAvailableEmployeesForShift = (dayIndex: number, shiftId: string): User[] => {
     const dayStr = dayIndex.toString();
@@ -76,8 +83,17 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
     });
   };
 
+  // Get employee IDs who submitted availability for this week
+  const getSubmittedEmployeeIds = (): string[] => {
+    return availabilities
+      .filter(a => a.weekStart === weekStartString)
+      .map(a => a.employeeId);
+  };
+
   const getEmployeeName = (employeeId: string | null): string => {
     if (!employeeId) return '';
+    // Special case for 119 emergency service
+    if (employeeId === '119-emergency-service') return '119';
     // Note: employees array should only contain role='employee' from backend
     // If you see "עובד לא נמצא", check that backend filters by role='employee' correctly
     const employee = employees.find(emp => emp.id === employeeId);
@@ -93,9 +109,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
 
   const getEmployeeColor = (employeeId: string | null): string => {
     if (!employeeId) return '';
+    // Special case for 119 emergency service
+    if (employeeId === '119-emergency-service') return 'bg-red-100 text-red-800 border-red-200';
     const employee = employees.find(emp => emp.id === employeeId);
     if (!employee) return 'bg-gray-100 text-gray-800 border-gray-200';
-    
+
     const employeeIndex = activeEmployees.findIndex(emp => emp.id === employeeId);
     if (employeeIndex === -1) return 'bg-gray-100 text-gray-800 border-gray-200';
     return EMPLOYEE_COLORS[employeeIndex % EMPLOYEE_COLORS.length];
@@ -173,7 +191,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
     return pendingChanges.some(c => c.day === day && c.shiftId === shiftId);
   };
 
-  // טיפול בלחיצה על תא - פתיחת רשימה נפתחת
+  // טיפול בלחיצה על תא - פתיחת מודל החלפה
   const handleCellClick = (day: string, shiftId: string) => {
     if (readonly) return;
 
@@ -185,8 +203,8 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
 
     if (isRestrictedTime || isHolidayBlocked || isLocked) return;
 
-    // פתיחת הרשימה הנפתחת
-    setOpenDropdown({ day, shiftId });
+    // פתיחת מודל החלפה
+    setReplacementModal({ day, shiftId });
   };
 
   // טיפול בבחירת עובד מהרשימה
@@ -230,6 +248,19 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
     setOpenDropdown(null);
   };
 
+  // Handler לשמירה מהמודל
+  const handleReplacementSave = (employeeId: string | null) => {
+    if (!replacementModal) return;
+
+    handleEmployeeSelect(
+      replacementModal.day,
+      replacementModal.shiftId,
+      employeeId
+    );
+
+    setReplacementModal(null);
+  };
+
   if (!schedule) {
     return (
       <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
@@ -243,48 +274,51 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
       <div className="bg-green-50 border-b border-green-200 p-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-semibold text-green-900 flex items-center">
-              <UserIcon className="w-5 h-5 ml-2" />
+        <div className="flex items-start justify-between gap-4">
+          {/* Right side - Title and date stacked */}
+          <div className="flex flex-col items-end">
+            <h3 className="text-base lg:text-lg font-semibold text-green-900 flex items-center">
+              <UserIcon className="w-4 h-4 lg:w-5 lg:h-5 ml-1 lg:ml-2" />
               סידור עבודה
             </h3>
-            <p className="text-sm text-green-700 mt-1">
+            <p className="text-xs lg:text-sm text-green-700 mt-0.5">
               נוצר ב-{new Date(schedule.createdAt).toLocaleDateString('he-IL')}
             </p>
           </div>
 
-          {/* Save/Cancel buttons */}
+          {/* Left side - Pending count and buttons stacked */}
           {pendingChanges.length > 0 && onBulkAssignmentChange && !readonly && (
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 lg:p-0">
-              <span className="text-sm text-blue-700 font-medium text-center">
-                {pendingChanges.length} שינויים ממתינים
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-[10px] text-blue-700 font-medium">
+                {pendingChanges.length} ממתינים
               </span>
-              <button
-                onClick={handleCancelChanges}
-                disabled={isSaving}
-                className="flex items-center justify-center gap-1 px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50"
-              >
-                <X className="w-4 h-4" />
-                ביטול
-              </button>
-              <button
-                onClick={handleSaveChanges}
-                disabled={isSaving}
-                className="flex items-center justify-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                {isSaving ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    שומר...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    שמור שינויים
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={handleCancelChanges}
+                  disabled={isSaving}
+                  className="flex items-center gap-0.5 px-2 py-0.5 bg-gray-500 text-white rounded text-[11px] hover:bg-gray-600 transition-colors disabled:opacity-50"
+                >
+                  <X className="w-3 h-3" />
+                  ביטול
+                </button>
+                <button
+                  onClick={handleSaveChanges}
+                  disabled={isSaving}
+                  className="flex items-center gap-0.5 px-2 py-0.5 bg-blue-600 text-white rounded text-[11px] hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      שומר...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-3 h-3" />
+                      שמור
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -437,6 +471,27 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
           </tbody>
         </table>
       </div>
+
+      {/* Shift Replacement Modal */}
+      {replacementModal && (
+        <ShiftReplacementModal
+          isOpen={true}
+          onClose={() => setReplacementModal(null)}
+          onSave={handleReplacementSave}
+          currentEmployeeId={getCurrentAssignment(replacementModal.day, replacementModal.shiftId)}
+          allEmployees={activeEmployees}
+          availableEmployeeIds={getAvailableEmployeesForShift(
+            parseInt(replacementModal.day),
+            replacementModal.shiftId
+          ).map(e => e.id)}
+          submittedEmployeeIds={getSubmittedEmployeeIds()}
+          shiftInfo={{
+            dayName: DAYS[parseInt(replacementModal.day)],
+            shiftName: SHIFTS.find(s => s.id === replacementModal.shiftId)?.name || '',
+            shiftTime: `${SHIFTS.find(s => s.id === replacementModal.shiftId)?.startTime || ''} - ${SHIFTS.find(s => s.id === replacementModal.shiftId)?.endTime || ''}`
+          }}
+        />
+      )}
     </div>
   );
 };
