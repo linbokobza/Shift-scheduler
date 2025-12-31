@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { User } from '../models';
 import { AppError } from '../middleware';
 import { AuthRequest } from '../middleware/auth';
@@ -37,7 +37,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
   const token = jwt.sign({ userId: user._id }, jwtSecret, {
     expiresIn: jwtExpiresIn,
-  });
+  } as SignOptions);
 
   res.status(201).json({
     message: 'User registered successfully',
@@ -83,7 +83,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
   const token = jwt.sign({ userId: user._id }, jwtSecret, {
     expiresIn: jwtExpiresIn,
-  });
+  } as SignOptions);
 
   logger.info(`User logged in: ${user.email}`);
 
@@ -207,7 +207,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
   const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
   const resetToken = jwt.sign({ userId: user._id, type: 'reset' }, jwtSecret, {
     expiresIn: '15m',
-  });
+  } as SignOptions);
 
   logger.info(`Password reset requested for user: ${user.email}`);
 

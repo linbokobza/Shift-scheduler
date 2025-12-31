@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { AuditLog } from '../models';
-import { AppError } from '../middleware';
 
 export const getAuditLogs = async (req: Request, res: Response): Promise<void> => {
   const { entityType, entityId, userId, action, startDate, endDate, limit = 50 } = req.query;

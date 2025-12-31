@@ -129,11 +129,11 @@ export const updateSchedule = async (req: AuthRequest, res: Response): Promise<v
 
   // Update
   if (assignments) {
-    schedule.assignments = ScheduleService.convertObjectToMap(assignments);
+    schedule.assignments = ScheduleService.convertObjectToMap(assignments) as any;
   }
 
   if (lockedAssignments) {
-    schedule.lockedAssignments = ScheduleService.convertObjectToMap(lockedAssignments);
+    schedule.lockedAssignments = ScheduleService.convertObjectToMap(lockedAssignments) as any;
   }
 
   await schedule.save();
@@ -193,14 +193,15 @@ export const lockShift = async (req: AuthRequest, res: Response): Promise<void> 
 
   // Initialize lockedAssignments if not exists
   if (!schedule.lockedAssignments) {
-    schedule.lockedAssignments = new Map();
+    schedule.lockedAssignments = new Map() as any;
   }
 
-  // Get or create day map
-  let dayMap = schedule.lockedAssignments.get(day.toString());
+  // Get or create day map - cast to Map for proper access
+  const lockedMap = schedule.lockedAssignments as any as Map<string, Map<string, boolean>>;
+  let dayMap = lockedMap.get(day.toString());
   if (!dayMap) {
     dayMap = new Map();
-    schedule.lockedAssignments.set(day.toString(), dayMap);
+    lockedMap.set(day.toString(), dayMap);
   }
 
   // Set lock status

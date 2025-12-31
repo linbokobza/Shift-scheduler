@@ -4,6 +4,22 @@ import { AppError, AuthRequest } from '../middleware';
 import { createAuditLog } from '../middleware/auditLogger';
 import { formatDate } from '../services/dateUtils.service';
 
+// Helper function to convert nested Map to plain object
+function convertShiftsMapToObject(shifts: any): any {
+  if (shifts instanceof Map) {
+    const result: any = {};
+    shifts.forEach((dayShifts: any, day: string) => {
+      if (dayShifts instanceof Map) {
+        result[day] = Object.fromEntries(dayShifts);
+      } else {
+        result[day] = dayShifts;
+      }
+    });
+    return result;
+  }
+  return shifts;
+}
+
 export const getAllAvailabilities = async (req: Request, res: Response): Promise<void> => {
   const { weekStart } = req.query;
 
@@ -168,7 +184,7 @@ export const createAvailability = async (req: AuthRequest, res: Response): Promi
       id: availability._id.toString(),
       employeeId: availability.employeeId.toString(),
       weekStart: formatDate(availability.weekStart),
-      shifts: Object.fromEntries(availability.shifts),
+      shifts: convertShiftsMapToObject(availability.shifts),
       submittedAt: availability.submittedAt.toISOString(),
     },
   });
@@ -203,7 +219,7 @@ export const updateAvailability = async (req: AuthRequest, res: Response): Promi
     shiftsMap.set(day, dayMap);
   });
 
-  availability.shifts = shiftsMap;
+  availability.shifts = shiftsMap as any;
   availability.submittedAt = new Date();
   await availability.save();
 
@@ -220,7 +236,7 @@ export const updateAvailability = async (req: AuthRequest, res: Response): Promi
       id: availability._id.toString(),
       employeeId: availability.employeeId.toString(),
       weekStart: formatDate(availability.weekStart),
-      shifts: Object.fromEntries(availability.shifts),
+      shifts: convertShiftsMapToObject(availability.shifts),
       submittedAt: availability.submittedAt.toISOString(),
     },
   });

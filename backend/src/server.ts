@@ -1,6 +1,7 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
 import 'express-async-errors';
 
 import { connectDatabase } from './config/database';
@@ -8,6 +9,7 @@ import { logger } from './utils/logger';
 import { errorHandler, notFoundHandler, csrfTokenMiddleware } from './middleware';
 
 // Routes
+import healthRoutes from './routes/health.routes';
 import authRoutes from './routes/auth.routes';
 import employeeRoutes from './routes/employee.routes';
 import availabilityRoutes from './routes/availability.routes';
@@ -22,7 +24,24 @@ dotenv.config();
 const app: Application = express();
 const PORT = process.env.PORT || 5001;
 
-// Middleware
+// Security middleware - Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+}));
+
+// CORS middleware
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: true,
@@ -33,17 +52,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // HTTPS enforcement in production
 if (process.env.NODE_ENV === 'production') {
-  app.use((req, res, next) => {
+  app.use((req, _res, next) => {
     if (req.header('x-forwarded-proto') !== 'https') {
       logger.warn(`Non-HTTPS request detected: ${req.method} ${req.url}`);
       // Optionally redirect to HTTPS
       // res.redirect(`https://${req.header('host')}${req.url}`);
     }
-    // Add security headers
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
     next();
   });
 }
@@ -52,21 +66,13 @@ if (process.env.NODE_ENV === 'production') {
 app.use(csrfTokenMiddleware);
 
 // Request logging
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
   logger.debug(`${req.method} ${req.url}`);
   next();
 });
 
-// Health check
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
-});
-
 // API Routes
+app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/availabilities', availabilityRoutes);
@@ -99,6 +105,10 @@ const startServer = async () => {
   }
 };
 
-startServer();
+// Only start server if not in test environment
+if (process.env.NODE_ENV !== 'test') {
+  startServer();
+}
 
+export { app };
 export default app;

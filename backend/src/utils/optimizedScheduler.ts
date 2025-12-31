@@ -233,7 +233,7 @@ function optimizeSchedule(
 
     // סידור משמרות לפי עדיפות: בוקר → ערב → לילה
     const sortedShifts = [...allShifts].sort((a, b) => {
-      const shiftOrder = { 'morning': 1, 'evening': 2, 'night': 3 };
+      const shiftOrder: { [key: string]: number } = { 'morning': 1, 'evening': 2, 'night': 3 };
       if (shiftOrder[a.shiftId] !== shiftOrder[b.shiftId]) {
         return shiftOrder[a.shiftId] - shiftOrder[b.shiftId];
       }
@@ -551,13 +551,13 @@ function getDateForDay(weekStart: string, day: number): string {
 function analyzeScheduleQuality(
   assignments: ShiftAssignment,
   employees: UserData[],
-  availabilityMap: Map<string, AvailabilityData>
+  _availabilityMap: Map<string, AvailabilityData>
 ): string[] {
   const warnings: string[] = [];
 
   const employeeStats = new Map<string, EmployeeShiftCounts>();
   employees.forEach(emp => {
-    employeeStats.set(emp.id, { morning: 0, evening: 0, night: 0, total: 0 });
+    employeeStats.set(emp.id, { morning: 0, evening: 0, night: 0, total: 0, eightToEightCount: 0 });
   });
 
   // ספירת משמרות
