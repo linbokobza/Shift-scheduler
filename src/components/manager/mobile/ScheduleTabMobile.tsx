@@ -21,6 +21,8 @@ interface ScheduleTabMobileProps {
   isPublishing: boolean;
   onAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
   onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => void;
+  currentDayIndex?: number;
+  onCurrentDayIndexChange?: (index: number) => void;
 }
 
 const STORAGE_KEY = 'manager-schedule-view-mode';
@@ -36,9 +38,15 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
   isGenerating,
   isPublishing,
   onAssignmentChange,
-  onBulkAssignmentChange
+  onBulkAssignmentChange,
+  currentDayIndex: propCurrentDayIndex,
+  onCurrentDayIndexChange
 }) => {
-  const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  // Use prop if provided, otherwise use local state (for backward compatibility)
+  const [localCurrentDayIndex, setLocalCurrentDayIndex] = useState(0);
+  const currentDayIndex = propCurrentDayIndex ?? localCurrentDayIndex;
+  const setCurrentDayIndex = onCurrentDayIndexChange ?? setLocalCurrentDayIndex;
+
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     // Load saved preference from localStorage
     const saved = localStorage.getItem(STORAGE_KEY);

@@ -33,6 +33,11 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   const [activeMenu, setActiveMenu] = useState<MenuOption>('employees');
   const [isPublishing, setIsPublishing] = useState(false);
 
+  // Tab state preservation
+  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
+  const [availabilityEditMode, setAvailabilityEditMode] = useState(false);
+  const [scheduleCurrentDayIndex, setScheduleCurrentDayIndex] = useState(0);
+
   const weekStartString = formatDate(currentWeekStart);
 
   // Fetch data with React Query
@@ -292,7 +297,14 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     onCommentChange: handleCommentChange,
     onMenuChange: setActiveMenu,
     isGenerating: generateScheduleMutation.isPending,
-    isPublishing
+    isPublishing,
+    // Tab state preservation props
+    selectedEmployee,
+    onSelectedEmployeeChange: setSelectedEmployee,
+    availabilityEditMode,
+    onAvailabilityEditModeChange: setAvailabilityEditMode,
+    scheduleCurrentDayIndex,
+    onScheduleCurrentDayIndexChange: setScheduleCurrentDayIndex
   };
 
   return (

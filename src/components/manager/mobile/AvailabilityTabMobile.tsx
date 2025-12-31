@@ -10,6 +10,10 @@ interface AvailabilityTabMobileProps {
   weekStart: Date;
   onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
+  selectedEmployee: string | null;
+  onSelectedEmployeeChange: (employeeId: string | null) => void;
+  editMode: boolean;
+  onEditModeChange: (editMode: boolean) => void;
 }
 
 export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
@@ -19,7 +23,11 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
   holidays,
   weekStart,
   onAvailabilityChange,
-  onCommentChange
+  onCommentChange,
+  selectedEmployee,
+  onSelectedEmployeeChange,
+  editMode,
+  onEditModeChange
 }) => {
   return (
     <div className="p-4">
@@ -31,6 +39,10 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
         weekStart={weekStart}
         onAvailabilityChange={onAvailabilityChange}
         onCommentChange={onCommentChange}
+        selectedEmployee={selectedEmployee}
+        onSelectedEmployeeChange={onSelectedEmployeeChange}
+        editMode={editMode}
+        onEditModeChange={onEditModeChange}
       />
     </div>
   );

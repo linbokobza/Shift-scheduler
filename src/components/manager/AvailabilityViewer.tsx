@@ -12,6 +12,10 @@ interface AvailabilityViewerProps {
   weekStart: Date;
   onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
+  selectedEmployee: string | null;
+  onSelectedEmployeeChange: (employeeId: string | null) => void;
+  editMode: boolean;
+  onEditModeChange: (editMode: boolean) => void;
 }
 
 const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
@@ -21,10 +25,12 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   holidays,
   weekStart,
   onAvailabilityChange,
-  onCommentChange
+  onCommentChange,
+  selectedEmployee,
+  onSelectedEmployeeChange,
+  editMode,
+  onEditModeChange
 }) => {
-  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
-  const [editMode, setEditMode] = useState(false);
   const [selectedCell, setSelectedCell] = useState<{ day: string; shift: string; comment: string } | null>(null);
 
   // Use the submission week from the props
@@ -139,10 +145,10 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
           <div className="flex items-center space-x-2">
             {selectedEmployee && (
               <button
-                onClick={() => setEditMode(!editMode)}
+                onClick={() => onEditModeChange(!editMode)}
                 className={`flex items-center px-3 py-2 rounded-lg transition-colors text-sm ml-2 ${
-                  editMode 
-                    ? 'bg-green-600 text-white hover:bg-green-700' 
+                  editMode
+                    ? 'bg-green-600 text-white hover:bg-green-700'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
@@ -173,8 +179,8 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
             value={selectedEmployee || ''}
             onChange={(e) => {
               const empId = e.target.value || null;
-              setSelectedEmployee(empId);
-              setEditMode(false);
+              onSelectedEmployeeChange(empId);
+              onEditModeChange(false);
             }}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent max-w-md"
           >

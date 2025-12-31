@@ -38,7 +38,8 @@
       "Bash(tee:*)",
       "Bash(npx tsc:*)",
       "Bash(node test-date-fix.js:*)",
-      "Bash(cmd /c taskkill /F /PID 11176)"
+      "Bash(cmd /c taskkill /F /PID 11176)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []

@@ -42,6 +42,14 @@ interface ManagerDashboardMobileProps {
   // Loading states
   isGenerating?: boolean;
   isPublishing?: boolean;
+
+  // Tab state preservation
+  selectedEmployee: string | null;
+  onSelectedEmployeeChange: (employeeId: string | null) => void;
+  availabilityEditMode: boolean;
+  onAvailabilityEditModeChange: (editMode: boolean) => void;
+  scheduleCurrentDayIndex: number;
+  onScheduleCurrentDayIndexChange: (index: number) => void;
 }
 
 export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
@@ -68,7 +76,13 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
   onAvailabilityChange,
   onCommentChange,
   isGenerating = false,
-  isPublishing = false
+  isPublishing = false,
+  selectedEmployee,
+  onSelectedEmployeeChange,
+  availabilityEditMode,
+  onAvailabilityEditModeChange,
+  scheduleCurrentDayIndex,
+  onScheduleCurrentDayIndexChange
 }) => {
   const [activeTab, setActiveTab] = useState<'schedule' | 'availability' | 'employees' | 'vacations' | 'holidays'>('schedule');
   const [showCalendar, setShowCalendar] = useState(false);
@@ -153,6 +167,8 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
               onBulkAssignmentChange={onBulkAssignmentChange}
               isGenerating={isGenerating}
               isPublishing={isPublishing}
+              currentDayIndex={scheduleCurrentDayIndex}
+              onCurrentDayIndexChange={onScheduleCurrentDayIndexChange}
             />
           </PullToRefresh>
         )}
@@ -167,6 +183,10 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
               weekStart={currentWeekStart}
               onAvailabilityChange={onAvailabilityChange}
               onCommentChange={onCommentChange}
+              selectedEmployee={selectedEmployee}
+              onSelectedEmployeeChange={onSelectedEmployeeChange}
+              editMode={availabilityEditMode}
+              onEditModeChange={onAvailabilityEditModeChange}
             />
           </PullToRefresh>
         )}
