@@ -21,7 +21,7 @@ setInterval(() => {
  */
 export const generateCSRFToken = (req: Request, res: Response): void => {
   // Create a unique identifier for this session
-  const sessionId = req.sessionID || req.ip || 'unknown';
+  const sessionId = (req as any).sessionID || req.ip || 'unknown';
 
   // Check if token already exists for this session
   let csrfData = csrfTokens.get(sessionId);
@@ -44,13 +44,13 @@ export const generateCSRFToken = (req: Request, res: Response): void => {
  * Middleware to protect against CSRF attacks
  * Should be applied to POST, PUT, DELETE, and PATCH requests
  */
-export const verifyCsrfToken = (req: Request, res: Response, next: NextFunction): void => {
+export const verifyCsrfToken = (req: Request, _res: Response, next: NextFunction): void => {
   // Skip CSRF verification for GET and HEAD requests
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
     return next();
   }
 
-  const sessionId = req.sessionID || req.ip || 'unknown';
+  const sessionId = (req as any).sessionID || req.ip || 'unknown';
   const csrfData = csrfTokens.get(sessionId);
 
   // Get token from request

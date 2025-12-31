@@ -22,7 +22,6 @@ const queryClient = new QueryClient({
 
 const AppContent = () => {
   const { user, isLoading } = useAuth();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -52,15 +51,10 @@ const AppContent = () => {
             path="/"
             element={
               <div className="min-h-screen bg-gray-50 overflow-x-hidden" dir="rtl">
-                <Header
-                  onMobileMenuToggle={user.role === 'manager' ? () => setIsMobileMenuOpen(!isMobileMenuOpen) : undefined}
-                />
+                <Header />
                 <main>
                   {user.role === 'manager' ? (
-                    <ManagerDashboard
-                      isMobileMenuOpen={isMobileMenuOpen}
-                      onMobileMenuClose={() => setIsMobileMenuOpen(false)}
-                    />
+                    <ManagerDashboard />
                   ) : (
                     <EmployeeDashboard />
                   )}

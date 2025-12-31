@@ -53,7 +53,7 @@ export const createEmployee = async (req: AuthRequest, res: Response): Promise<v
   });
 };
 
-export const getAllEmployees = async (req: Request, res: Response): Promise<void> => {
+export const getAllEmployees = async (_req: Request, res: Response): Promise<void> => {
   const employees = await User.find().select('-password').sort({ name: 1 });
 
   res.status(200).json({

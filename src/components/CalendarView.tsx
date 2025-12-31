@@ -5,6 +5,18 @@ import { formatDateHebrew } from '../utils/dateUtils';
 import { getShiftsForDate, SHIFT_DISPLAY_ORDER, SHIFT_NAMES_HEBREW } from '../utils/calendarUtils';
 import { usePublishedSchedulesForMonth } from '../hooks/useSchedules';
 
+// Color palette for employees
+const EMPLOYEE_COLORS = [
+  'bg-blue-100 text-blue-800 border-blue-200',
+  'bg-green-100 text-green-800 border-green-200',
+  'bg-purple-100 text-purple-800 border-purple-200',
+  'bg-orange-100 text-orange-800 border-orange-200',
+  'bg-pink-100 text-pink-800 border-pink-200',
+  'bg-indigo-100 text-indigo-800 border-indigo-200',
+  'bg-teal-100 text-teal-800 border-teal-200',
+  'bg-red-100 text-red-800 border-red-200',
+];
+
 interface CalendarViewProps {
   employees: UserType[];
   vacationDays: VacationDay[];
@@ -19,6 +31,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   onClose
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const activeEmployees = employees.filter(emp => emp.isActive);
 
   const { data: publishedSchedules = [], isLoading: schedulesLoading } =
     usePublishedSchedulesForMonth(
@@ -33,25 +46,59 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
+    const endingDayOfWeek = lastDay.getDay();
 
     const days = [];
-    
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
+
+    // Add days from previous month to fill the week starting from Sunday
+    if (startingDayOfWeek > 0) {
+      const prevMonth = month - 1;
+      const prevYear = prevMonth < 0 ? year - 1 : year;
+      const prevMonthAdjusted = prevMonth < 0 ? 11 : prevMonth;
+      const prevMonthLastDay = new Date(prevYear, prevMonthAdjusted + 1, 0).getDate();
+
+      // Calculate how many days from previous month to show
+      const daysFromPrevMonth = startingDayOfWeek;
+      const startDay = prevMonthLastDay - daysFromPrevMonth + 1;
+
+      for (let day = startDay; day <= prevMonthLastDay; day++) {
+        days.push(new Date(prevYear, prevMonthAdjusted, day));
+      }
     }
-    
+
     // Add all days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day));
     }
-    
+
+    // Add days from next month to complete the week until Friday (day 5)
+    // If month ends on Sunday (0) through Thursday (4), add days to reach Friday
+    if (endingDayOfWeek < 5) {
+      const nextMonth = month + 1;
+      const nextYear = nextMonth > 11 ? year + 1 : year;
+      const nextMonthAdjusted = nextMonth > 11 ? 0 : nextMonth;
+      const daysToAdd = 5 - endingDayOfWeek;
+
+      for (let day = 1; day <= daysToAdd; day++) {
+        days.push(new Date(nextYear, nextMonthAdjusted, day));
+      }
+    }
+
     return days;
   };
 
   const getEmployeeName = (employeeId: string) => {
     const employee = employees.find(emp => emp.id === employeeId);
     return employee?.name || 'עובד לא נמצא';
+  };
+
+  const getEmployeeColor = (employeeName: string): string => {
+    const employee = employees.find(emp => emp.name === employeeName);
+    if (!employee) return 'bg-gray-100 text-gray-800 border-gray-200';
+
+    const employeeIndex = activeEmployees.findIndex(emp => emp.id === employee.id);
+    if (employeeIndex === -1) return 'bg-gray-100 text-gray-800 border-gray-200';
+    return EMPLOYEE_COLORS[employeeIndex % EMPLOYEE_COLORS.length];
   };
 
   const getVacationsForDate = (date: Date) => {
@@ -173,13 +220,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
             {/* Calendar days */}
             {days.map((day, index) => {
-              if (!day) {
-                return <div key={index} className="p-1 sm:p-2 min-h-[70px] sm:min-h-[110px]"></div>;
-              }
-
               const vacations = getVacationsForDate(day);
               const holiday = getHolidayForDate(day);
               const isToday = day.toDateString() === new Date().toDateString();
+              const isCurrentMonth = day.getMonth() === currentDate.getMonth();
 
               return (
                 <div
@@ -187,12 +231,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                   className={`p-0.5 sm:p-2 min-h-[70px] sm:min-h-[110px] border rounded relative overflow-hidden ${
                     isToday
                       ? 'bg-blue-100 border-blue-300'
-                      : 'bg-white border-gray-200 hover:bg-gray-50'
+                      : isCurrentMonth
+                      ? 'bg-white border-gray-200 hover:bg-gray-50'
+                      : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                   }`}
                 >
                   {/* Day number */}
                   <div className={`text-xs sm:text-sm font-medium mb-0.5 ${
-                    isToday ? 'text-blue-900' : 'text-gray-900'
+                    isToday ? 'text-blue-900' : isCurrentMonth ? 'text-gray-900' : 'text-gray-500'
                   }`}>
                     {day.getDate()}
                   </div>
@@ -218,11 +264,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                           const employeeName = shifts[shiftType];
                           if (!employeeName) return null;
 
-                          const shiftColor = shiftType === 'morning'
-                            ? 'bg-blue-50 text-blue-700 border-blue-200'
-                            : shiftType === 'evening'
-                            ? 'bg-orange-50 text-orange-700 border-orange-200'
-                            : 'bg-purple-50 text-purple-700 border-purple-200';
+                          const employeeColor = getEmployeeColor(employeeName);
 
                           // Get first name only to save space
                           const firstName = employeeName.split(' ')[0];
@@ -230,11 +272,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                           return (
                             <div
                               key={shiftType}
-                              className={`text-[9px] sm:text-xs px-1 py-0.5 rounded border ${shiftColor} truncate leading-tight`}
+                              className={`text-[9px] sm:text-xs px-1 py-0.5 rounded border ${employeeColor} truncate leading-tight`}
                               title={`${SHIFT_NAMES_HEBREW[shiftType]}: ${employeeName}`}
                             >
-                              <span className="font-medium">{SHIFT_NAMES_HEBREW[shiftType]}:</span>{' '}
-                              <span>{firstName}</span>
+                              {firstName}
                             </div>
                           );
                         })}
@@ -277,18 +318,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         <div className="bg-gray-50 border-t p-3 sm:p-4 flex-shrink-0">
           <h4 className="font-medium text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">מקרא</h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs sm:text-sm">
-            <div className="flex items-center">
-              <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-50 border border-blue-200 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
-              <span className="text-gray-700">משמרת בוקר</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 sm:w-4 sm:h-4 bg-orange-50 border border-orange-200 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
-              <span className="text-gray-700">משמרת ערב</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 sm:w-4 sm:h-4 bg-purple-50 border border-purple-200 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
-              <span className="text-gray-700">משמרת לילה</span>
-            </div>
             <div className="flex items-center">
               <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 border border-blue-200 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
               <span className="text-gray-700">חופשה</span>

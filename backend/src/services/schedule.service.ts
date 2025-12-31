@@ -157,53 +157,37 @@ export class ScheduleService {
     createdBy: mongoose.Types.ObjectId,
     optimizationScore?: number
   ): Promise<ISchedule> {
-    // Use MongoDB transaction to ensure atomic delete + create
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    // Delete any existing schedules for this week
+    await Schedule.deleteMany({ weekStart });
 
-    try {
-      // Delete any existing schedules for this week
-      await Schedule.deleteMany({ weekStart }, { session });
+    // Convert assignments to Map with ObjectIds
+    const assignmentsMap = this.convertObjectToMap(assignments);
 
-      // Convert assignments to Map with ObjectIds
-      const assignmentsMap = this.convertObjectToMap(assignments);
-
-      // Convert employeeIds to ObjectIds
-      assignmentsMap.forEach((dayMap, day) => {
-        const newDayMap = new Map();
-        dayMap.forEach((employeeId: string | null, shiftId: string) => {
-          newDayMap.set(
-            shiftId,
-            employeeId ? new mongoose.Types.ObjectId(employeeId) : null
-          );
-        });
-        assignmentsMap.set(day, newDayMap);
+    // Convert employeeIds to ObjectIds
+    assignmentsMap.forEach((dayMap, day) => {
+      const newDayMap = new Map();
+      dayMap.forEach((employeeId: string | null, shiftId: string) => {
+        newDayMap.set(
+          shiftId,
+          employeeId ? new mongoose.Types.ObjectId(employeeId) : null
+        );
       });
+      assignmentsMap.set(day, newDayMap);
+    });
 
-      const lockedMap = lockedAssignments ? this.convertObjectToMap(lockedAssignments) : undefined;
+    const lockedMap = lockedAssignments ? this.convertObjectToMap(lockedAssignments) : undefined;
 
-      // Create new schedule
-      const schedules = await Schedule.create([{
-        weekStart,
-        assignments: assignmentsMap as any,
-        lockedAssignments: lockedMap as any,
-        isPublished: false,
-        createdBy,
-        optimizationScore,
-      }], { session });
+    // Create new schedule
+    const schedule = await Schedule.create({
+      weekStart,
+      assignments: assignmentsMap as any,
+      lockedAssignments: lockedMap as any,
+      isPublished: false,
+      createdBy,
+      optimizationScore,
+    });
 
-      // Commit the transaction
-      await session.commitTransaction();
-
-      return schedules[0];
-    } catch (error) {
-      // Rollback on error
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      // End the session
-      session.endSession();
-    }
+    return schedule;
   }
 
   /**

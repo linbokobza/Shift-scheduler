@@ -1,0 +1,4 @@
+dist/
+node_modules/
+backend/dist/
+*.d.ts

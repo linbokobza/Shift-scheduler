@@ -12,6 +12,10 @@ interface AvailabilityViewerProps {
   weekStart: Date;
   onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
+  selectedEmployee: string | null;
+  onSelectedEmployeeChange: (employeeId: string | null) => void;
+  editMode: boolean;
+  onEditModeChange: (editMode: boolean) => void;
 }
 
 const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
@@ -21,12 +25,13 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   holidays,
   weekStart,
   onAvailabilityChange,
-  onCommentChange
+  onCommentChange,
+  selectedEmployee,
+  onSelectedEmployeeChange,
+  editMode,
+  onEditModeChange
 }) => {
-  const [selectedEmployee, setSelectedEmployee] = useState<string | null>(null);
-  const [editMode, setEditMode] = useState(false);
-  const [selectedCell, setSelectedCell] = useState<{ day: string; shift: string } | null>(null);
-  const [commentText, setCommentText] = useState('');
+  const [selectedCell, setSelectedCell] = useState<{ day: string; shift: string; comment: string } | null>(null);
 
   // Use the submission week from the props
   const submissionWeekStart = weekStart;
@@ -112,27 +117,9 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
     onAvailabilityChange(selectedEmployee, day, shiftId, nextStatus);
   };
 
-  const handleCommentClick = (day: string, shiftId: string, e: React.MouseEvent) => {
+  const handleCommentClick = (day: string, shiftId: string, comment: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!selectedEmployee) return;
-
-    const dayIndex = parseInt(day);
-    if (isVacationDay(selectedEmployee, dayIndex) || isHolidayShiftBlocked(dayIndex, shiftId)) return;
-
-    const isRestrictedTime = (dayIndex === 5 && (shiftId === 'evening' || shiftId === 'night')) || dayIndex === 6;
-    if (isRestrictedTime) return;
-
-    setSelectedCell({ day, shift: shiftId });
-    const employeeAvailability = getEmployeeAvailability(selectedEmployee);
-    setCommentText(employeeAvailability?.shifts[day]?.[shiftId]?.comment || '');
-  };
-
-  const saveComment = () => {
-    if (selectedCell && selectedEmployee) {
-      onCommentChange(selectedEmployee, selectedCell.day, selectedCell.shift, commentText);
-      setSelectedCell(null);
-      setCommentText('');
-    }
+    setSelectedCell({ day, shift: shiftId, comment });
   };
 
   if (activeEmployees.length === 0) {
@@ -158,10 +145,10 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
           <div className="flex items-center space-x-2">
             {selectedEmployee && (
               <button
-                onClick={() => setEditMode(!editMode)}
+                onClick={() => onEditModeChange(!editMode)}
                 className={`flex items-center px-3 py-2 rounded-lg transition-colors text-sm ml-2 ${
-                  editMode 
-                    ? 'bg-green-600 text-white hover:bg-green-700' 
+                  editMode
+                    ? 'bg-green-600 text-white hover:bg-green-700'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
@@ -192,8 +179,8 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
             value={selectedEmployee || ''}
             onChange={(e) => {
               const empId = e.target.value || null;
-              setSelectedEmployee(empId);
-              setEditMode(false);
+              onSelectedEmployeeChange(empId);
+              onEditModeChange(false);
             }}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent max-w-md"
           >
@@ -211,16 +198,16 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
 
         {selectedEmployee && (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-xs">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 border-b">
+                  <th className="px-2 py-2 text-right font-medium text-gray-700 border-b">
                     משמרת
                   </th>
                   {DAYS.map((day, index) => (
-                    <th key={index} className="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b min-w-24">
-                      <div>{day}</div>
-                      <div className="text-xs text-gray-500 font-normal">
+                    <th key={index} className="px-2 py-2 text-center font-medium text-gray-700 border-b min-w-[80px]">
+                      <div className="text-xs">{day}</div>
+                      <div className="text-[10px] text-gray-500 font-normal">
                         {formatDateHebrew(weekDates[index])}
                       </div>
                     </th>
@@ -230,12 +217,9 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
               <tbody>
                 {SHIFTS.map((shift) => (
                   <tr key={shift.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 border-b">
-                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${shift.color}`}>
+                    <td className="px-2 py-2 border-b">
+                      <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${shift.color}`}>
                         {shift.name}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {shift.startTime} - {shift.endTime}
                       </div>
                     </td>
                     {DAYS.map((_, dayIndex) => {
@@ -249,54 +233,44 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                       const hasComment = cellData?.comment && cellData.comment.length > 0;
 
                       return (
-                        <td key={dayIndex} className="px-2 py-4 border-b">
+                        <td key={dayIndex} className="px-1 lg:px-2 py-2 lg:py-4 border-b">
                           <div
                             className={`
-                              relative h-16 rounded-lg border-2 transition-all
-                              ${editMode ? 'cursor-pointer hover:shadow-md' : 'cursor-default'}
+                              relative min-h-[48px] lg:h-16 rounded border lg:border-2 flex items-center justify-center transition-all text-[10px] lg:text-xs
+                              ${editMode ? 'cursor-pointer' : 'cursor-default'}
                               ${isRestrictedTime
-                                ? 'bg-gray-200 text-gray-500 border-gray-300'
+                                ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
                                 : isHolidayBlocked
-                                ? 'bg-indigo-200 text-indigo-800 border-indigo-300'
-                                : isVacation 
-                                ? 'bg-blue-100 text-blue-800 border-blue-200' 
-                                : cellData 
-                                  ? getStatusColor(cellData.status)
-                                  : 'bg-gray-50 text-gray-400 border-gray-200'
+                                ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed'
+                                : isVacation
+                                ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed'
+                                : cellData
+                                  ? `${getStatusColor(cellData.status)} hover:opacity-80 shadow-sm`
+                                  : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
                               }
                             `}
                             onClick={() => handleCellClick(dayStr, shift.id)}
                           >
-                            <div className="flex items-center justify-center h-full text-center px-2">
-                              <div className="text-xs font-medium">
-                                {isRestrictedTime 
-                                  ? 'לא זמין' 
+                            <div className="text-center px-1 lg:px-2">
+                              <div className={`font-medium leading-tight ${cellData ? 'font-semibold' : ''}`}>
+                                {isRestrictedTime
+                                  ? '×'
                                   : isHolidayBlocked
                                     ? `חג: ${holiday?.name}`
-                                  : isVacation 
-                                    ? 'חופשה/מחלה' 
+                                  : isVacation
+                                    ? 'חופשה/מחלה'
                                     : getStatusText(cellData?.status || 'available')
                                 }
                               </div>
                             </div>
-                            
+
                             {hasComment && !isHolidayBlocked && (
                               <button
-                                onClick={(e) => handleCommentClick(dayStr, shift.id, e)}
+                                onClick={(e) => handleCommentClick(dayStr, shift.id, cellData?.comment || '', e)}
                                 className="absolute bottom-1 right-1 text-blue-600 hover:text-blue-800 transition-colors z-10"
-                                title={editMode ? "ערוך הערה" : cellData?.comment}
+                                title={cellData?.comment}
                               >
                                 <MessageSquare className="w-3 h-3 fill-current" />
-                              </button>
-                            )}
-                            
-                            {editMode && !isVacation && !hasComment && !isRestrictedTime && !isHolidayBlocked && (
-                              <button
-                                onClick={(e) => handleCommentClick(dayStr, shift.id, e)}
-                                className="absolute bottom-1 right-1 text-gray-400 hover:text-blue-600 opacity-0 hover:opacity-100 transition-all z-10"
-                                title="הוסף הערה"
-                              >
-                                <MessageSquare className="w-3 h-3" />
                               </button>
                             )}
                           </div>
@@ -318,50 +292,21 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
         )}
       </div>
 
-      {/* Comment Modal */}
+      {/* Comment Modal - View Only */}
       {selectedCell && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedCell(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4">{editMode ? 'עריכת הערה' : 'צפייה בהערה'}</h3>
-            <textarea
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="הכניסו הערה..."
-              className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              dir="rtl"
-              readOnly={!editMode}
-            />
-            <div className="flex justify-end space-x-3 mt-4">
+            <h3 className="text-lg font-semibold mb-4">הערה</h3>
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg min-h-[96px] whitespace-pre-wrap" dir="rtl">
+              {selectedCell.comment || 'אין הערה'}
+            </div>
+            <div className="flex justify-end mt-4">
               <button
                 onClick={() => setSelectedCell(null)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors ml-3"
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
               >
-                {editMode ? 'ביטול' : 'סגור'}
+                סגור
               </button>
-              {editMode && (
-                <>
-                  <button
-                    onClick={saveComment}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    שמירה
-                  </button>
-                  {commentText && (
-                    <button
-                      onClick={() => {
-                        setCommentText('');
-                        if (selectedCell && selectedEmployee) {
-                          onCommentChange(selectedEmployee, selectedCell.day, selectedCell.shift, '');
-                        }
-                        setSelectedCell(null);
-                      }}
-                      className="px-4 py-2 text-red-600 hover:text-red-700 transition-colors"
-                    >
-                      מחק הערה
-                    </button>
-                  )}
-                </>
-              )}
             </div>
           </div>
         </div>
