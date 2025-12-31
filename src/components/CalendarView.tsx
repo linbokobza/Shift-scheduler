@@ -50,9 +50,20 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
     const days = [];
 
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
+    // Add days from previous month to fill the week starting from Sunday
+    if (startingDayOfWeek > 0) {
+      const prevMonth = month - 1;
+      const prevYear = prevMonth < 0 ? year - 1 : year;
+      const prevMonthAdjusted = prevMonth < 0 ? 11 : prevMonth;
+      const prevMonthLastDay = new Date(prevYear, prevMonthAdjusted + 1, 0).getDate();
+
+      // Calculate how many days from previous month to show
+      const daysFromPrevMonth = startingDayOfWeek;
+      const startDay = prevMonthLastDay - daysFromPrevMonth + 1;
+
+      for (let day = startDay; day <= prevMonthLastDay; day++) {
+        days.push(new Date(prevYear, prevMonthAdjusted, day));
+      }
     }
 
     // Add all days of the month
@@ -209,10 +220,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
             {/* Calendar days */}
             {days.map((day, index) => {
-              if (!day) {
-                return <div key={index} className="p-1 sm:p-2 min-h-[70px] sm:min-h-[110px]"></div>;
-              }
-
               const vacations = getVacationsForDate(day);
               const holiday = getHolidayForDate(day);
               const isToday = day.toDateString() === new Date().toDateString();
