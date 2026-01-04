@@ -6,7 +6,9 @@ import Sidebar from '../Sidebar';
 import AvailabilityViewer from '../AvailabilityViewer';
 import AvailabilitySummary from '../../AvailabilitySummary';
 import CalendarView from '../../CalendarView';
+import UnavailableShiftsAlert from '../UnavailableShiftsAlert';
 import { Availability, Schedule, User, VacationDay, Holiday, AvailabilityStatus } from '../../../types';
+import { ShiftAvailabilityAnalysis } from '../../../utils/availabilityUtils';
 
 interface ManagerDashboardDesktopProps {
   // Data
@@ -21,6 +23,7 @@ interface ManagerDashboardDesktopProps {
   scheduleLoading: boolean;
   activeMenu: 'employees' | 'vacations' | 'holidays';
   isMobileMenuOpen?: boolean;
+  shiftAnalysis: ShiftAvailabilityAnalysis;
 
   // Handlers
   onWeekChange: (weekStart: Date) => void;
@@ -57,6 +60,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
   scheduleLoading,
   activeMenu,
   isMobileMenuOpen,
+  shiftAnalysis,
   onWeekChange,
   onGenerateSchedule,
   onPublishSchedule,
@@ -150,6 +154,14 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
             </div>
           </div>
 
+          {/* Unavailable Shifts Alert */}
+          {shiftAnalysis?.hasIssues && (
+            <UnavailableShiftsAlert
+              analysis={shiftAnalysis}
+              weekStart={currentWeekStart}
+            />
+          )}
+
           {/* Schedule Section */}
           <div className="bg-white rounded-lg shadow-sm border p-4 lg:p-6 w-full">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 mb-4">
@@ -234,6 +246,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                   weekStart={currentWeekStart}
                   onAvailabilityChange={onAvailabilityChange}
                   onCommentChange={onCommentChange}
+                  shiftAnalysis={shiftAnalysis}
                 />
               </div>
 
@@ -256,6 +269,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                 weekStart={currentWeekStart}
                 onAvailabilityChange={onAvailabilityChange}
                 onCommentChange={onCommentChange}
+                shiftAnalysis={shiftAnalysis}
               />
             </div>
           )}

@@ -44,7 +44,8 @@
       "Bash(timeout 30 npm test)",
       "Bash(NODE_ENV=test npm test:*)",
       "Bash(timeout 45 npm test)",
-      "Bash(npm run test:frontend:*)"
+      "Bash(npm run test:frontend:*)",
+      "Bash(timeout /t 5)"
     ],
     "deny": [],
     "ask": []

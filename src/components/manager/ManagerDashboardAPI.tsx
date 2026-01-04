@@ -6,6 +6,7 @@ import { useEmployees, useToggleEmployeeActive, useCreateEmployee } from '../../
 import { useAvailabilities, useUpdateAvailability } from '../../hooks/useAvailabilities';
 import { useScheduleByWeek, useGenerateSchedule } from '../../hooks/useSchedules';
 import { useVacations, useCreateVacation, useDeleteVacation, useHolidays, useCreateHoliday, useDeleteHoliday } from '../../hooks/useVacations';
+import { useShiftAvailability } from '../../hooks/useShiftAvailability';
 import { formatDate, getSubmissionWeek, isSubmissionDeadlinePassed } from '../../utils/dateUtils';
 import { ManagerDashboardMobile } from './mobile/ManagerDashboardMobile';
 import { ManagerDashboardDesktop } from './desktop/ManagerDashboardDesktop';
@@ -62,6 +63,15 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
 
   // Filter availabilities for current week only (for stats display)
   const currentWeekAvailabilities = availabilities.filter(a => a.weekStart === weekStartString);
+
+  // Analyze shift availability
+  const { analysis: shiftAnalysis } = useShiftAvailability(
+    currentWeekAvailabilities,
+    activeEmployees,
+    vacations,
+    holidays,
+    weekStartString
+  );
 
   const handleToggleActive = (employeeId: string) => {
     toggleActiveMutation.mutate(employeeId);
@@ -281,6 +291,7 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     currentWeekAvailabilities,
     scheduleLoading,
     activeMenu,
+    shiftAnalysis,
     onWeekChange: handleWeekChange,
     onGenerateSchedule: handleGenerateSchedule,
     onPublishSchedule: handlePublishSchedule,

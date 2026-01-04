@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Eye, Edit3, Save, MessageSquare } from 'lucide-react';
+import { Eye, Edit3, Save, MessageSquare, AlertCircle } from 'lucide-react';
 import { User, Availability, VacationDay, AvailabilityStatus, Holiday } from '../../types';
 import { SHIFTS, DAYS } from '../../data/mockData';
 import { formatDateHebrew, getWeekDates, formatDate } from '../../utils/dateUtils';
+import { ShiftAvailabilityAnalysis } from '../../utils/availabilityUtils';
 
 interface AvailabilityViewerProps {
   employees: User[];
@@ -16,6 +17,7 @@ interface AvailabilityViewerProps {
   onSelectedEmployeeChange: (employeeId: string | null) => void;
   editMode: boolean;
   onEditModeChange: (editMode: boolean) => void;
+  shiftAnalysis?: ShiftAvailabilityAnalysis;
 }
 
 const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
@@ -29,7 +31,8 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   selectedEmployee,
   onSelectedEmployeeChange,
   editMode,
-  onEditModeChange
+  onEditModeChange,
+  shiftAnalysis
 }) => {
   const [selectedCell, setSelectedCell] = useState<{ day: string; shift: string; comment: string } | null>(null);
 
@@ -38,6 +41,14 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   const weekStartString = formatDate(submissionWeekStart);
   const weekDates = getWeekDates(submissionWeekStart);
   const activeEmployees = employees.filter(emp => emp.role === 'employee' && emp.isActive);
+
+  // Helper function to check if a shift is unavailable
+  const isShiftUnavailable = (dayIndex: number, shiftId: string): boolean => {
+    if (!shiftAnalysis) return false;
+    return shiftAnalysis.unavailableShifts.some(
+      shift => shift.day === dayIndex && shift.shiftId === shiftId
+    );
+  };
 
   const getEmployeeAvailability = (employeeId: string) => {
     return availabilities.find(a => a.employeeId === employeeId && a.weekStart === weekStartString);
@@ -204,24 +215,50 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                   <th className="px-2 py-2 text-right font-medium text-gray-700 border-b">
                     משמרת
                   </th>
-                  {DAYS.map((day, index) => (
-                    <th key={index} className="px-2 py-2 text-center font-medium text-gray-700 border-b min-w-[80px]">
-                      <div className="text-xs">{day}</div>
-                      <div className="text-[10px] text-gray-500 font-normal">
-                        {formatDateHebrew(weekDates[index])}
-                      </div>
-                    </th>
-                  ))}
+                  {DAYS.map((day, index) => {
+                    // Check if any shift on this day is unavailable
+                    const hasDayWarning = SHIFTS.some(s => isShiftUnavailable(index, s.id));
+
+                    return (
+                      <th key={index} className="px-2 py-2 text-center font-medium text-gray-700 border-b min-w-[80px]">
+                        <div className="flex items-center justify-center gap-1">
+                          <div className="text-center">
+                            <div className="text-xs">{day}</div>
+                            <div className="text-[10px] text-gray-500 font-normal">
+                              {formatDateHebrew(weekDates[index])}
+                            </div>
+                          </div>
+                          {hasDayWarning && (
+                            <div
+                              className="bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                              title="יש משמרות ללא עובדים זמינים ביום זה"
+                            >
+                              !
+                            </div>
+                          )}
+                        </div>
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
-                {SHIFTS.map((shift) => (
-                  <tr key={shift.id} className="hover:bg-gray-50">
-                    <td className="px-2 py-2 border-b">
-                      <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${shift.color}`}>
-                        {shift.name}
-                      </div>
-                    </td>
+                {SHIFTS.map((shift) => {
+                  // Check if this shift has any unavailable days
+                  const hasShiftWarning = DAYS.some((_, i) => isShiftUnavailable(i, shift.id));
+
+                  return (
+                    <tr key={shift.id} className="hover:bg-gray-50">
+                      <td className="px-2 py-2 border-b">
+                        <div className="flex items-center gap-1">
+                          <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${shift.color}`}>
+                            {shift.name}
+                          </div>
+                          {hasShiftWarning && (
+                            <AlertCircle className="w-3 h-3 text-red-500 flex-shrink-0" title="יש ימים ללא עובדים זמינים במשמרת זו" />
+                          )}
+                        </div>
+                      </td>
                     {DAYS.map((_, dayIndex) => {
                       const dayStr = dayIndex.toString();
                       const employeeAvailability = getEmployeeAvailability(selectedEmployee);
@@ -277,8 +314,9 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                         </td>
                       );
                     })}
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
