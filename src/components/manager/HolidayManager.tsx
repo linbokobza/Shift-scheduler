@@ -92,7 +92,14 @@ const HolidayManager: React.FC<HolidayManagerProps> = ({
               id="holiday-type"
               value={holidayType}
               onChange={(e) => setHolidayType(e.target.value as 'no-work' | 'morning-only')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white appearance-none cursor-pointer"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E")`,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'left 0.75rem center',
+                backgroundSize: '1rem',
+                paddingLeft: '2.5rem'
+              }}
             >
               <option value="no-work">חג - אין עבודה כלל</option>
               <option value="morning-only">חג - עבודה רק במשמרת בוקר</option>

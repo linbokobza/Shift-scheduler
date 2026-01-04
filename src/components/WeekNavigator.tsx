@@ -80,7 +80,7 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
           {showNavigator && !showSubmissionWeekButton && (
             <button
               onClick={goToCurrentWeek}
-              className="text-[10px] bg-blue-600 text-white px-2 py-1.5 rounded hover:bg-blue-700 transition-colors flex-1 min-h-[28px] sm:min-h-[32px]"
+              className="text-[12px] bg-blue-600 text-white px-2 py-2 rounded hover:bg-blue-700 transition-colors flex-1 min-h-[28px] sm:min-h-[32px]"
             >
               השבוע הנוכחי
             </button>

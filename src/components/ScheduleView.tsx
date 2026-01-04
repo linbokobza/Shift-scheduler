@@ -571,7 +571,7 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
               {isRestrictedTime
                 ? '×'
                 : isHolidayBlocked
-                  ? 'חג'
+                  ? ` ${holiday?.name || 'חג'}`
                   : currentAssignment
                     ? (employeeName.split(' ')[0] || employeeName)
                     : '-'
