@@ -217,21 +217,21 @@ const EmployeeDashboard = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-3 lg:p-6">
       {/* Header with Calendar Button */}
-      <div className="mb-6 bg-white rounded-lg shadow-sm border p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">הגשת זמינות למשמרות</h2>
-            <p className="text-gray-600">
+      <div className="mb-4 lg:mb-6 bg-white rounded-lg shadow-sm border p-3 lg:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex-1">
+            <h2 className="text-lg lg:text-2xl font-bold text-gray-900 mb-1 lg:mb-2">הגשת זמינות למשמרות</h2>
+            <p className="text-sm lg:text-base text-gray-600">
               בחרו את הזמינות שלכם לכל משמרת בשבוע. ניתן להוסיף הערות לכל משמרת.
             </p>
           </div>
           <button
             onClick={() => setShowCalendar(true)}
-            className="flex items-center bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            className="flex items-center bg-purple-600 text-white px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm lg:text-base whitespace-nowrap"
           >
-            <CalendarDays className="w-5 h-5 ml-2" />
+            <CalendarDays className="w-4 h-4 lg:w-5 lg:h-5 ml-1 lg:ml-2" />
             לוח שנה
           </button>
         </div>
@@ -246,41 +246,41 @@ const EmployeeDashboard = () => {
       />
 
       {/* Toggle between availability and schedule view */}
-      <div className="bg-white rounded-lg shadow-sm border mb-6">
-        <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+      <div className="bg-white rounded-lg shadow-sm border mb-4 lg:mb-6">
+        <div className="p-3 lg:p-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
               onClick={() => setShowSchedule(false)}
-              className={`flex items-center px-4 py-2 rounded-lg transition-all ${
-                !showSchedule 
-                  ? 'bg-blue-600 text-white' 
+              className={`flex items-center justify-center px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg transition-all text-sm lg:text-base ${
+                !showSchedule
+                  ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               <Clock className="w-4 h-4 ml-1" />
               הגשת זמינות
             </button>
-            
+
             <button
               onClick={() => setShowSchedule(true)}
-              className={`flex items-center px-4 py-2 rounded-lg transition-all ${
-                showSchedule 
-                  ? 'bg-blue-600 text-white' 
+              className={`flex items-center justify-center px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg transition-all text-sm lg:text-base ${
+                showSchedule
+                  ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
               disabled={!currentSchedule || !isSchedulePublished}
             >
               <Eye className="w-4 h-4 ml-1" />
-              צפייה בסידור
-              {(!currentSchedule || !isSchedulePublished) && <span className="text-xs mr-1">(לא זמין)</span>}
+              <span className="truncate">צפייה בסידור</span>
+              {(!currentSchedule || !isSchedulePublished) && <span className="text-xs mr-1 hidden sm:inline">(לא זמין)</span>}
             </button>
           </div>
-          
+
           {currentSchedule && isSchedulePublished && (
-            <div className="flex items-center text-green-600">
+            <div className="flex items-center justify-center sm:justify-start text-green-600">
               <Calendar className="w-4 h-4 ml-1" />
-              <span className="text-sm">סידור פורסם</span>
+              <span className="text-xs lg:text-sm">סידור פורסם</span>
             </div>
           )}
         </div>

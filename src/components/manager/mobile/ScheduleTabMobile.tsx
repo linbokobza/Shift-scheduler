@@ -105,43 +105,59 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
       {/* Schedule Status */}
       {schedule && !schedule.isPublished && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-          <h4 className="text-green-900 font-medium text-sm mb-1">סידור נוצר</h4>
-          <p className="text-green-700 text-xs mb-3">
+          <p className="text-green-700 text-xs text-center mb-2">
             הסידור מוכן. לחץ לפרסם כדי שהעובדים יוכלו לראות
           </p>
-          <button
-            onClick={onPublishSchedule}
-            disabled={isPublishing}
-            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center"
-          >
-            {isPublishing ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2" />
-            ) : (
-              <Send className="w-4 h-4 ml-2" />
-            )}
-            {isPublishing ? 'מפרסם...' : 'פרסם סידור'}
-          </button>
         </div>
       )}
 
       {schedule && schedule.isPublished && (
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-4">
-          <div className="flex items-center">
-            <Calendar className="w-5 h-5 text-purple-600 ml-2" />
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-2 mb-4">
+          <div className="flex items-center justify-center">
+            <Calendar className="w-4 h-4 text-purple-600 ml-1" />
             <span className="text-purple-900 font-medium text-sm">סידור פורסם</span>
           </div>
         </div>
       )}
 
-      {/* Generate Schedule Button */}
-      <button
-        onClick={onGenerateSchedule}
-        disabled={isGenerating}
-        className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium mb-4 flex items-center justify-center gap-2"
-      >
-        <Calendar className="w-5 h-5" />
-        {isGenerating ? 'יוצר...' : (schedule ? 'צור סידור חדש' : 'צור סידור')}
-      </button>
+      {/* Action Buttons - Side by Side */}
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={onPublishSchedule}
+          disabled={isPublishing || !schedule || schedule.isPublished}
+          className="flex-1 bg-green-600 text-white px-3 py-2.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-sm font-medium"
+        >
+          {isPublishing ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>מפרסם...</span>
+            </>
+          ) : (
+            <>
+              <Send className="w-4 h-4" />
+              <span>פרסם סידור</span>
+            </>
+          )}
+        </button>
+
+        <button
+          onClick={onGenerateSchedule}
+          disabled={isGenerating}
+          className="flex-1 bg-blue-600 text-white px-3 py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 text-sm font-medium"
+        >
+          {isGenerating ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>יוצר...</span>
+            </>
+          ) : (
+            <>
+              <Calendar className="w-4 h-4" />
+              <span>{schedule ? 'צור סידור חדש' : 'צור סידור'}</span>
+            </>
+          )}
+        </button>
+      </div>
 
       {/* View Mode Toggle */}
       <div className="flex gap-2 mb-4">
