@@ -46,6 +46,12 @@ interface ManagerDashboardDesktopProps {
   // Loading states
   isGenerating?: boolean;
   isPublishing?: boolean;
+
+  // Tab state preservation
+  selectedEmployee: string | null;
+  onSelectedEmployeeChange: (employeeId: string | null) => void;
+  availabilityEditMode: boolean;
+  onAvailabilityEditModeChange: (editMode: boolean) => void;
 }
 
 export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = ({
@@ -78,7 +84,11 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
   onMenuChange,
   onMobileMenuClose,
   isGenerating = false,
-  isPublishing = false
+  isPublishing = false,
+  selectedEmployee,
+  onSelectedEmployeeChange,
+  availabilityEditMode,
+  onAvailabilityEditModeChange
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
 
@@ -247,6 +257,10 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                   onAvailabilityChange={onAvailabilityChange}
                   onCommentChange={onCommentChange}
                   shiftAnalysis={shiftAnalysis}
+                  selectedEmployee={selectedEmployee}
+                  onSelectedEmployeeChange={onSelectedEmployeeChange}
+                  editMode={availabilityEditMode}
+                  onEditModeChange={onAvailabilityEditModeChange}
                 />
               </div>
 
@@ -270,6 +284,10 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                 onAvailabilityChange={onAvailabilityChange}
                 onCommentChange={onCommentChange}
                 shiftAnalysis={shiftAnalysis}
+                selectedEmployee={selectedEmployee}
+                onSelectedEmployeeChange={onSelectedEmployeeChange}
+                editMode={availabilityEditMode}
+                onEditModeChange={onAvailabilityEditModeChange}
               />
             </div>
           )}
