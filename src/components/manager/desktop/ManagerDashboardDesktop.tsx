@@ -91,6 +91,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
   onAvailabilityEditModeChange
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
+  const [hasPendingChanges, setHasPendingChanges] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50 pb-8 overflow-x-hidden" dir="rtl">
@@ -211,7 +212,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                       </div>
                       <button
                         onClick={onPublishSchedule}
-                        disabled={isPublishing}
+                        disabled={isPublishing || hasPendingChanges}
                         className="w-full lg:w-auto bg-blue-600 text-white px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 flex items-center justify-center text-sm lg:text-base lg:ml-2"
                       >
                         {isPublishing ? (
@@ -231,6 +232,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                     weekStart={currentWeekStart}
                     readonly={false}
                     onBulkAssignmentChange={onBulkAssignmentChange}
+                    onPendingChanges={setHasPendingChanges}
                   />
                 </>
               ) : (

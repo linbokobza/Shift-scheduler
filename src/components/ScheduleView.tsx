@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { User as UserIcon, Lock, Unlock, Save, X } from 'lucide-react';
 import { Schedule, User, Holiday, Availability } from '../types';
 import { SHIFTS, DAYS } from '../data/mockData';
@@ -27,6 +27,7 @@ interface ScheduleViewProps {
   onAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
   onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => Promise<void>;
   onLockToggle?: (day: string, shiftId: string, locked: boolean) => void;
+  onPendingChanges?: (hasPendingChanges: boolean) => void;
   readonly?: boolean;
   showLockControls?: boolean;
 }
@@ -40,6 +41,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   onAssignmentChange,
   onBulkAssignmentChange,
   onLockToggle,
+  onPendingChanges,
   readonly = false,
   showLockControls = false
 }) => {
@@ -68,6 +70,13 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
     day: string;
     shiftId: string;
   } | null>(null);
+
+  // Notify parent component about pending changes
+  useEffect(() => {
+    if (onPendingChanges) {
+      onPendingChanges(pendingChanges.length > 0);
+    }
+  }, [pendingChanges, onPendingChanges]);
 
   // Get available employees for a specific day and shift
   const getAvailableEmployeesForShift = (dayIndex: number, shiftId: string): User[] => {
