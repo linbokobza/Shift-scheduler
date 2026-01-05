@@ -9,7 +9,9 @@ import { EmployeesTabMobile } from './EmployeesTabMobile';
 import { VacationsTabMobile } from './VacationsTabMobile';
 import { HolidaysTabMobile } from './HolidaysTabMobile';
 import CalendarView from '../../CalendarView';
+import UnavailableShiftsAlert from '../UnavailableShiftsAlert';
 import { Availability, Schedule, User, VacationDay, Holiday, AvailabilityStatus } from '../../../types';
+import { ShiftAvailabilityAnalysis } from '../../../utils/availabilityUtils';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface ManagerDashboardMobileProps {
@@ -22,6 +24,7 @@ interface ManagerDashboardMobileProps {
   currentWeekStart: Date;
   activeEmployees: User[];
   currentWeekAvailabilities: Availability[];
+  shiftAnalysis: ShiftAvailabilityAnalysis;
 
   // Handlers
   onWeekChange: (weekStart: Date) => void;
@@ -61,6 +64,7 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
   currentWeekStart,
   activeEmployees,
   currentWeekAvailabilities,
+  shiftAnalysis,
   onWeekChange,
   onGenerateSchedule,
   onPublishSchedule,
@@ -141,6 +145,16 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Unavailable Shifts Alert */}
+          {shiftAnalysis?.hasIssues && (
+            <div className="mb-3">
+              <UnavailableShiftsAlert
+                analysis={shiftAnalysis}
+                weekStart={currentWeekStart}
+              />
+            </div>
+          )}
 
           {/* Week Navigator - only for schedule and availability tabs */}
           {(activeTab === 'schedule' || activeTab === 'availability') && (

@@ -30,6 +30,21 @@ const VacationManager: React.FC<VacationManagerProps> = ({
     return vacationDate >= weekStart && vacationDate <= weekEnd;
   });
 
+  // For readonly mode (employees), filter only future vacation days
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const displayVacations = readonly
+    ? vacationDays.filter(vacation => {
+        const vacationDate = parseLocalDate(vacation.date);
+        return vacationDate >= today;
+      })
+    : vacationDays;
+
+  // If readonly and no future vacations, don't render anything
+  if (readonly && displayVacations.length === 0) {
+    return null;
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const selectedDateObj = new Date(selectedDate);
@@ -54,6 +69,25 @@ const VacationManager: React.FC<VacationManagerProps> = ({
     return type === 'vacation' ? 'חופשה' : 'מחלה';
   };
 
+  // Generate subtitle text for readonly mode
+  const getSubtitleText = () => {
+    if (!readonly) {
+      return 'הגדר ימי חופשה ומחלה';
+    }
+
+    // For employees, show the vacation dates
+    if (displayVacations.length === 0) {
+      return 'אין ימי חופשה או מחלה עתידיים';
+    }
+
+    // Create a summary of vacation dates
+    const sortedVacations = [...displayVacations].sort((a, b) =>
+      parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime()
+    );
+
+    return sortedVacations.map(v => formatDateStringHebrew(v.date)).join(', ');
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border">
       <div className="bg-green-50 border-b border-green-200 p-4">
@@ -62,7 +96,7 @@ const VacationManager: React.FC<VacationManagerProps> = ({
           ימי חופשה ומחלה
         </h3>
         <p className="text-sm text-green-700 mt-1">
-          הגדר ימי חופשה ומחלה
+          {getSubtitleText()}
         </p>
       </div>
 
@@ -142,10 +176,12 @@ const VacationManager: React.FC<VacationManagerProps> = ({
 
             {showHistory && (
               <div className="space-y-2 mt-2">
-                {vacationDays.length === 0 ? (
-                  <p className="text-gray-500 text-sm text-center py-4">אין ימי חופשה או מחלה</p>
+                {displayVacations.length === 0 ? (
+                  <p className="text-gray-500 text-sm text-center py-4">
+                    {readonly ? 'אין ימי חופשה או מחלה עתידיים' : 'אין ימי חופשה או מחלה'}
+                  </p>
                 ) : (
-                  vacationDays.map((vacation) => (
+                  displayVacations.map((vacation) => (
                     <div
                       key={vacation.id}
                       className={`flex items-center justify-between rounded-lg p-3 border-2 ${getTypeColor(vacation.type)}`}

@@ -52,6 +52,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
     const saved = localStorage.getItem(STORAGE_KEY);
     return (saved === 'cards' || saved === 'table') ? saved : 'cards';
   });
+  const [hasPendingChanges, setHasPendingChanges] = useState(false);
   const weekDates = getWeekDates(weekStart);
 
   // Save view mode preference to localStorage whenever it changes
@@ -124,7 +125,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
       <div className="flex gap-2 mb-4">
         <button
           onClick={onPublishSchedule}
-          disabled={isPublishing || !schedule || schedule.isPublished}
+          disabled={isPublishing || !schedule || schedule.isPublished || hasPendingChanges}
           className="flex-1 bg-green-600 text-white px-3 py-2.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-sm font-medium"
         >
           {isPublishing ? (
@@ -278,6 +279,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
             weekStart={weekStart}
             readonly={false}
             onBulkAssignmentChange={onBulkAssignmentChange || (() => {})}
+            onPendingChanges={setHasPendingChanges}
           />
         </div>
       )}
