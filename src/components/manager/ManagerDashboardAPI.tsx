@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '../../api/axios.config';
 import { scheduleAPI } from '../../api/schedule.api';
-import { useEmployees, useToggleEmployeeActive, useCreateEmployee } from '../../hooks/useEmployees';
+import { employeeAPI } from '../../api/employee.api';
+import { useEmployees, useToggleEmployeeActive, useCreateEmployee, useDeleteEmployee } from '../../hooks/useEmployees';
 import { useAvailabilities, useUpdateAvailability } from '../../hooks/useAvailabilities';
 import { useScheduleByWeek, useGenerateSchedule } from '../../hooks/useSchedules';
 import { useVacations, useCreateVacation, useDeleteVacation, useHolidays, useCreateHoliday, useDeleteHoliday } from '../../hooks/useVacations';
@@ -11,6 +12,7 @@ import { formatDate, getSubmissionWeek, isSubmissionDeadlinePassed } from '../..
 import { ManagerDashboardMobile } from './mobile/ManagerDashboardMobile';
 import { ManagerDashboardDesktop } from './desktop/ManagerDashboardDesktop';
 import { AvailabilityStatus } from '../../types';
+import DeleteEmployeeModal from './DeleteEmployeeModal';
 
 type MenuOption = 'employees' | 'vacations' | 'holidays';
 
@@ -39,6 +41,14 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   const [availabilityEditMode, setAvailabilityEditMode] = useState(false);
   const [scheduleCurrentDayIndex, setScheduleCurrentDayIndex] = useState(0);
 
+  // Delete employee state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [futureSchedulesForDelete, setFutureSchedulesForDelete] = useState<any[]>([]);
+
   const weekStartString = formatDate(currentWeekStart);
 
   // Fetch data with React Query
@@ -52,6 +62,7 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   // Mutations
   const toggleActiveMutation = useToggleEmployeeActive();
   const createEmployeeMutation = useCreateEmployee();
+  const deleteEmployeeMutation = useDeleteEmployee();
   const generateScheduleMutation = useGenerateSchedule();
   const createVacationMutation = useCreateVacation();
   const deleteVacationMutation = useDeleteVacation();
@@ -193,9 +204,61 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     }
   };
 
-  const handleRemoveEmployee = (employeeId: string) => {
-    console.log('Remove employee:', employeeId);
-    // TODO: Implement employee removal
+  const handleRemoveEmployee = async (employeeId: string) => {
+    const employee = employees.find(emp => emp.id === employeeId);
+    if (!employee) return;
+
+    setEmployeeToDelete({ id: employeeId, name: employee.name });
+
+    try {
+      // Check for schedule conflicts without deleting (confirm=false means check only)
+      const result = await employeeAPI.delete(employeeId, { confirm: false });
+
+      if (result.hasScheduleConflicts && result.futureSchedules) {
+        // Show modal with schedule conflict info
+        setFutureSchedulesForDelete(result.futureSchedules);
+        setDeleteModalOpen(true);
+      } else {
+        // No conflicts, show simple confirmation
+        setFutureSchedulesForDelete([]);
+        setDeleteModalOpen(true);
+      }
+    } catch (error: any) {
+      console.error('Error checking employee deletion:', error);
+      alert(error.response?.data?.error || 'שגיאה בבדיקת העובד למחיקה');
+      setEmployeeToDelete(null);
+    }
+  };
+
+  const handleConfirmDelete = async (removeFromSchedules: boolean) => {
+    if (!employeeToDelete) return;
+
+    try {
+      const result = await deleteEmployeeMutation.mutateAsync({
+        id: employeeToDelete.id,
+        confirm: true,
+        removeFromSchedules,
+      });
+
+      if (!result.hasScheduleConflicts) {
+        const scheduleMessage = result.removedFromSchedules
+          ? ` והוסר מ-${result.scheduleCount} סידורים עתידיים`
+          : '';
+        alert(`העובד ${employeeToDelete.name} נמחק בהצלחה${scheduleMessage}!`);
+        setDeleteModalOpen(false);
+        setEmployeeToDelete(null);
+        setFutureSchedulesForDelete([]);
+      }
+    } catch (error: any) {
+      console.error('Error deleting employee:', error);
+      alert(error.response?.data?.error || 'שגיאה במחיקת העובד');
+    }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setEmployeeToDelete(null);
+    setFutureSchedulesForDelete([]);
   };
 
   const handleResetPassword = (employeeId: string) => {
@@ -329,6 +392,18 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
       <div className="hidden lg:block">
         <ManagerDashboardDesktop {...sharedProps} />
       </div>
+
+      {/* Delete Employee Modal */}
+      {employeeToDelete && (
+        <DeleteEmployeeModal
+          isOpen={deleteModalOpen}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleConfirmDelete}
+          employeeName={employeeToDelete.name}
+          futureSchedules={futureSchedulesForDelete}
+          isLoading={deleteEmployeeMutation.isPending}
+        />
+      )}
     </>
   );
 };

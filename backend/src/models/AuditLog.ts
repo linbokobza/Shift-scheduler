@@ -19,7 +19,8 @@ export type AuditAction =
   | 'DELETE_HOLIDAY'
   | 'LOGIN'
   | 'LOGOUT'
-  | 'UPDATE_PASSWORD';
+  | 'UPDATE_PASSWORD'
+  | 'DELETE_EMPLOYEE';
 
 export type EntityType =
   | 'schedule'

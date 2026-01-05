@@ -31,4 +31,27 @@ export const employeeAPI = {
     const response = await axiosInstance.patch(`/employees/${id}/toggle-active`);
     return response.data;
   },
+
+  delete: async (
+    id: string,
+    options: { confirm?: boolean; removeFromSchedules?: boolean } = {}
+  ): Promise<{
+    message: string;
+    hasScheduleConflicts: boolean;
+    employee: User;
+    futureSchedules?: Array<{
+      scheduleId: string;
+      weekStart: string;
+      isPublished: boolean;
+      assignmentCount: number;
+    }>;
+    removedFromSchedules?: boolean;
+    scheduleCount?: number;
+  }> => {
+    const { confirm = false, removeFromSchedules = false } = options;
+    const response = await axiosInstance.delete(
+      `/employees/${id}?confirm=${confirm}&removeFromSchedules=${removeFromSchedules}`
+    );
+    return response.data;
+  },
 };

@@ -39,4 +39,13 @@ router.put('/:id', authenticateJWT, requireManager, employeeController.updateEmp
  */
 router.patch('/:id/toggle-active', authenticateJWT, requireManager, employeeController.toggleEmployeeActive);
 
+/**
+ * @route   DELETE /api/employees/:id
+ * @desc    Delete employee (hard delete)
+ * @access  Private (Manager only)
+ * @query   confirm - If true, actually deletes. If false, just checks and returns info
+ * @query   removeFromSchedules - If true, removes employee from future schedules before deleting
+ */
+router.delete('/:id', authenticateJWT, requireManager, employeeController.deleteEmployee);
+
 export default router;

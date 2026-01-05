@@ -76,3 +76,29 @@ export const useToggleEmployeeActive = () => {
     },
   });
 };
+
+// Delete employee
+export const useDeleteEmployee = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      confirm = false,
+      removeFromSchedules = false
+    }: {
+      id: string;
+      confirm?: boolean;
+      removeFromSchedules?: boolean;
+    }) => employeeAPI.delete(id, { confirm, removeFromSchedules }),
+    onSuccess: (response) => {
+      // Only invalidate queries if employee was actually deleted
+      if (!response.hasScheduleConflicts) {
+        queryClient.invalidateQueries({ queryKey: employeeKeys.all });
+        queryClient.invalidateQueries({ queryKey: employeeKeys.detail(response.employee.id) });
+        // Also invalidate schedules since assignments may have changed
+        queryClient.invalidateQueries({ queryKey: ['schedules'] });
+      }
+    },
+  });
+};
