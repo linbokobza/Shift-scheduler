@@ -79,8 +79,8 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     const dayIndex = parseInt(day);
     if (readonly || isVacationDay(dayIndex) || isHolidayShiftBlocked(dayIndex, shiftId)) return;
 
-    // Check if it's Friday evening/night or Saturday (not available)
-    const isRestrictedTime = (dayIndex === 5 && (shiftId === 'evening' || shiftId === 'night')) || dayIndex === 6;
+    // Check if it's Friday evening/night (not available)
+    const isRestrictedTime = (dayIndex === 5 && (shiftId === 'evening' || shiftId === 'night'));
     if (isRestrictedTime) return;
 
     const currentStatus = availability[day]?.[shiftId]?.status;
@@ -95,11 +95,11 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     e.stopPropagation();
     const dayIndex = parseInt(day);
     if (readonly || isVacationDay(dayIndex) || isHolidayShiftBlocked(dayIndex, shiftId)) return;
-    
-    // Check if it's Friday evening/night or Saturday (not available)
-    const isRestrictedTime = (dayIndex === 5 && (shiftId === 'evening' || shiftId === 'night')) || dayIndex === 6;
+
+    // Check if it's Friday evening/night (not available)
+    const isRestrictedTime = (dayIndex === 5 && (shiftId === 'evening' || shiftId === 'night'));
     if (isRestrictedTime) return;
-    
+
     setSelectedCell({ day, shift: shiftId });
     setCommentText(availability[day]?.[shiftId]?.comment || '');
   };
@@ -137,8 +137,8 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
           </div>
 
           <button
-            onClick={() => setCurrentDayIndex(prev => Math.min(6, prev + 1))}
-            disabled={currentDayIndex === 6}
+            onClick={() => setCurrentDayIndex(prev => Math.min(5, prev + 1))}
+            disabled={currentDayIndex === 5}
             className="p-3 min-h-[44px] min-w-[44px] disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -153,7 +153,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
             const isVacation = isVacationDay(currentDayIndex);
             const holiday = getHolidayForDay(currentDayIndex);
             const isHolidayBlocked = isHolidayShiftBlocked(currentDayIndex, shift.id);
-            const isWeekend = (currentDayIndex === 5 && (shift.id === 'evening' || shift.id === 'night')) || currentDayIndex === 6;
+            const isWeekend = (currentDayIndex === 5 && (shift.id === 'evening' || shift.id === 'night'));
             const hasComment = cellData?.comment && cellData.comment.length > 0;
 
             return (
@@ -224,7 +224,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
 
         {/* Progress indicator */}
         <div className="text-center text-sm text-gray-500 mt-4">
-          יום {currentDayIndex + 1} מתוך 7
+          יום {currentDayIndex + 1} מתוך 6
         </div>
         </div>
       )}
@@ -262,7 +262,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                   const isVacation = isVacationDay(dayIndex);
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
-                  const isWeekend = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night')) || dayIndex === 6; // Friday evening/night and Saturday
+                  const isWeekend = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night')); // Friday evening/night
 
                   return (
                     <td key={dayIndex} className="px-1 lg:px-2 py-2 lg:py-4 border-b">

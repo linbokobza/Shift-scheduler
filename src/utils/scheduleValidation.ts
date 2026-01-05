@@ -148,11 +148,6 @@ export const hasScheduleConflicts = (
       const prevNightShift = `${day - 1}-night`;
       if (employeeShifts.includes(prevNightShift)) return true;
     }
-    // Also check Sunday morning after Saturday night (day 6 -> day 0)
-    if (day === 0) {
-      const saturdayNightShift = `6-night`;
-      if (employeeShifts.includes(saturdayNightShift)) return true;
-    }
   }
   
   return false;

@@ -73,11 +73,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
     // Add days from next month to complete the week until Friday (day 5)
     // If month ends on Sunday (0) through Thursday (4), add days to reach Friday
-    if (endingDayOfWeek < 5) {
+    if (endingDayOfWeek < 4) {
       const nextMonth = month + 1;
       const nextYear = nextMonth > 11 ? year + 1 : year;
       const nextMonthAdjusted = nextMonth > 11 ? 0 : nextMonth;
-      const daysToAdd = 5 - endingDayOfWeek;
+      const daysToAdd = 4 - endingDayOfWeek;
 
       for (let day = 1; day <= daysToAdd; day++) {
         days.push(new Date(nextYear, nextMonthAdjusted, day));
@@ -136,7 +136,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
   ];
 
-  const dayNames = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+  const dayNames = ['א', 'ב', 'ג', 'ד', 'ה', 'ו'];
 
   const days = getDaysInMonth(currentDate);
 

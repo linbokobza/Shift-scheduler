@@ -30,8 +30,7 @@ export const DAYS = [
   'שלישי',
   'רביעי',
   'חמישי',
-  'שישי',
-  'שבת'
+  'שישי'
 ];
 
 export const USERS: User[] = [
@@ -115,11 +114,6 @@ export const getMockAvailability = (): Availability[] => {
           'morning': { status: 'unavailable' },
           'evening': { status: 'unavailable' },
           'night': { status: 'unavailable' }
-        },
-        '6': {
-          'morning': { status: 'unavailable' },
-          'evening': { status: 'unavailable' },
-          'night': { status: 'unavailable' }
         }
       }
     },
@@ -156,11 +150,6 @@ export const getMockAvailability = (): Availability[] => {
           'morning': { status: 'available' },
           'evening': { status: 'unavailable' },
           'night': { status: 'unavailable' }
-        },
-        '6': {
-          'morning': { status: 'unavailable' },
-          'evening': { status: 'unavailable' },
-          'night': { status: 'unavailable' }
         }
       }
     },
@@ -195,11 +184,6 @@ export const getMockAvailability = (): Availability[] => {
         },
         '5': {
           'morning': { status: 'available' },
-          'evening': { status: 'unavailable' },
-          'night': { status: 'unavailable' }
-        },
-        '6': {
-          'morning': { status: 'unavailable' },
           'evening': { status: 'unavailable' },
           'night': { status: 'unavailable' }
         }
@@ -280,11 +264,6 @@ export const mockSchedules: Schedule[] = [
         'morning': '2',
         'evening': null,
         'night': null
-      },
-      '6': {
-        'morning': null,
-        'evening': null,
-        'night': null
       }
     },
     createdAt: '2025-01-15T14:00:00Z',
@@ -321,11 +300,6 @@ export const mockSchedules: Schedule[] = [
       },
       '5': {
         'morning': '1',
-        'evening': null,
-        'night': null
-      },
-      '6': {
-        'morning': null,
         'evening': null,
         'night': null
       }

@@ -10,7 +10,7 @@ export const getWeekStart = (date: Date = new Date()): Date => {
 
 export const getWeekDates = (weekStart: Date): Date[] => {
   const dates = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 6; i++) { // 6 days: Sunday-Friday
     const date = new Date(weekStart);
     date.setDate(weekStart.getDate() + i);
     dates.push(date);

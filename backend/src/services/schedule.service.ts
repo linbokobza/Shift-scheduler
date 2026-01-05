@@ -58,9 +58,9 @@ export class ScheduleService {
     // Fetch availabilities for this week
     const availabilities = await Availability.find({ weekStart });
 
-    // Fetch vacations for this week (± 6 days to include only Sunday-Friday)
+    // Fetch vacations for this week (6 days: Sunday-Friday)
     const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 6); // Fixed: was +7, should be +6 for 7 days (0-6)
+    weekEnd.setDate(weekEnd.getDate() + 5); // 6 days: day 0 (Sunday) to day 5 (Friday)
     const vacations = await Vacation.find({
       date: { $gte: weekStart, $lte: weekEnd },
     });

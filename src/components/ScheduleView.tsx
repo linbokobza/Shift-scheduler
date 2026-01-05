@@ -147,9 +147,9 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   const handleAssignmentClick = (day: string, shiftId: string) => {
     if (readonly || !onAssignmentChange) return;
 
-    // Don't allow changes to Friday evening/night and Saturday
+    // Don't allow changes to Friday evening/night
     const dayNum = parseInt(day);
-    const isRestrictedTime = (dayNum === 5 && (shiftId === 'evening' || shiftId === 'night')) || dayNum === 6;
+    const isRestrictedTime = (dayNum === 5 && (shiftId === 'evening' || shiftId === 'night'));
     const isHolidayBlocked = isHolidayShiftBlocked(dayNum, shiftId);
     const isLocked = schedule?.lockedAssignments?.[day]?.[shiftId];
 
@@ -206,7 +206,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
 
     // לא לאפשר שינויים בזמנים מוגבלים, חגים ומשמרות נעולות
     const dayNum = parseInt(day);
-    const isRestrictedTime = (dayNum === 5 && (shiftId === 'evening' || shiftId === 'night')) || dayNum === 6;
+    const isRestrictedTime = (dayNum === 5 && (shiftId === 'evening' || shiftId === 'night'));
     const isHolidayBlocked = isHolidayShiftBlocked(dayNum, shiftId);
     const isLocked = schedule?.lockedAssignments?.[day]?.[shiftId];
 
@@ -367,7 +367,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                   const employeeColor = getEmployeeColor(currentAssignment);
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
-                  const isRestrictedTime = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night')) || dayIndex === 6;
+                  const isRestrictedTime = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night'));
                   const isPending = hasPendingChange(dayStr, shift.id);
                   const isDropdownOpen = openDropdown?.day === dayStr && openDropdown?.shiftId === shift.id;
                   const isLocked = schedule?.lockedAssignments?.[dayStr]?.[shift.id];
@@ -442,7 +442,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                   const employeeColor = getEmployeeColor(currentAssignment);
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
-                  const isRestrictedTime = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night')) || dayIndex === 6;
+                  const isRestrictedTime = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night'));
                   const availableEmployees = getAvailableEmployeesForShift(dayIndex, shift.id);
                   const isPending = hasPendingChange(dayStr, shift.id);
                   const isDropdownOpen = openDropdown?.day === dayStr && openDropdown?.shiftId === shift.id;
