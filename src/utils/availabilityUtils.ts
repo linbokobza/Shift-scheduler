@@ -3,7 +3,7 @@ import { SHIFTS, DAYS } from '../data/mockData';
 import { getWeekDates, formatDate, parseLocalDate } from './dateUtils';
 
 export interface UnavailableShift {
-  day: number;                    // 0-6 (ראשון-שבת)
+  day: number;                    // 0-5 (ראשון-שישי)
   dayName: string;                // שם היום בעברית
   shiftId: string;                // 'morning', 'evening', 'night'
   shiftName: string;              // שם המשמרת בעברית
@@ -18,15 +18,13 @@ export interface ShiftAvailabilityAnalysis {
 }
 
 /**
- * בודק אם משמרת היא מוגבלת (שישי ערב/לילה או כל השבת)
+ * בודק אם משמרת היא מוגבלת (שישי ערב/לילה)
  */
 const isRestrictedShift = (dayIndex: number, shiftId: string): boolean => {
   // שישי ערב ולילה
   const isFridayEveningOrNight = dayIndex === 5 && (shiftId === 'evening' || shiftId === 'night');
-  // כל השבת
-  const isSaturday = dayIndex === 6;
 
-  return isFridayEveningOrNight || isSaturday;
+  return isFridayEveningOrNight;
 };
 
 /**
@@ -79,8 +77,8 @@ export function analyzeShiftAvailability(
   const unavailableShifts: UnavailableShift[] = [];
   const weekDates = getWeekDates(parseLocalDate(weekStart));
 
-  // עבור כל יום ומשמרת
-  for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+  // עבור כל יום ומשמרת (6 ימים: ראשון-שישי)
+  for (let dayIndex = 0; dayIndex < 6; dayIndex++) {
     for (const shift of SHIFTS) {
       // דלג על משמרות מוגבלות
       if (isRestrictedShift(dayIndex, shift.id)) {

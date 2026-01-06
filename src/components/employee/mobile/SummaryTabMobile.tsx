@@ -19,14 +19,14 @@ export const SummaryTabMobile: React.FC<SummaryTabMobileProps> = ({
     let totalUnavailable = 0;
     let totalUnselected = 0;
 
-    // Count all shifts (7 days × 3 shifts = 21 total)
-    // But exclude Friday evening/night and Saturday (4 shifts)
-    // So 21 - 4 = 17 possible shifts
+    // Count all shifts (6 days × 3 shifts = 18 total)
+    // But exclude Friday evening/night (2 shifts)
+    // So 18 - 2 = 16 possible shifts
 
-    for (let day = 0; day < 7; day++) {
+    for (let day = 0; day < 6; day++) {
       for (const shift of SHIFTS) {
-        // Skip Friday evening/night and Saturday
-        const isWeekend = (day === 5 && (shift.id === 'evening' || shift.id === 'night')) || day === 6;
+        // Skip Friday evening/night
+        const isWeekend = (day === 5 && (shift.id === 'evening' || shift.id === 'night'));
         if (isWeekend) continue;
 
         const status = availability[day.toString()]?.[shift.id]?.status;
@@ -45,7 +45,7 @@ export const SummaryTabMobile: React.FC<SummaryTabMobileProps> = ({
       available: totalAvailable,
       unavailable: totalUnavailable,
       unselected: totalUnselected,
-      total: 17 // Total possible shifts (excluding weekend restrictions)
+      total: 16 // Total possible shifts (excluding Friday evening/night)
     };
   };
 
@@ -62,7 +62,7 @@ export const SummaryTabMobile: React.FC<SummaryTabMobileProps> = ({
       let unselected = 0;
 
       for (const shift of SHIFTS) {
-        const isWeekend = (index === 5 && (shift.id === 'evening' || shift.id === 'night')) || index === 6;
+        const isWeekend = (index === 5 && (shift.id === 'evening' || shift.id === 'night'));
         if (isWeekend) continue;
 
         const status = availability[index.toString()]?.[shift.id]?.status;
@@ -136,19 +136,7 @@ export const SummaryTabMobile: React.FC<SummaryTabMobileProps> = ({
         <h3 className="text-lg font-semibold text-gray-900 mb-3">פירוט לפי ימים</h3>
         <div className="space-y-2">
           {dailyBreakdown.map((day) => {
-            const isWeekend = day.dayIndex === 6;
-            const totalShifts = isWeekend ? 0 : (day.dayIndex === 5 ? 1 : 3);
-
-            if (isWeekend) {
-              return (
-                <Card key={day.dayIndex} padding="sm" className="bg-gray-100">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-500">{day.day}</span>
-                    <span className="text-xs text-gray-500">סוף שבוע</span>
-                  </div>
-                </Card>
-              );
-            }
+            const totalShifts = (day.dayIndex === 5 ? 1 : 3);
 
             return (
               <Card key={day.dayIndex} padding="sm">
