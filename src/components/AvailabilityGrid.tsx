@@ -42,6 +42,17 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
     }
   };
 
+  const getStatusColorWithoutBorder = (status: AvailabilityStatus) => {
+    switch (status) {
+      case 'available':
+        return 'bg-green-100 text-green-800';
+      case 'unavailable':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-500';
+    }
+  };
+
   const getStatusText = (status: AvailabilityStatus) => {
     switch (status) {
       case 'available':
@@ -263,40 +274,58 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
                   const isWeekend = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night')); // Friday evening/night
+                  const hasComment = cellData?.comment && cellData.comment.length > 0;
 
                   return (
                     <td key={dayIndex} className="px-1 lg:px-2 py-2 lg:py-4 border-b">
-                      <div
-                        className={`
-                          min-h-[48px] lg:h-16 rounded border lg:border-2 flex items-center justify-center transition-all cursor-pointer text-[10px] lg:text-xs
-                          ${isWeekend
-                            ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
-                            : isHolidayBlocked
-                            ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed'
-                            : isVacation
-                            ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed'
-                            : cellData
-                              ? `${getStatusColor(cellData.status)} hover:opacity-80 shadow-sm`
-                              : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
-                          }
-                          ${readonly || isWeekend || isHolidayBlocked ? 'cursor-not-allowed' : ''}
-                        `}
-                        onClick={() => !readonly && !isWeekend && !isHolidayBlocked && handleCellClick(dayStr, shift.id)}
-                      >
-                        <div className="text-center px-1 lg:px-2">
-                          <div className={`font-medium leading-tight ${cellData ? 'font-semibold' : ''}`}>
-                            {isWeekend
-                              ? '×'
+                      <div className="relative">
+                        <div
+                          className={`
+                            min-h-[48px] lg:h-16 rounded flex items-center justify-center transition-all cursor-pointer text-[10px] lg:text-xs
+                            ${isWeekend
+                              ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed border lg:border-2'
                               : isHolidayBlocked
-                                ? `חג: ${holiday?.name}`
+                              ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed border lg:border-2'
                               : isVacation
-                                ? 'חופשה/מחלה'
-                                : cellData?.status
-                                  ? getStatusText(cellData.status)
-                                  : ''
+                              ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed border lg:border-2'
+                              : cellData
+                                ? `${getStatusColorWithoutBorder(cellData.status)} hover:opacity-80 shadow-sm ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border lg:border-2 lg:border-gray-200' : 'border lg:border-2'}`
+                                : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100 border lg:border-2'
                             }
+                            ${readonly || isWeekend || isHolidayBlocked ? 'cursor-not-allowed' : ''}
+                          `}
+                          onClick={() => !readonly && !isWeekend && !isHolidayBlocked && handleCellClick(dayStr, shift.id)}
+                        >
+                          <div className="text-center px-1 lg:px-2">
+                            <div className={`font-medium leading-tight ${cellData ? 'font-semibold' : ''}`}>
+                              {isWeekend
+                                ? '×'
+                                : isHolidayBlocked
+                                  ? `חג: ${holiday?.name}`
+                                : isVacation
+                                  ? 'חופשה/מחלה'
+                                  : cellData?.status
+                                    ? getStatusText(cellData.status)
+                                    : ''
+                              }
+                            </div>
                           </div>
                         </div>
+
+                        {/* Comment icon - desktop only */}
+                        {!readonly && !isVacation && !isHolidayBlocked && !isWeekend && (
+                          <button
+                            onClick={(e) => handleCommentClick(dayStr, shift.id, e)}
+                            className={`hidden lg:block absolute bottom-1 right-1 transition-colors z-10 p-1 ${
+                              hasComment
+                                ? 'text-blue-600 hover:text-blue-800'
+                                : 'text-gray-400 hover:text-gray-600'
+                            }`}
+                            title={hasComment ? 'צפה/ערוך הערה' : 'הוסף הערה'}
+                          >
+                            <MessageSquare className={`w-3 h-3 ${hasComment ? 'fill-current' : ''}`} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   );
@@ -311,42 +340,85 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       {/* Comment Modal */}
       {selectedCell && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 lg:p-4" onClick={() => setSelectedCell(null)}>
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full modal-container" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4">הוספת הערה</h3>
-            <textarea
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="הכניסו הערה..."
-              className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              dir="rtl"
-            />
-            <div className="flex justify-end space-x-3 mt-4">
-              <button
-                onClick={() => setSelectedCell(null)}
-                className="px-4 py-2 min-h-[44px] text-gray-600 hover:text-gray-800 transition-colors ml-3"
-              >
-                ביטול
-              </button>
-              <button
-                onClick={saveComment}
-                className="px-4 py-2 min-h-[44px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                שמירה
-              </button>
-              {commentText && (
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            {/* Mobile - editable */}
+            <div className="lg:hidden">
+              <h3 className="text-lg font-semibold mb-4">הוספת הערה</h3>
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="הכניסו הערה..."
+                className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                dir="rtl"
+              />
+              <div className="flex justify-end space-x-3 mt-4">
                 <button
-                  onClick={() => {
-                    setCommentText('');
-                    if (selectedCell) {
-                      onCommentChange(selectedCell.day, selectedCell.shift, '');
-                    }
-                    setSelectedCell(null);
-                  }}
-                  className="px-4 py-2 min-h-[44px] text-red-600 hover:text-red-700 transition-colors"
+                  onClick={() => setSelectedCell(null)}
+                  className="px-4 py-2 min-h-[44px] text-gray-600 hover:text-gray-800 transition-colors ml-3"
                 >
-                  מחק הערה
+                  ביטול
                 </button>
-              )}
+                <button
+                  onClick={saveComment}
+                  className="px-4 py-2 min-h-[44px] bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  שמירה
+                </button>
+                {commentText && (
+                  <button
+                    onClick={() => {
+                      setCommentText('');
+                      if (selectedCell) {
+                        onCommentChange(selectedCell.day, selectedCell.shift, '');
+                      }
+                      setSelectedCell(null);
+                    }}
+                    className="px-4 py-2 min-h-[44px] text-red-600 hover:text-red-700 transition-colors"
+                  >
+                    מחק הערה
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Desktop - editable */}
+            <div className="hidden lg:block">
+              <h3 className="text-lg font-semibold mb-4">{commentText ? 'ערוך הערה' : 'הוסף הערה'}</h3>
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="הכניסו הערה..."
+                className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                dir="rtl"
+              />
+              <div className="flex justify-end space-x-3 mt-4">
+                <button
+                  onClick={() => setSelectedCell(null)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors ml-3"
+                >
+                  ביטול
+                </button>
+                <button
+                  onClick={saveComment}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  שמירה
+                </button>
+                {commentText && (
+                  <button
+                    onClick={() => {
+                      setCommentText('');
+                      if (selectedCell) {
+                        onCommentChange(selectedCell.day, selectedCell.shift, '');
+                      }
+                      setSelectedCell(null);
+                    }}
+                    className="px-4 py-2 text-red-600 hover:text-red-700 transition-colors"
+                  >
+                    מחק הערה
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

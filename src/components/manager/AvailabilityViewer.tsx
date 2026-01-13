@@ -76,6 +76,17 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
     }
   };
 
+  const getStatusColorWithoutBorder = (status: AvailabilityStatus) => {
+    switch (status) {
+      case 'available':
+        return 'bg-green-100 text-green-800';
+      case 'unavailable':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-500';
+    }
+  };
+
   const getStatusText = (status: AvailabilityStatus) => {
     switch (status) {
       case 'available':
@@ -128,8 +139,8 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
     onAvailabilityChange(selectedEmployee, day, shiftId, nextStatus);
   };
 
-  const handleCommentClick = (day: string, shiftId: string, comment: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCommentClick = (day: string, shiftId: string, comment: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setSelectedCell({ day, shift: shiftId, comment });
   };
 
@@ -282,11 +293,17 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                                 : isVacation
                                 ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed'
                                 : cellData
-                                  ? `${getStatusColor(cellData.status)} hover:opacity-80 shadow-sm`
+                                  ? `${hasComment ? getStatusColorWithoutBorder(cellData.status) : getStatusColor(cellData.status)} hover:opacity-80 shadow-sm ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border lg:border-2 lg:border-gray-200' : ''}`
                                   : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
                               }
                             `}
-                            onClick={() => handleCellClick(dayStr, shift.id)}
+                            onClick={() => {
+                              if (!editMode && hasComment && !isHolidayBlocked) {
+                                handleCommentClick(dayStr, shift.id, cellData?.comment || '', undefined);
+                              } else {
+                                handleCellClick(dayStr, shift.id);
+                              }
+                            }}
                           >
                             <div className="text-center px-1 lg:px-2">
                               <div className={`font-medium leading-tight ${cellData ? 'font-semibold' : ''}`}>
@@ -301,10 +318,11 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                               </div>
                             </div>
 
+                            {/* Comment icon - desktop only */}
                             {hasComment && !isHolidayBlocked && (
                               <button
                                 onClick={(e) => handleCommentClick(dayStr, shift.id, cellData?.comment || '', e)}
-                                className="absolute bottom-1 right-1 text-blue-600 hover:text-blue-800 transition-colors z-10"
+                                className="hidden lg:block absolute bottom-1 right-1 text-blue-600 hover:text-blue-800 transition-colors z-10"
                                 title={cellData?.comment}
                               >
                                 <MessageSquare className="w-3 h-3 fill-current" />
