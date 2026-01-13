@@ -21,6 +21,7 @@ interface ShiftDropdownProps {
   onSelect: (employeeId: string | null) => void;
   onClose: () => void;
   cellRef: React.RefObject<HTMLDivElement>;
+  employeeComments?: { [employeeId: string]: string };
 }
 
 const ShiftDropdown: React.FC<ShiftDropdownProps> = ({
@@ -30,6 +31,7 @@ const ShiftDropdown: React.FC<ShiftDropdownProps> = ({
   onSelect,
   onClose,
   cellRef,
+  employeeComments = {},
 }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -84,14 +86,21 @@ const ShiftDropdown: React.FC<ShiftDropdownProps> = ({
                 currentEmployeeId === employee.id ? 'bg-blue-50' : ''
               }`}
             >
-              <div className="flex items-center">
-                <div
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${getEmployeeColor(
-                    employee.id
-                  )}`}
-                >
-                  {employee.name}
+              <div className="flex flex-col items-start flex-1">
+                <div className="flex items-center">
+                  <div
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${getEmployeeColor(
+                      employee.id
+                    )}`}
+                  >
+                    {employee.name}
+                  </div>
                 </div>
+                {employeeComments[employee.id] && (
+                  <div className="text-xs text-gray-600 mt-1 italic px-3" dir="rtl">
+                    💬 {employeeComments[employee.id]}
+                  </div>
+                )}
               </div>
               {currentEmployeeId === employee.id && (
                 <Check className="w-4 h-4 text-blue-600" />

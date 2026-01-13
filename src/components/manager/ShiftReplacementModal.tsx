@@ -15,6 +15,7 @@ interface ShiftReplacementModalProps {
     shiftName: string;
     shiftTime: string;
   };
+  employeeComments?: { [employeeId: string]: string };
 }
 
 // Special ID for 119 emergency service
@@ -30,7 +31,8 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
   allEmployees,
   availableEmployeeIds,
   submittedEmployeeIds,
-  shiftInfo
+  shiftInfo,
+  employeeComments = {}
 }) => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(currentEmployeeId);
 
@@ -145,14 +147,21 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
                       : 'border border-gray-200 bg-white hover:bg-gray-50'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 min-w-0">
+                 <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1 overflow-hidden">
                       <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
                         {employee.name.split(' ').map(n => n[0]).join('')}
                       </div>
-                      <div className="min-w-0 flex-1">
+                      <div className="flex-1 overflow-hidden">
                         <div className="font-medium text-sm text-gray-900 truncate">{employee.name}</div>
-                        <div className={`w-1.5 h-1.5 rounded-full ${indicator.color} inline-block`} />
+                        <div className="flex items-start gap-2">
+                          <div className={`w-1.5 h-1.5 rounded-full ${indicator.color} flex-shrink-0 mt-1`} />
+                          {employeeComments[employee.id] && (
+                            <span className="text-xs text-gray-600 italic break-words" dir="rtl" style={{wordBreak: 'break-word'}}>
+                              💬 {employeeComments[employee.id]}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     {isSelected && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}

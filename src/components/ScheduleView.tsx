@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User as UserIcon, Lock, Unlock, Save, X } from 'lucide-react';
+import { User as UserIcon, Lock, Unlock, Save, X, MessageSquare } from 'lucide-react';
 import { Schedule, User, Holiday, Availability } from '../types';
 import { SHIFTS, DAYS } from '../data/mockData';
 import { formatDateHebrew, getWeekDates, formatDate } from '../utils/dateUtils';
@@ -16,6 +16,17 @@ const EMPLOYEE_COLORS = [
   'bg-indigo-100 text-indigo-800 border-indigo-200',
   'bg-teal-100 text-teal-800 border-teal-200',
   'bg-red-100 text-red-800 border-red-200',
+];
+
+const EMPLOYEE_COLORS_NO_BORDER = [
+  'bg-blue-100 text-blue-800',
+  'bg-green-100 text-green-800',
+  'bg-purple-100 text-purple-800',
+  'bg-orange-100 text-orange-800',
+  'bg-pink-100 text-pink-800',
+  'bg-indigo-100 text-indigo-800',
+  'bg-teal-100 text-teal-800',
+  'bg-red-100 text-red-800',
 ];
 
 interface ScheduleViewProps {
@@ -69,6 +80,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   const [replacementModal, setReplacementModal] = useState<{
     day: string;
     shiftId: string;
+  } | null>(null);
+
+  // State למודל הערות
+  const [commentModal, setCommentModal] = useState<{
+    comment: string;
   } | null>(null);
 
   // Notify parent component about pending changes
@@ -128,6 +144,18 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
     return EMPLOYEE_COLORS[employeeIndex % EMPLOYEE_COLORS.length];
   };
 
+  const getEmployeeColorWithoutBorder = (employeeId: string | null): string => {
+    if (!employeeId) return '';
+    // Special case for 119 emergency service
+    if (employeeId === '119-emergency-service') return 'bg-red-100 text-red-800';
+    const employee = employees.find(emp => emp.id === employeeId);
+    if (!employee) return 'bg-gray-100 text-gray-800';
+
+    const employeeIndex = activeEmployees.findIndex(emp => emp.id === employeeId);
+    if (employeeIndex === -1) return 'bg-gray-100 text-gray-800';
+    return EMPLOYEE_COLORS_NO_BORDER[employeeIndex % EMPLOYEE_COLORS_NO_BORDER.length];
+  };
+
   const getHolidayForDay = (dayIndex: number) => {
     const date = weekDates[dayIndex];
     const dateString = formatDate(date);
@@ -137,11 +165,20 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   const isHolidayShiftBlocked = (dayIndex: number, shiftId: string) => {
     const holiday = getHolidayForDay(dayIndex);
     if (!holiday) return false;
-    
+
     if (holiday.type === 'no-work') return true;
     if (holiday.type === 'morning-only' && (shiftId === 'evening' || shiftId === 'night')) return true;
-    
+
     return false;
+  };
+
+  const getEmployeeComment = (employeeId: string | null, dayIndex: number, shiftId: string): string | undefined => {
+    if (!employeeId) return undefined;
+    const dayStr = dayIndex.toString();
+    const empAvailability = availabilities.find(
+      a => a.employeeId === employeeId && a.weekStart === weekStartString
+    );
+    return empAvailability?.shifts[dayStr]?.[shiftId]?.comment;
   };
 
   const handleAssignmentClick = (day: string, shiftId: string) => {
@@ -365,6 +402,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                   const currentAssignment = getCurrentAssignment(dayStr, shift.id);
                   const employeeName = getEmployeeName(currentAssignment);
                   const employeeColor = getEmployeeColor(currentAssignment);
+                  const employeeColorNoBorder = getEmployeeColorWithoutBorder(currentAssignment);
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
                   const isRestrictedTime = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night'));
@@ -372,6 +410,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                   const isDropdownOpen = openDropdown?.day === dayStr && openDropdown?.shiftId === shift.id;
                   const isLocked = schedule?.lockedAssignments?.[dayStr]?.[shift.id];
                   const availableEmployees = getAvailableEmployeesForShift(dayIndex, shift.id);
+                  const allEmployeeComments = availableEmployees.reduce((acc, emp) => {
+                    const comment = getEmployeeComment(emp.id, dayIndex, shift.id);
+                    if (comment) acc[emp.id] = comment;
+                    return acc;
+                  }, {} as { [key: string]: string });
 
                   return (
                     <ShiftCell
@@ -382,6 +425,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       currentAssignment={currentAssignment}
                       employeeName={employeeName}
                       employeeColor={employeeColor}
+                      employeeColorNoBorder={employeeColorNoBorder}
                       holiday={holiday}
                       isHolidayBlocked={isHolidayBlocked}
                       isRestrictedTime={isRestrictedTime}
@@ -392,6 +436,8 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       readonly={readonly}
                       showLockControls={showLockControls}
                       employees={employees}
+                      employeeComment={getEmployeeComment(currentAssignment, dayIndex, shift.id)}
+                      allEmployeeComments={allEmployeeComments}
                       onCellClick={handleCellClick}
                       onEmployeeSelect={handleEmployeeSelect}
                       onDropdownClose={() => setOpenDropdown(null)}
@@ -440,6 +486,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                   const currentAssignment = getCurrentAssignment(dayStr, shift.id);
                   const employeeName = getEmployeeName(currentAssignment);
                   const employeeColor = getEmployeeColor(currentAssignment);
+                  const employeeColorNoBorder = getEmployeeColorWithoutBorder(currentAssignment);
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
                   const isRestrictedTime = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night'));
@@ -448,6 +495,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                   const isDropdownOpen = openDropdown?.day === dayStr && openDropdown?.shiftId === shift.id;
 
                   const isLocked = schedule?.lockedAssignments?.[dayStr]?.[shift.id];
+                  const allEmployeeComments = availableEmployees.reduce((acc, emp) => {
+                    const comment = getEmployeeComment(emp.id, dayIndex, shift.id);
+                    if (comment) acc[emp.id] = comment;
+                    return acc;
+                  }, {} as { [key: string]: string });
 
                   return (
                     <ShiftCell
@@ -458,6 +510,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       currentAssignment={currentAssignment}
                       employeeName={employeeName}
                       employeeColor={employeeColor}
+                      employeeColorNoBorder={employeeColorNoBorder}
                       holiday={holiday}
                       isHolidayBlocked={isHolidayBlocked}
                       isRestrictedTime={isRestrictedTime}
@@ -468,6 +521,8 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       readonly={readonly}
                       showLockControls={showLockControls}
                       employees={employees}
+                      employeeComment={getEmployeeComment(currentAssignment, dayIndex, shift.id)}
+                      allEmployeeComments={allEmployeeComments}
                       onCellClick={handleCellClick}
                       onEmployeeSelect={handleEmployeeSelect}
                       onDropdownClose={() => setOpenDropdown(null)}
@@ -499,6 +554,14 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
             shiftName: SHIFTS.find(s => s.id === replacementModal.shiftId)?.name || '',
             shiftTime: `${SHIFTS.find(s => s.id === replacementModal.shiftId)?.startTime || ''} - ${SHIFTS.find(s => s.id === replacementModal.shiftId)?.endTime || ''}`
           }}
+          employeeComments={getAvailableEmployeesForShift(
+            parseInt(replacementModal.day),
+            replacementModal.shiftId
+          ).reduce((acc, emp) => {
+            const comment = getEmployeeComment(emp.id, parseInt(replacementModal.day), replacementModal.shiftId);
+            if (comment) acc[emp.id] = comment;
+            return acc;
+          }, {} as { [key: string]: string })}
         />
       )}
     </div>
@@ -513,6 +576,7 @@ interface ShiftCellProps {
   currentAssignment: string | null;
   employeeName: string;
   employeeColor: string;
+  employeeColorNoBorder: string;
   holiday: Holiday | undefined;
   isHolidayBlocked: boolean;
   isRestrictedTime: boolean;
@@ -523,6 +587,8 @@ interface ShiftCellProps {
   readonly: boolean;
   showLockControls: boolean;
   employees: User[];
+  employeeComment?: string;
+  allEmployeeComments: { [employeeId: string]: string };
   onCellClick: (day: string, shiftId: string) => void;
   onEmployeeSelect: (day: string, shiftId: string, employeeId: string | null) => void;
   onDropdownClose: () => void;
@@ -536,6 +602,7 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
   currentAssignment,
   employeeName,
   employeeColor,
+  employeeColorNoBorder,
   holiday,
   isHolidayBlocked,
   isRestrictedTime,
@@ -546,30 +613,39 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
   readonly,
   showLockControls,
   employees,
+  employeeComment,
+  allEmployeeComments,
   onCellClick,
   onEmployeeSelect,
   onDropdownClose,
   onLockToggle,
 }) => {
   const cellRef = useRef<HTMLDivElement>(null);
+  const hasComment = employeeComment && employeeComment.length > 0;
+  const [showCommentModal, setShowCommentModal] = useState(false);
+
+  const handleCommentClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowCommentModal(true);
+  };
 
   return (
     <td className="px-1 lg:px-2 py-2 lg:py-4 border-b">
       <div className="relative" ref={cellRef}>
         <div
           className={`
-            min-h-[48px] lg:h-16 rounded border lg:border-2 flex items-center justify-center transition-all cursor-pointer text-[10px] lg:text-xs
+            min-h-[48px] lg:h-16 rounded flex items-center justify-center transition-all cursor-pointer text-[10px] lg:text-xs
             ${isRestrictedTime
-              ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
+              ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed border lg:border-2'
               : isHolidayBlocked
-              ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed'
+              ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed border lg:border-2'
               : isLocked
-              ? `${employeeColor} border-2 lg:border-4 border-yellow-500 shadow-sm lg:shadow-md`
+              ? `${employeeColor} border-2 lg:border-[3px] border-yellow-500 shadow-sm lg:shadow-md`
               : isPending
-              ? `${employeeColor} border-2 lg:border-4 border-blue-500 shadow-sm lg:shadow-md`
+              ? `${employeeColor} border-2 lg:border-[3px] border-blue-500 shadow-sm lg:shadow-md`
               : currentAssignment
-              ? `${employeeColor} hover:opacity-80 shadow-sm`
-              : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+              ? `${hasComment ? employeeColorNoBorder : employeeColor} hover:opacity-80 shadow-sm border lg:border-2 ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border-gray-200' : ''}`
+              : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100 border lg:border-2'
             }
             ${readonly || isRestrictedTime || isHolidayBlocked || isLocked ? 'cursor-not-allowed' : ''}
           `}
@@ -601,6 +677,7 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
             onSelect={(employeeId) => onEmployeeSelect(dayStr, shiftId, employeeId)}
             onClose={onDropdownClose}
             cellRef={cellRef}
+            employeeComments={allEmployeeComments}
           />
         )}
 
@@ -623,6 +700,41 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
               <Unlock className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
             )}
           </button>
+        )}
+
+        {/* Comment icon - desktop only */}
+        {currentAssignment && !isRestrictedTime && !isHolidayBlocked && (
+          <button
+            onClick={handleCommentClick}
+            className={`hidden lg:block absolute bottom-1 right-1 transition-colors z-10 p-1 ${
+              hasComment
+                ? 'text-blue-600 hover:text-blue-800'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+            title={hasComment ? 'צפה בהערה' : 'הוסף הערה'}
+          >
+            <MessageSquare className={`w-3 h-3 ${hasComment ? 'fill-current' : ''}`} />
+          </button>
+        )}
+
+        {/* Comment Modal - desktop only, read-only */}
+        {showCommentModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowCommentModal(false)}>
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-lg font-semibold mb-4">{hasComment ? 'הערה' : 'אין הערה'}</h3>
+              <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg min-h-[96px] whitespace-pre-wrap" dir="rtl">
+                {employeeComment || 'העובד לא הוסיף הערה למשמרת זו'}
+              </div>
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setShowCommentModal(false)}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  סגור
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </td>
