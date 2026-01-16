@@ -195,6 +195,43 @@ export async function generateOptimizedSchedule(
         console.log(`[Scheduler] Preserving frozen assignment: day ${dayStr}, shift ${shiftId}, employee ${employeeId}`);
       });
 
+      // בדיקת התנגשויות עם משמרות מוקפאות והסרת שיבוצים בעייתיים
+      frozenShifts.forEach((frozenEmployeeId, key) => {
+        const [dayStr, frozenShiftId] = key.split('_');
+        const day = parseInt(dayStr);
+
+        // אסור שתי משמרות באותו יום - הסר כל שיבוץ אחר של אותו עובד באותו יום
+        if (convertedAssignments[dayStr]) {
+          const shiftsInDay = ['morning', 'evening', 'night'];
+          shiftsInDay.forEach(shiftId => {
+            if (shiftId !== frozenShiftId && convertedAssignments[dayStr][shiftId] === frozenEmployeeId) {
+              console.log(`[Scheduler] Removing conflicting ${shiftId} assignment for ${frozenEmployeeId} on day ${dayStr} (same day as frozen ${frozenShiftId})`);
+              convertedAssignments[dayStr][shiftId] = null;
+            }
+          });
+        }
+
+        // אם יש לילה מוקפא, בדוק שאותו עובד לא משובץ לבוקר למחרת (רק בוקר - ערב מותר!)
+        if (frozenShiftId === 'night' && day < 5) {
+          const nextDay = (day + 1).toString();
+          if (convertedAssignments[nextDay]) {
+            if (convertedAssignments[nextDay]['morning'] === frozenEmployeeId) {
+              console.log(`[Scheduler] Removing conflicting morning assignment for ${frozenEmployeeId} on day ${nextDay} (after frozen night)`);
+              convertedAssignments[nextDay]['morning'] = null;
+            }
+          }
+        }
+
+        // אם יש בוקר מוקפא, בדוק שאותו עובד לא משובץ ללילה אתמול (רק בוקר - ערב מותר אחרי לילה!)
+        if (frozenShiftId === 'morning' && day > 0) {
+          const prevDay = (day - 1).toString();
+          if (convertedAssignments[prevDay] && convertedAssignments[prevDay]['night'] === frozenEmployeeId) {
+            console.log(`[Scheduler] Removing conflicting night assignment for ${frozenEmployeeId} on day ${prevDay} (before frozen morning)`);
+            convertedAssignments[prevDay]['night'] = null;
+          }
+        }
+      });
+
       // הוספת אזהרות מ-OR-Tools
       if (ortoolsResult.result.stats) {
         const ortoolsWarnings = generateWarningsFromStats(ortoolsResult.result.stats, activeEmployees);
@@ -326,7 +363,7 @@ function optimizeSchedule(
           return false;
         }
 
-        // אסור בוקר אחרי לילה
+        // אסור בוקר אחרי לילה (לילה ביום X -> בוקר ביום X+1)
         if (shiftId === 'morning' && day > 0) {
           const prevDayNight = attemptAssignments[day - 1]['night'];
           if (prevDayNight === emp.id) {
@@ -334,7 +371,7 @@ function optimizeSchedule(
           }
         }
 
-        // אסור לילה לפני בוקר
+        // אסור לילה לפני בוקר (לילה ביום X -> בוקר ביום X+1)
         if (shiftId === 'night' && day < 5) {
           const nextDayMorning = attemptAssignments[day + 1]?.['morning'];
           if (nextDayMorning === emp.id) {

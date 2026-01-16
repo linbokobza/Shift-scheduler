@@ -679,8 +679,8 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
               }
             </div>
 
-            {/* Freeze Badge */}
-            {isFrozen && currentAssignment && (
+            {/* Freeze Badge - only visible to managers (not readonly) */}
+            {isFrozen && currentAssignment && !readonly && (
               <div className="bg-yellow-400 text-yellow-900 text-[8px] lg:text-[9px] px-1 py-0.5 rounded font-bold mt-0.5 inline-flex items-center gap-0.5 shadow-sm">
                 <Snowflake className="w-2 h-2" />
                 <span>קפוא</span>
