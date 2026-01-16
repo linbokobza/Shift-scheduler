@@ -196,7 +196,6 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                 <button
                   onClick={() => handleResetPassword(employee.id, employee.name)}
                   className="text-blue-500 hover:text-blue-700 p-1 rounded transition-colors lg:opacity-0 lg:group-hover:opacity-100 ml-1 lg:ml-2"
-                  title="איפוס סיסמה"
                 >
                   <Key className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                 </button>
@@ -204,7 +203,6 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                 <button
                   onClick={() => handleRemoveEmployee(employee.id, employee.name)}
                   className="text-red-500 hover:text-red-700 p-1 rounded transition-colors lg:opacity-0 lg:group-hover:opacity-100 ml-1 lg:ml-2"
-                  title="הסר עובד"
                 >
                   <Trash2 className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
                 </button>

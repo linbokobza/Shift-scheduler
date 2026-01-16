@@ -50,6 +50,11 @@ export interface Schedule {
       [shiftId: string]: boolean; // true = locked
     };
   };
+  frozenAssignments?: {
+    [day: string]: {
+      [shiftId: string]: boolean; // true = frozen
+    };
+  };
   createdAt: string;
   createdBy: string;
   isPublished?: boolean;

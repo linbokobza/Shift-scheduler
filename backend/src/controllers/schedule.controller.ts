@@ -74,13 +74,26 @@ export const generateSchedule = async (req: AuthRequest, res: Response): Promise
   // Fetch all data
   const data = await ScheduleService.getScheduleData(weekStartDate);
 
+  // Check if there's an existing schedule with frozen assignments
+  const existingSchedule = await Schedule.findOne({ weekStart: weekStartDate });
+  let existingScheduleData: { assignments?: any; frozenAssignments?: any } | undefined;
+
+  if (existingSchedule) {
+    existingScheduleData = {
+      assignments: existingSchedule.assignments ? ScheduleService.convertMapToObject(existingSchedule.assignments) : undefined,
+      frozenAssignments: existingSchedule.frozenAssignments ? ScheduleService.convertMapToObject(existingSchedule.frozenAssignments) : undefined
+    };
+    console.log('[Controller] Found existing schedule with frozenAssignments:', existingScheduleData.frozenAssignments);
+  }
+
   // Call advanced optimization algorithm (now async with OR-Tools)
   const result = await generateOptimizedSchedule(
     data.employees,
     data.availabilities,
     data.vacations,
     data.holidays,
-    data.weekStart
+    data.weekStart,
+    existingScheduleData
   );
 
   if (!result) {
@@ -93,13 +106,14 @@ export const generateSchedule = async (req: AuthRequest, res: Response): Promise
     return;
   }
 
-  // Save schedule
+  // Save schedule - preserve frozenAssignments from existing schedule
   const schedule = await ScheduleService.saveSchedule(
     weekStartDate,
     result.assignments,
     {},
     req.user._id,
-    0
+    0,
+    result.frozenAssignments || existingScheduleData?.frozenAssignments
   );
 
   // Audit log
@@ -119,7 +133,7 @@ export const generateSchedule = async (req: AuthRequest, res: Response): Promise
 
 export const updateSchedule = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { assignments, lockedAssignments } = req.body;
+  const { assignments, lockedAssignments, frozenAssignments } = req.body;
 
   const schedule = await Schedule.findById(id);
 
@@ -134,6 +148,10 @@ export const updateSchedule = async (req: AuthRequest, res: Response): Promise<v
 
   if (lockedAssignments) {
     schedule.lockedAssignments = ScheduleService.convertObjectToMap(lockedAssignments) as any;
+  }
+
+  if (frozenAssignments) {
+    schedule.frozenAssignments = ScheduleService.convertObjectToMap(frozenAssignments) as any;
   }
 
   await schedule.save();

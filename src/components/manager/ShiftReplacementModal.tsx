@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, User as UserIcon, Phone } from 'lucide-react';
+import { X, Check, User as UserIcon, Phone, Snowflake } from 'lucide-react';
 import { User } from '../../types';
 
 interface ShiftReplacementModalProps {
@@ -14,8 +14,12 @@ interface ShiftReplacementModalProps {
     dayName: string;
     shiftName: string;
     shiftTime: string;
+    day: string;
+    shiftId: string;
   };
   employeeComments?: { [employeeId: string]: string };
+  isFrozen?: boolean;
+  onFreezeToggle?: (frozen: boolean) => void;
 }
 
 // Special ID for 119 emergency service
@@ -32,16 +36,21 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
   availableEmployeeIds,
   submittedEmployeeIds,
   shiftInfo,
-  employeeComments = {}
+  employeeComments = {},
+  isFrozen = false,
+  onFreezeToggle
 }) => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(currentEmployeeId);
+  const [isFrozenLocal, setIsFrozenLocal] = useState<boolean>(isFrozen);
 
-  // Reset selection when modal opens
+  // Reset selection and freeze state when modal opens
   useEffect(() => {
     if (isOpen) {
+      console.log('🧊 Modal opened - isFrozen prop:', isFrozen, 'currentEmployeeId:', currentEmployeeId);
       setSelectedEmployeeId(currentEmployeeId);
+      setIsFrozenLocal(isFrozen);
     }
-  }, [isOpen, currentEmployeeId]);
+  }, [isOpen, currentEmployeeId, isFrozen]);
 
   // Click outside to close
   useEffect(() => {
@@ -100,6 +109,9 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
 
   const handleSave = () => {
     onSave(selectedEmployeeId);
+    if (onFreezeToggle) {
+      onFreezeToggle(isFrozenLocal);
+    }
   };
 
   return (
@@ -127,6 +139,25 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Freeze Checkbox Section */}
+        {currentEmployeeId && (
+          <div className="px-4 pt-2 pb-3 border-b border-gray-200">
+            <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+              <input
+                type="checkbox"
+                checked={isFrozenLocal}
+                onChange={(e) => setIsFrozenLocal(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">להקפיא משמרת</span>
+              <Snowflake className="w-4 h-4 text-blue-500" />
+              <span className="text-xs text-gray-500 mr-auto">
+                (העובד ישאר במשמרת זו ולא ישובץ במשמרות אחרות השבוע)
+              </span>
+            </label>
+          </div>
+        )}
 
         {/* Content */}
         <div className="p-4 max-h-[70vh] overflow-y-auto">

@@ -213,7 +213,6 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                   <button
                     onClick={(e) => handleCommentClick(dayStr, shift.id, e)}
                     className="absolute bottom-1 left-1 text-blue-600 hover:text-blue-800 transition-colors z-10 p-1"
-                    title="ערוך הערה"
                   >
                     <MessageSquare className="w-4 h-4 fill-current" />
                   </button>
@@ -223,7 +222,6 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                   <button
                     onClick={(e) => handleCommentClick(dayStr, shift.id, e)}
                     className="absolute bottom-1 left-1 text-gray-400 hover:text-blue-600 transition-all z-10 p-1"
-                    title="הוסף הערה"
                   >
                     <MessageSquare className="w-4 h-4" />
                   </button>
@@ -321,7 +319,6 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                                 ? 'text-blue-600 hover:text-blue-800'
                                 : 'text-gray-400 hover:text-gray-600'
                             }`}
-                            title={hasComment ? 'צפה/ערוך הערה' : 'הוסף הערה'}
                           >
                             <MessageSquare className={`w-3 h-3 ${hasComment ? 'fill-current' : ''}`} />
                           </button>

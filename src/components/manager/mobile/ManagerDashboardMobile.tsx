@@ -41,6 +41,8 @@ interface ManagerDashboardMobileProps {
   onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => void;
   onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
+  onLockToggle?: (day: string, shiftId: string, locked: boolean) => void;
+  onFreezeToggle?: (day: string, shiftId: string, frozen: boolean) => void;
 
   // Loading states
   isGenerating?: boolean;
@@ -79,6 +81,8 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
   onBulkAssignmentChange,
   onAvailabilityChange,
   onCommentChange,
+  onLockToggle,
+  onFreezeToggle,
   isGenerating = false,
   isPublishing = false,
   selectedEmployee,
@@ -179,6 +183,8 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
               onGenerateSchedule={onGenerateSchedule}
               onPublishSchedule={onPublishSchedule}
               onBulkAssignmentChange={onBulkAssignmentChange}
+              onLockToggle={onLockToggle}
+              onFreezeToggle={onFreezeToggle}
               isGenerating={isGenerating}
               isPublishing={isPublishing}
               currentDayIndex={scheduleCurrentDayIndex}

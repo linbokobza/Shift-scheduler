@@ -145,6 +145,7 @@ export const generateOptimizedSchedule = (
       availabilityMap,
       vacationMap,
       lockedAssignments,
+      existingSchedule?.frozenAssignments || {},
       weekStart,
       existingSchedule
     );
@@ -164,6 +165,7 @@ export const generateOptimizedSchedule = (
       weekStart,
       assignments: result.assignments,
       lockedAssignments,
+      frozenAssignments: existingSchedule?.frozenAssignments,
       createdAt: new Date().toISOString(),
       createdBy: 'system'
     };
@@ -203,6 +205,7 @@ function optimizeSchedule(
   availabilityMap: Map<string, Availability>,
   vacationMap: Map<string, Set<string>>,
   lockedAssignments: Schedule['lockedAssignments'],
+  frozenAssignments: Schedule['frozenAssignments'],
   weekStart: string,
   existingSchedule?: Schedule
 ): { assignments: Schedule['assignments']; score: number } | null {
@@ -227,6 +230,31 @@ function optimizeSchedule(
           // מצא את ה-employeeId מה-assignments המקוריים
           const employeeId = existingSchedule.assignments[day]?.[shiftId];
           if (employeeId) {
+            assignments[day][shiftId] = employeeId;
+            lockedEmployeeAssignments.set(`${day}_${shiftId}`, employeeId);
+          }
+        }
+      });
+    });
+  }
+
+  // מעקב אחר עובדים קפואים - הם יכולים להיות משובצים רק במשמרות הקפואות שלהם
+  const frozenEmployees = new Map<string, Set<string>>(); // employeeId -> Set of "day_shift"
+
+  if (frozenAssignments && existingSchedule) {
+    Object.keys(frozenAssignments).forEach(dayStr => {
+      const day = parseInt(dayStr);
+      Object.keys(frozenAssignments[day]).forEach(shiftId => {
+        if (frozenAssignments[day][shiftId]) {
+          const employeeId = existingSchedule.assignments[day]?.[shiftId];
+          if (employeeId) {
+            // מעקב אחר העובד כקפוא במשמרת זו
+            if (!frozenEmployees.has(employeeId)) {
+              frozenEmployees.set(employeeId, new Set());
+            }
+            frozenEmployees.get(employeeId)!.add(`${day}_${shiftId}`);
+
+            // שיבוץ העובד למשמרת (כמו נעולה)
             assignments[day][shiftId] = employeeId;
             lockedEmployeeAssignments.set(`${day}_${shiftId}`, employeeId);
           }
@@ -323,6 +351,9 @@ function optimizeSchedule(
             return false;
           }
         }
+
+        // Note: Frozen employees are already assigned to their frozen shifts
+        // They CAN be assigned to other shifts as well (frozen doesn't exclude them from rotation)
 
         return true;
       });

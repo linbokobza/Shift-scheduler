@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User as UserIcon, Lock, Unlock, Save, X, MessageSquare } from 'lucide-react';
+import { User as UserIcon, Lock, Unlock, Save, X, MessageSquare, Snowflake } from 'lucide-react';
 import { Schedule, User, Holiday, Availability } from '../types';
 import { SHIFTS, DAYS } from '../data/mockData';
 import { formatDateHebrew, getWeekDates, formatDate } from '../utils/dateUtils';
@@ -38,6 +38,7 @@ interface ScheduleViewProps {
   onAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
   onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => Promise<void>;
   onLockToggle?: (day: string, shiftId: string, locked: boolean) => void;
+  onFreezeToggle?: (day: string, shiftId: string, frozen: boolean) => void;
   onPendingChanges?: (hasPendingChanges: boolean) => void;
   readonly?: boolean;
   showLockControls?: boolean;
@@ -52,10 +53,12 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   onAssignmentChange,
   onBulkAssignmentChange,
   onLockToggle,
+  onFreezeToggle,
   onPendingChanges,
   readonly = false,
   showLockControls = false
 }) => {
+  console.log('🧊 ScheduleView render - frozenAssignments:', schedule?.frozenAssignments);
   const weekDates = getWeekDates(weekStart);
   const weekStartString = formatDate(weekStart);
   const activeEmployees = employees.filter(emp => emp.role === 'employee' && emp.isActive);
@@ -223,6 +226,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
 
     const currentLock = schedule?.lockedAssignments?.[day]?.[shiftId];
     onLockToggle(day, shiftId, !currentLock);
+  };
+
+  const handleFreezeToggle = (day: string, shiftId: string, frozen: boolean) => {
+    if (!onFreezeToggle || readonly) return;
+    onFreezeToggle(day, shiftId, frozen);
   };
 
   // קבלת ערך משמרת (מקורי או עם שינוי ממתין)
@@ -409,6 +417,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                   const isPending = hasPendingChange(dayStr, shift.id);
                   const isDropdownOpen = openDropdown?.day === dayStr && openDropdown?.shiftId === shift.id;
                   const isLocked = schedule?.lockedAssignments?.[dayStr]?.[shift.id];
+                  const isFrozen = schedule?.frozenAssignments?.[dayStr]?.[shift.id];
                   const availableEmployees = getAvailableEmployeesForShift(dayIndex, shift.id);
                   const allEmployeeComments = availableEmployees.reduce((acc, emp) => {
                     const comment = getEmployeeComment(emp.id, dayIndex, shift.id);
@@ -432,7 +441,8 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       availableEmployees={availableEmployees}
                       isPending={isPending}
                       isDropdownOpen={isDropdownOpen}
-                      isLocked={isLocked}
+                      isLocked={isLocked || false}
+                      isFrozen={isFrozen || false}
                       readonly={readonly}
                       showLockControls={showLockControls}
                       employees={employees}
@@ -495,6 +505,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                   const isDropdownOpen = openDropdown?.day === dayStr && openDropdown?.shiftId === shift.id;
 
                   const isLocked = schedule?.lockedAssignments?.[dayStr]?.[shift.id];
+                  const isFrozen = schedule?.frozenAssignments?.[dayStr]?.[shift.id];
                   const allEmployeeComments = availableEmployees.reduce((acc, emp) => {
                     const comment = getEmployeeComment(emp.id, dayIndex, shift.id);
                     if (comment) acc[emp.id] = comment;
@@ -517,7 +528,8 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       availableEmployees={availableEmployees}
                       isPending={isPending}
                       isDropdownOpen={isDropdownOpen}
-                      isLocked={isLocked}
+                      isLocked={isLocked || false}
+                      isFrozen={isFrozen || false}
                       readonly={readonly}
                       showLockControls={showLockControls}
                       employees={employees}
@@ -552,7 +564,9 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
           shiftInfo={{
             dayName: DAYS[parseInt(replacementModal.day)],
             shiftName: SHIFTS.find(s => s.id === replacementModal.shiftId)?.name || '',
-            shiftTime: `${SHIFTS.find(s => s.id === replacementModal.shiftId)?.startTime || ''} - ${SHIFTS.find(s => s.id === replacementModal.shiftId)?.endTime || ''}`
+            shiftTime: `${SHIFTS.find(s => s.id === replacementModal.shiftId)?.startTime || ''} - ${SHIFTS.find(s => s.id === replacementModal.shiftId)?.endTime || ''}`,
+            day: replacementModal.day,
+            shiftId: replacementModal.shiftId
           }}
           employeeComments={getAvailableEmployeesForShift(
             parseInt(replacementModal.day),
@@ -562,6 +576,8 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
             if (comment) acc[emp.id] = comment;
             return acc;
           }, {} as { [key: string]: string })}
+          isFrozen={schedule?.frozenAssignments?.[replacementModal.day]?.[replacementModal.shiftId] || false}
+          onFreezeToggle={(frozen) => handleFreezeToggle(replacementModal.day, replacementModal.shiftId, frozen)}
         />
       )}
     </div>
@@ -584,6 +600,7 @@ interface ShiftCellProps {
   isPending: boolean;
   isDropdownOpen: boolean;
   isLocked: boolean;
+  isFrozen: boolean;
   readonly: boolean;
   showLockControls: boolean;
   employees: User[];
@@ -610,6 +627,7 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
   isPending,
   isDropdownOpen,
   isLocked,
+  isFrozen,
   readonly,
   showLockControls,
   employees,
@@ -641,8 +659,6 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
               ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed border lg:border-2'
               : isLocked
               ? `${employeeColor} border-2 lg:border-[3px] border-yellow-500 shadow-sm lg:shadow-md`
-              : isPending
-              ? `${employeeColor} border-2 lg:border-[3px] border-blue-500 shadow-sm lg:shadow-md`
               : currentAssignment
               ? `${hasComment ? employeeColorNoBorder : employeeColor} hover:opacity-80 shadow-sm border lg:border-2 ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border-gray-200' : ''}`
               : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100 border lg:border-2'
@@ -662,9 +678,16 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
                     : '-'
               }
             </div>
-            {isLocked && (
-              <Lock className="w-2.5 h-2.5 lg:w-3 lg:h-3 mx-auto mt-0.5 text-yellow-700" />
+
+            {/* Freeze Badge */}
+            {isFrozen && currentAssignment && (
+              <div className="bg-yellow-400 text-yellow-900 text-[8px] lg:text-[9px] px-1 py-0.5 rounded font-bold mt-0.5 inline-flex items-center gap-0.5 shadow-sm">
+                <Snowflake className="w-2 h-2" />
+                <span>קפוא</span>
+              </div>
             )}
+
+            {/* Lock icon removed per user request - lock/unlock button at top-left remains */}
           </div>
         </div>
 
@@ -681,39 +704,15 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
           />
         )}
 
-        {/* Lock/Unlock button */}
-        {showLockControls && !readonly && !isRestrictedTime && !isHolidayBlocked && currentAssignment && (
-          <button
-            onClick={(e) => onLockToggle(dayStr, shiftId, e)}
-            className={`
-              absolute top-0.5 lg:top-1 left-0.5 lg:left-1 p-0.5 lg:p-1 rounded transition-all hidden lg:block
-              ${isLocked
-                ? 'bg-yellow-500 text-white hover:bg-yellow-600'
-                : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-              }
-            `}
-            title={isLocked ? 'לחץ לפתיחת נעילה' : 'לחץ לנעילת משמרת'}
-          >
-            {isLocked ? (
-              <Lock className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
-            ) : (
-              <Unlock className="w-2.5 h-2.5 lg:w-3 lg:h-3" />
-            )}
-          </button>
-        )}
+        {/* Lock/Unlock button removed per user request */}
 
-        {/* Comment icon - desktop only */}
-        {currentAssignment && !isRestrictedTime && !isHolidayBlocked && (
+        {/* Comment icon - desktop only - only shown when comment exists */}
+        {hasComment && currentAssignment && !isRestrictedTime && !isHolidayBlocked && (
           <button
             onClick={handleCommentClick}
-            className={`hidden lg:block absolute bottom-1 right-1 transition-colors z-10 p-1 ${
-              hasComment
-                ? 'text-blue-600 hover:text-blue-800'
-                : 'text-gray-400 hover:text-gray-600'
-            }`}
-            title={hasComment ? 'צפה בהערה' : 'הוסף הערה'}
+            className="hidden lg:block absolute bottom-1 right-1 transition-colors z-10 p-1 text-blue-600 hover:text-blue-800"
           >
-            <MessageSquare className={`w-3 h-3 ${hasComment ? 'fill-current' : ''}`} />
+            <MessageSquare className="w-3 h-3 fill-current" />
           </button>
         )}
 

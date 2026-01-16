@@ -273,7 +273,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                             <div
                               key={shiftType}
                               className={`text-[9px] sm:text-xs px-1 py-0.5 rounded border ${employeeColor} truncate leading-tight`}
-                              title={`${SHIFT_NAMES_HEBREW[shiftType]}: ${employeeName}`}
                             >
                               {firstName}
                             </div>

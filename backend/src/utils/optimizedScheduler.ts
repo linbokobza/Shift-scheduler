@@ -56,6 +56,15 @@ const SHIFTS = [
   { id: 'night', name: 'לילה' },
 ];
 
+interface ExistingScheduleData {
+  assignments?: ShiftAssignment;
+  frozenAssignments?: {
+    [day: string]: {
+      [shiftId: string]: boolean;
+    };
+  };
+}
+
 /**
  * אלגוריתם אופטימיזציה מתקדם לסידור משמרות
  * משתמש ב-OR-Tools CP-SAT solver כברירת מחדל, עם fallback לאלגוריתם greedy
@@ -65,10 +74,12 @@ export async function generateOptimizedSchedule(
   availabilities: AvailabilityData[],
   vacations: VacationData[],
   holidays: HolidayData[],
-  weekStart: string
-): Promise<{ assignments: ShiftAssignment; warnings: string[] } | null> {
+  weekStart: string,
+  existingSchedule?: ExistingScheduleData
+): Promise<{ assignments: ShiftAssignment; warnings: string[]; frozenAssignments?: ExistingScheduleData['frozenAssignments'] } | null> {
 
   const warnings: string[] = [];
+  const frozenAssignments = existingSchedule?.frozenAssignments;
 
   // יצירת מפות
   const availabilityMap = new Map<string, AvailabilityData>();
@@ -132,6 +143,25 @@ export async function generateOptimizedSchedule(
     }
   });
 
+  // מיפוי משמרות מוקפאות - אלו יישארו קבועות
+  const frozenShifts = new Map<string, string>(); // key: "day_shiftId", value: employeeId
+  if (frozenAssignments && existingSchedule?.assignments) {
+    Object.keys(frozenAssignments).forEach(dayStr => {
+      const dayFrozen = frozenAssignments[dayStr];
+      if (dayFrozen) {
+        Object.keys(dayFrozen).forEach(shiftId => {
+          if (dayFrozen[shiftId]) {
+            const employeeId = existingSchedule.assignments?.[dayStr]?.[shiftId];
+            if (employeeId) {
+              frozenShifts.set(`${dayStr}_${shiftId}`, employeeId);
+              console.log(`[Scheduler] Frozen shift: day ${dayStr}, shift ${shiftId}, employee ${employeeId}`);
+            }
+          }
+        });
+      }
+    });
+  }
+
   // ניסיון ראשון: OR-Tools CP-SAT solver
   try {
     console.log('[Scheduler] Attempting optimization with OR-Tools...');
@@ -155,6 +185,16 @@ export async function generateOptimizedSchedule(
         convertedAssignments[day] = shifts;
       }
 
+      // שמירת משמרות מוקפאות - דריסת התוצאה של OR-Tools
+      frozenShifts.forEach((employeeId, key) => {
+        const [dayStr, shiftId] = key.split('_');
+        if (!convertedAssignments[dayStr]) {
+          convertedAssignments[dayStr] = {};
+        }
+        convertedAssignments[dayStr][shiftId] = employeeId;
+        console.log(`[Scheduler] Preserving frozen assignment: day ${dayStr}, shift ${shiftId}, employee ${employeeId}`);
+      });
+
       // הוספת אזהרות מ-OR-Tools
       if (ortoolsResult.result.stats) {
         const ortoolsWarnings = generateWarningsFromStats(ortoolsResult.result.stats, activeEmployees);
@@ -163,7 +203,8 @@ export async function generateOptimizedSchedule(
 
       return {
         assignments: convertedAssignments,
-        warnings
+        warnings,
+        frozenAssignments
       };
     } else {
       console.warn('[Scheduler] OR-Tools failed:', ortoolsResult.result.message);
@@ -180,7 +221,8 @@ export async function generateOptimizedSchedule(
     activeEmployees,
     allShifts,
     availabilityMap,
-    vacationMap
+    vacationMap,
+    frozenShifts
   );
 
   if (!result) {
@@ -193,7 +235,8 @@ export async function generateOptimizedSchedule(
 
   return {
     assignments: result.assignments,
-    warnings
+    warnings,
+    frozenAssignments
   };
 }
 
@@ -204,7 +247,8 @@ function optimizeSchedule(
   employees: UserData[],
   allShifts: Array<{ day: number; shiftId: string; date: string }>,
   availabilityMap: Map<string, AvailabilityData>,
-  vacationMap: Map<string, Set<string>>
+  vacationMap: Map<string, Set<string>>,
+  frozenShifts: Map<string, string> = new Map()
 ): { assignments: ShiftAssignment; score: number } | null {
 
   // אתחול assignments
@@ -216,12 +260,22 @@ function optimizeSchedule(
     });
   }
 
+  // מילוי משמרות מוקפאות תחילה
+  frozenShifts.forEach((employeeId, key) => {
+    const [dayStr, shiftId] = key.split('_');
+    const day = parseInt(dayStr);
+    if (assignments[day]) {
+      assignments[day][shiftId] = employeeId;
+      console.log(`[Greedy] Pre-assigned frozen shift: day ${day}, shift ${shiftId}, employee ${employeeId}`);
+    }
+  });
+
   // ניסיונות מרובים למציאת פתרון אופטימלי
   const maxAttempts = 50;
   let bestAssignments: ShiftAssignment | null = null;
   let bestScore = Infinity;
 
-  console.log(`Starting optimization with ${employees.length} employees and ${allShifts.length} shifts`);
+  console.log(`Starting optimization with ${employees.length} employees and ${allShifts.length} shifts (${frozenShifts.size} frozen)`);
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const attemptAssignments = JSON.parse(JSON.stringify(assignments));
@@ -231,8 +285,23 @@ function optimizeSchedule(
       employeeShiftCounts.set(emp.id, { morning: 0, evening: 0, night: 0, total: 0, eightToEightCount: 0 });
     });
 
+    // עדכון ספירות למשמרות מוקפאות
+    frozenShifts.forEach((employeeId, key) => {
+      const [, shiftId] = key.split('_');
+      const counts = employeeShiftCounts.get(employeeId);
+      if (counts) {
+        counts.total++;
+        if (shiftId === 'morning') counts.morning++;
+        else if (shiftId === 'evening') counts.evening++;
+        else if (shiftId === 'night') counts.night++;
+      }
+    });
+
+    // סינון משמרות שאינן מוקפאות
+    const unfrozenShifts = allShifts.filter(({ day, shiftId }) => !frozenShifts.has(`${day}_${shiftId}`));
+
     // סידור משמרות לפי עדיפות: בוקר → ערב → לילה
-    const sortedShifts = [...allShifts].sort((a, b) => {
+    const sortedShifts = [...unfrozenShifts].sort((a, b) => {
       const shiftOrder: { [key: string]: number } = { 'morning': 1, 'evening': 2, 'night': 3 };
       if (shiftOrder[a.shiftId] !== shiftOrder[b.shiftId]) {
         return shiftOrder[a.shiftId] - shiftOrder[b.shiftId];
@@ -241,6 +310,7 @@ function optimizeSchedule(
       return Math.random() - 0.5;
     });
 
+    let failed = false;
     for (const { day, shiftId, date } of sortedShifts) {
       // בניית רשימת מועמדים זמינים
       const candidates = employees.filter(emp => {

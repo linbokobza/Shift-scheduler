@@ -143,7 +143,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={onMobileMenuClose}
           className="absolute top-3 left-3 z-10 p-2 text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg shadow-sm transition-colors"
-          title="סגור"
         >
           <X className="w-5 h-5" />
         </button>

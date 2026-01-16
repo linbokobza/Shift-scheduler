@@ -25,6 +25,7 @@ export const scheduleAPI = {
     data: {
       assignments?: Schedule['assignments'];
       lockedAssignments?: Schedule['lockedAssignments'];
+      frozenAssignments?: Schedule['frozenAssignments'];
     }
   ): Promise<{ schedule: Schedule }> => {
     const response = await axiosInstance.put(`/schedules/${id}`, data);
