@@ -330,6 +330,64 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     }
   };
 
+  const handleLockToggle = async (day: string, shiftId: string, locked: boolean) => {
+    if (!currentSchedule) return;
+
+    const updatedLockedAssignments = {
+      ...currentSchedule.lockedAssignments,
+      [day]: {
+        ...(currentSchedule.lockedAssignments?.[day] || {}),
+        [shiftId]: locked
+      }
+    };
+
+    try {
+      await scheduleAPI.update(currentSchedule.id, {
+        lockedAssignments: updatedLockedAssignments
+      });
+
+      // Invalidate queries to refetch
+      queryClient.invalidateQueries({ queryKey: ['schedules'] });
+      queryClient.invalidateQueries({ queryKey: ['schedules', 'week', weekStartString] });
+    } catch (error) {
+      console.error('Error updating lock status:', error);
+      alert('שגיאה בעדכון נעילת המשמרת');
+    }
+  };
+
+  const handleFreezeToggle = async (day: string, shiftId: string, frozen: boolean) => {
+    if (!currentSchedule) return;
+
+    console.log('🧊 handleFreezeToggle called:', { day, shiftId, frozen, currentScheduleId: currentSchedule.id });
+
+    const updatedFrozenAssignments = {
+      ...currentSchedule.frozenAssignments,
+      [day]: {
+        ...(currentSchedule.frozenAssignments?.[day] || {}),
+        [shiftId]: frozen
+      }
+    };
+
+    console.log('🧊 Updated frozenAssignments:', updatedFrozenAssignments);
+
+    try {
+      const result = await scheduleAPI.update(currentSchedule.id, {
+        frozenAssignments: updatedFrozenAssignments
+      });
+
+      console.log('🧊 API update successful, returned schedule:', result.schedule.frozenAssignments);
+
+      // Invalidate queries to refetch
+      queryClient.invalidateQueries({ queryKey: ['schedules'] });
+      queryClient.invalidateQueries({ queryKey: ['schedules', 'week', weekStartString] });
+
+      console.log('🧊 Invalidated queries');
+    } catch (error) {
+      console.error('Error updating freeze status:', error);
+      alert('שגיאה בעדכון הקפאת המשמרת');
+    }
+  };
+
   // Loading state
   if (employeesLoading || availabilitiesLoading) {
     return (
@@ -369,6 +427,8 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     onBulkAssignmentChange: handleBulkAssignmentChange,
     onAvailabilityChange: handleAvailabilityChange,
     onCommentChange: handleCommentChange,
+    onLockToggle: handleLockToggle,
+    onFreezeToggle: handleFreezeToggle,
     onMenuChange: setActiveMenu,
     isGenerating: generateScheduleMutation.isPending,
     isPublishing,

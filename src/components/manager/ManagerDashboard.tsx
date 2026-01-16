@@ -317,6 +317,35 @@ const ManagerDashboard = () => {
     });
   };
 
+  const handleFreezeToggle = (day: string, shiftId: string, frozen: boolean) => {
+    if (!currentSchedule) return;
+
+    console.log('🧊 handleFreezeToggle:', { day, shiftId, frozen, currentScheduleId: currentSchedule.id });
+
+    const updatedSchedule = {
+      ...currentSchedule,
+      frozenAssignments: {
+        ...currentSchedule.frozenAssignments,
+        [day]: {
+          ...(currentSchedule.frozenAssignments?.[day] || {}),
+          [shiftId]: frozen
+        }
+      }
+    };
+
+    console.log('🧊 Updated schedule frozenAssignments:', updatedSchedule.frozenAssignments);
+
+    setSchedules(prev => {
+      const updated = prev.map(s =>
+        s.id === currentSchedule.id ? updatedSchedule : s
+      );
+      // Save to localStorage
+      localStorage.setItem('schedules', JSON.stringify(updated));
+      console.log('🧊 Saved to localStorage:', updated.find(s => s.id === currentSchedule.id)?.frozenAssignments);
+      return updated;
+    });
+  };
+
   const handlePublishSchedule = async () => {
     if (!currentSchedule) return;
 
@@ -614,6 +643,7 @@ const ManagerDashboard = () => {
               weekStart={currentWeekStart}
               onAssignmentChange={handleScheduleChange}
               onLockToggle={handleLockToggle}
+              onFreezeToggle={handleFreezeToggle}
               readonly={false}
               showLockControls={true}
             />

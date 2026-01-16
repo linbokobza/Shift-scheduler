@@ -13,6 +13,11 @@ export interface ISchedule extends Document {
       [shiftId: string]: boolean;
     };
   };
+  frozenAssignments?: {
+    [day: string]: {
+      [shiftId: string]: boolean;
+    };
+  };
   isPublished: boolean;
   publishedAt?: Date;
   createdBy: mongoose.Types.ObjectId;
@@ -36,6 +41,13 @@ const scheduleSchema = new Schema<ISchedule>(
       required: true,
     },
     lockedAssignments: {
+      type: Map,
+      of: {
+        type: Map,
+        of: Boolean,
+      },
+    },
+    frozenAssignments: {
       type: Map,
       of: {
         type: Map,

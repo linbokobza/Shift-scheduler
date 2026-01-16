@@ -40,6 +40,8 @@ interface ManagerDashboardDesktopProps {
   onBulkAssignmentChange: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => void;
   onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
+  onLockToggle: (day: string, shiftId: string, locked: boolean) => void;
+  onFreezeToggle: (day: string, shiftId: string, frozen: boolean) => void;
   onMenuChange: (menu: 'employees' | 'vacations' | 'holidays') => void;
   onMobileMenuClose?: () => void;
 
@@ -81,6 +83,8 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
   onBulkAssignmentChange,
   onAvailabilityChange,
   onCommentChange,
+  onLockToggle,
+  onFreezeToggle,
   onMenuChange,
   onMobileMenuClose,
   isGenerating = false,
@@ -232,7 +236,10 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                     weekStart={currentWeekStart}
                     readonly={false}
                     onBulkAssignmentChange={onBulkAssignmentChange}
+                    onLockToggle={onLockToggle}
+                    onFreezeToggle={onFreezeToggle}
                     onPendingChanges={setHasPendingChanges}
+                    showLockControls={true}
                   />
                 </>
               ) : (

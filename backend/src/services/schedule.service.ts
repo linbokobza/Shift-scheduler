@@ -155,7 +155,8 @@ export class ScheduleService {
     assignments: ShiftAssignment,
     lockedAssignments: any,
     createdBy: mongoose.Types.ObjectId,
-    optimizationScore?: number
+    optimizationScore?: number,
+    frozenAssignments?: any
   ): Promise<ISchedule> {
     // Delete any existing schedules for this week
     await Schedule.deleteMany({ weekStart });
@@ -176,12 +177,14 @@ export class ScheduleService {
     });
 
     const lockedMap = lockedAssignments ? this.convertObjectToMap(lockedAssignments) : undefined;
+    const frozenMap = frozenAssignments ? this.convertObjectToMap(frozenAssignments) : undefined;
 
     // Create new schedule
     const schedule = await Schedule.create({
       weekStart,
       assignments: assignmentsMap as any,
       lockedAssignments: lockedMap as any,
+      frozenAssignments: frozenMap as any,
       isPublished: false,
       createdBy,
       optimizationScore,
@@ -200,6 +203,9 @@ export class ScheduleService {
       assignments: this.convertMapToObject(schedule.assignments),
       lockedAssignments: schedule.lockedAssignments
         ? this.convertMapToObject(schedule.lockedAssignments)
+        : undefined,
+      frozenAssignments: schedule.frozenAssignments
+        ? this.convertMapToObject(schedule.frozenAssignments)
         : undefined,
       isPublished: schedule.isPublished,
       publishedAt: schedule.publishedAt?.toISOString(),

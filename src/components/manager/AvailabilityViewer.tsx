@@ -242,7 +242,6 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                           {hasDayWarning && (
                             <div
                               className="bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-                              title="יש משמרות ללא עובדים זמינים ביום זה"
                             >
                               !
                             </div>
@@ -266,7 +265,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                             {shift.name}
                           </div>
                           {hasShiftWarning && (
-                            <AlertCircle className="w-3 h-3 text-red-500 flex-shrink-0" title="יש ימים ללא עובדים זמינים במשמרת זו" />
+                            <AlertCircle className="w-3 h-3 text-red-500 flex-shrink-0" />
                           )}
                         </div>
                       </td>
@@ -323,7 +322,6 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                               <button
                                 onClick={(e) => handleCommentClick(dayStr, shift.id, cellData?.comment || '', e)}
                                 className="hidden lg:block absolute bottom-1 right-1 text-blue-600 hover:text-blue-800 transition-colors z-10"
-                                title={cellData?.comment}
                               >
                                 <MessageSquare className="w-3 h-3 fill-current" />
                               </button>
