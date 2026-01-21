@@ -42,10 +42,14 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('currentUser');
-      window.location.href = '/';
+      // Skip redirect for login requests - let the login form handle the error
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      if (!isLoginRequest) {
+        // Token expired or invalid - redirect to login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('currentUser');
+        window.location.href = '/';
+      }
     }
     if (error.response?.status === 403) {
       // CSRF token might be invalid
