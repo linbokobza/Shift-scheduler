@@ -347,7 +347,6 @@ function optimizeSchedule(
       return Math.random() - 0.5;
     });
 
-    let failed = false;
     for (const { day, shiftId, date } of sortedShifts) {
       // בניית רשימת מועמדים זמינים
       const candidates = employees.filter(emp => {

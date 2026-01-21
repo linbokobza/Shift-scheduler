@@ -114,7 +114,7 @@ export class ScheduleService {
   /**
    * Convert Mongoose Map to plain object
    */
-  private static convertMapToObject(map: any): any {
+  static convertMapToObject(map: any): any {
     if (!map) return {};
 
     const result: any = {};
