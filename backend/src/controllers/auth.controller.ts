@@ -5,6 +5,7 @@ import { AppError } from '../middleware';
 import { AuthRequest } from '../middleware/auth';
 import { createAuditLog } from '../middleware/auditLogger';
 import { logger } from '../utils/logger';
+import { sendPasswordResetEmail } from '../services/email.service';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { name, email, password, role } = req.body;
@@ -209,15 +210,26 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
     expiresIn: '15m',
   } as SignOptions);
 
+  const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+
   logger.info(`Password reset requested for user: ${user.email}`);
 
-  // In production, send email with reset link
-  // For now, we'll return the token in response (demo only)
+  // Send password reset email
+  const emailSent = await sendPasswordResetEmail(user.email, resetLink);
+
+  // In development mode, also return the link for testing if email is not configured
+  if (process.env.NODE_ENV === 'development' && !emailSent) {
+    res.status(200).json({
+      message: 'Reset link has been sent to email',
+      // Only for development when email is not configured
+      resetToken,
+      resetLink,
+    });
+    return;
+  }
+
   res.status(200).json({
-    message: 'Reset link has been sent to email',
-    // Remove in production - only for demo
-    resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined,
-    resetLink: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`,
+    message: 'If email exists, reset link has been sent',
   });
 };
 
