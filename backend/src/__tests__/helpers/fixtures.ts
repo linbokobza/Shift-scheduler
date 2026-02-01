@@ -12,7 +12,7 @@ export interface TestUser {
 export async function createTestUser(
   name: string,
   email: string,
-  password: string = 'password123',
+  password: string = 'Password123',
   role: 'manager' | 'employee' = 'employee'
 ): Promise<TestUser> {
   const user = await User.create({
@@ -38,14 +38,14 @@ export async function createTestUser(
 }
 
 export async function createTestManager(): Promise<TestUser> {
-  return createTestUser('Test Manager', 'manager@test.com', 'password123', 'manager');
+  return createTestUser('Test Manager', 'manager@test.com', 'Password123', 'manager');
 }
 
 export async function createTestEmployee(name?: string, email?: string): Promise<TestUser> {
   return createTestUser(
     name || 'Test Employee',
     email || `employee${Date.now()}@test.com`,
-    'password123',
+    'Password123',
     'employee'
   );
 }

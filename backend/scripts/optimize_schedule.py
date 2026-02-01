@@ -11,7 +11,7 @@ import json
 import sys
 import random
 import time
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Optional
 from ortools.sat.python import cp_model
 
 
@@ -61,6 +61,20 @@ class ShiftSchedulingModel:
         self.holiday_map = {}
         for holiday in data.get('holidays', []):
             self.holiday_map[holiday['date']] = holiday
+
+        # Build frozen assignments map
+        # frozenAssignments: { day: { shiftId: employeeId | null } }
+        # null means "frozen as empty" - no one should be assigned
+        self.frozen_assignments = data.get('frozenAssignments', {})
+        if self.frozen_assignments:
+            print(f"🔒 Frozen assignments loaded:", file=sys.stderr)
+            for day_str, shifts in self.frozen_assignments.items():
+                for shift_id, emp_id in shifts.items():
+                    if emp_id:
+                        emp_name = self.employees.get(emp_id, {}).get('name', emp_id)
+                        print(f"   Day {day_str} {shift_id}: {emp_name}", file=sys.stderr)
+                    else:
+                        print(f"   Day {day_str} {shift_id}: FROZEN EMPTY", file=sys.stderr)
 
         # Build valid shifts list (considering holidays and Friday restrictions)
         self.valid_shifts = []
@@ -156,6 +170,15 @@ class ShiftSchedulingModel:
 
         return shift_avail.get('status') == 'available'
  
+    def _is_shift_frozen(self, day: int, shift: str) -> Tuple[bool, Optional[str]]:
+        """Check if a shift is frozen. Returns (is_frozen, employee_id or None for frozen empty)"""
+        day_str = str(day)
+        if day_str in self.frozen_assignments:
+            if shift in self.frozen_assignments[day_str]:
+                emp_id = self.frozen_assignments[day_str][shift]
+                return (True, emp_id)  # emp_id can be None for "frozen empty"
+        return (False, None)
+
     def add_hard_constraints(self):
         """Add all hard constraints that must be satisfied"""
 
@@ -165,23 +188,59 @@ class ShiftSchedulingModel:
                 if not self._is_employee_available(emp_id, day, shift):
                     self.model.Add(self.x[(emp_id, day, shift)] == 0)
 
-        # CONSTRAINT: Each shift must have EXACTLY 1 employee (if anyone is available)
+        # CONSTRAINT: Handle frozen assignments and shift filling
+        frozen_count = 0
         for day, shift in self.valid_shifts:
-            available_employees = [
-                emp_id for emp_id in self.employee_ids
-                if self._is_employee_available(emp_id, day, shift)
-            ]
+            is_frozen, frozen_emp_id = self._is_shift_frozen(day, shift)
 
-            if available_employees:
-                # EXACTLY 1 employee per shift (HARD CONSTRAINT - must be filled!)
-                self.model.Add(
-                    sum(self.x[(emp_id, day, shift)] for emp_id in self.employee_ids) == 1
-                )
+            if is_frozen:
+                frozen_count += 1
+                if frozen_emp_id is None:
+                    # FROZEN EMPTY - no one should be assigned to this shift
+                    self.model.Add(
+                        sum(self.x[(emp_id, day, shift)] for emp_id in self.employee_ids) == 0
+                    )
+                    print(f"🔒 Day {day} {shift}: Frozen as EMPTY", file=sys.stderr)
+                else:
+                    # Check if this is the special "119" emergency service
+                    if '119' in str(frozen_emp_id):
+                        # 119 is not a real employee - treat as "no regular employee assigned"
+                        # No one should be assigned (119 handles this shift externally)
+                        self.model.Add(
+                            sum(self.x[(emp_id, day, shift)] for emp_id in self.employee_ids) == 0
+                        )
+                        print(f"🚨 Day {day} {shift}: Frozen to 119 (emergency service)", file=sys.stderr)
+                    elif frozen_emp_id in self.employee_ids:
+                        # FROZEN WITH EMPLOYEE - this specific employee must be assigned
+                        self.model.Add(self.x[(frozen_emp_id, day, shift)] == 1)
+                        # And no one else can be assigned
+                        for other_emp in self.employee_ids:
+                            if other_emp != frozen_emp_id:
+                                self.model.Add(self.x[(other_emp, day, shift)] == 0)
+                        emp_name = self.employees.get(frozen_emp_id, {}).get('name', frozen_emp_id)
+                        print(f"🔒 Day {day} {shift}: Frozen to {emp_name}", file=sys.stderr)
+                    else:
+                        print(f"⚠️  Day {day} {shift}: Frozen employee {frozen_emp_id} not found!", file=sys.stderr)
             else:
-                # No one available - ensure shift is not assigned
-                self.model.Add(
-                    sum(self.x[(emp_id, day, shift)] for emp_id in self.employee_ids) == 0
-                )
+                # Not frozen - normal constraint
+                available_employees = [
+                    emp_id for emp_id in self.employee_ids
+                    if self._is_employee_available(emp_id, day, shift)
+                ]
+
+                if available_employees:
+                    # EXACTLY 1 employee per shift (HARD CONSTRAINT - must be filled!)
+                    self.model.Add(
+                        sum(self.x[(emp_id, day, shift)] for emp_id in self.employee_ids) == 1
+                    )
+                else:
+                    # No one available - ensure shift is not assigned
+                    self.model.Add(
+                        sum(self.x[(emp_id, day, shift)] for emp_id in self.employee_ids) == 0
+                    )
+
+        if frozen_count > 0:
+            print(f"✓ Applied {frozen_count} frozen shift constraints", file=sys.stderr)
 
         # CONSTRAINT: Each employee works at most 1 shift per day
         for emp_id in self.employee_ids:
@@ -264,26 +323,29 @@ class ShiftSchedulingModel:
             )
 
         # 3. 8-8 violations (evening→morning or night→evening)
+        # These are SOFT CONSTRAINTS - we track them and penalize in objective function
+        # This allows variety in shift types while still trying to minimize 8-8 patterns
         for emp_id in self.employee_ids:
             violations_88 = []
 
             for day in range(self.num_days - 1):
-                # Evening today → morning tomorrow
+                # Evening today → morning tomorrow (8 hours rest - not ideal but allowed)
                 evening_today = self.x.get((emp_id, day, 'evening'))
                 morning_tomorrow = self.x.get((emp_id, day + 1, 'morning'))
 
                 if evening_today is not None and morning_tomorrow is not None:
+                    # Track for reporting and soft penalty
                     violation = self.model.NewBoolVar(f'violation_88_em_{emp_id}_d{day}')
-                    # violation = 1 iff both are true
                     self.model.AddBoolAnd([evening_today, morning_tomorrow]).OnlyEnforceIf(violation)
                     self.model.AddBoolOr([evening_today.Not(), morning_tomorrow.Not()]).OnlyEnforceIf(violation.Not())
                     violations_88.append(violation)
 
-                # Night today → evening tomorrow
+                # Night today → evening tomorrow (8 hours rest - not ideal but allowed)
                 night_today = self.x.get((emp_id, day, 'night'))
                 evening_tomorrow = self.x.get((emp_id, day + 1, 'evening'))
 
                 if night_today is not None and evening_tomorrow is not None:
+                    # Track for reporting and soft penalty
                     violation = self.model.NewBoolVar(f'violation_88_ne_{emp_id}_d{day}')
                     self.model.AddBoolAnd([night_today, evening_tomorrow]).OnlyEnforceIf(violation)
                     self.model.AddBoolOr([night_today.Not(), evening_tomorrow.Not()]).OnlyEnforceIf(violation.Not())
@@ -297,12 +359,16 @@ class ShiftSchedulingModel:
                 total_88 = self.model.NewIntVar(0, 0, f'total_88_{emp_id}')
                 self.eight_eight_violations[emp_id] = total_88
 
+        print(f"✓ Created 8-8 pattern tracking (SOFT constraint - penalized but allowed)", file=sys.stderr)
+
         # 4. 8-8-8 violations (3 consecutive shifts with 8-hour gaps)
+        # ALL patterns that create problematic sequences must be detected!
         for emp_id in self.employee_ids:
             violations_888 = []
 
             for day in range(self.num_days - 2):
-                # Pattern 1: night → evening → morning
+                # Pattern 1: night(day0) → evening(day1) → morning(day2)
+                # This is the classic 8-8-8 across 3 days
                 night_d0 = self.x.get((emp_id, day, 'night'))
                 evening_d1 = self.x.get((emp_id, day + 1, 'evening'))
                 morning_d2 = self.x.get((emp_id, day + 2, 'morning'))
@@ -313,6 +379,24 @@ class ShiftSchedulingModel:
                     self.model.AddBoolOr([night_d0.Not(), evening_d1.Not(), morning_d2.Not()]).OnlyEnforceIf(violation.Not())
                     violations_888.append(violation)
 
+            # Pattern 2: morning(day0) → evening(day0) → night(day0) - same day all 3 shifts
+            # This shouldn't happen due to "1 shift per day" constraint, but just in case
+
+            # Pattern 3: Check consecutive day patterns with evening→morning (8-hour gap)
+            for day in range(self.num_days - 1):
+                # evening(day) → morning(day+1) is an 8-8 pattern
+                # If preceded by morning(day), it's morning→evening→morning (8-8 chain)
+                morning_d0 = self.x.get((emp_id, day, 'morning'))
+                evening_d0 = self.x.get((emp_id, day, 'evening'))
+                morning_d1 = self.x.get((emp_id, day + 1, 'morning'))
+
+                if morning_d0 is not None and evening_d0 is not None and morning_d1 is not None:
+                    # This would require 2 shifts on same day, which is forbidden
+                    pass
+
+                # night(day) → evening(day+1) is an 8-8 pattern
+                # If followed by morning(day+2), it's the pattern we already check above
+
             if violations_888:
                 total_888 = self.model.NewIntVar(0, len(violations_888), f'total_888_{emp_id}')
                 self.eight_eight_eight_violations[emp_id] = total_888
@@ -321,6 +405,28 @@ class ShiftSchedulingModel:
                 total_888 = self.model.NewIntVar(0, 0, f'total_888_{emp_id}')
                 self.eight_eight_eight_violations[emp_id] = total_888
 
+        # 5. Employee variety - each employee should have variety in shift types
+        # This measures the gap between the most and least frequent shift type for EACH employee
+        # Goal: prevent scenarios where one employee gets only mornings, another only evenings, etc.
+        self.employee_variety_gaps = {}
+        for emp_id in self.employee_ids:
+            morning_count = self.employee_morning_counts[emp_id]
+            evening_count = self.employee_evening_counts[emp_id]
+            night_count = self.employee_night_counts[emp_id]
+
+            # Max and min shift type count for this employee
+            emp_max_type = self.model.NewIntVar(0, len(self.valid_shifts), f'emp_max_type_{emp_id}')
+            emp_min_type = self.model.NewIntVar(0, len(self.valid_shifts), f'emp_min_type_{emp_id}')
+
+            self.model.AddMaxEquality(emp_max_type, [morning_count, evening_count, night_count])
+            self.model.AddMinEquality(emp_min_type, [morning_count, evening_count, night_count])
+
+            # Gap = difference between most and least frequent shift type for this employee
+            variety_gap = self.model.NewIntVar(0, len(self.valid_shifts), f'variety_gap_{emp_id}')
+            self.model.Add(variety_gap == emp_max_type - emp_min_type)
+            self.employee_variety_gaps[emp_id] = variety_gap
+
+        print(f"✓ Created employee variety gap variables", file=sys.stderr)
         print(f"✓ Created auxiliary variables", file=sys.stderr)
 
     def solve_with_priorities(self) -> Tuple[bool, dict]:
@@ -380,7 +486,6 @@ class ShiftSchedulingModel:
 
         # Instead, improve search quality
         solver.parameters.cp_model_probing_level = 2  # More aggressive probing
-        solver.parameters.sat_parameters.max_sat_conflicts = 10000000  # Allow more conflicts exploration
 
         print(f"✓ Using random seed: {random_seed}", file=sys.stderr)
 
@@ -397,11 +502,29 @@ class ShiftSchedulingModel:
             violation_count_888 = self.eight_eight_eight_violations[emp_id]
             self.model.Add(violation_count_888 == 0)  # HARD LIMIT: ZERO 8-8-8 patterns allowed!
 
-        # For reporting and optimization: count total 8-8 violations
-        # This is now a SOFT constraint with very high penalty to minimize usage
+        # SOFT CONSTRAINT: Minimize 8-8 patterns (but allow them when necessary for variety)
+        # 8-8 means 2 consecutive shifts with only 8-hour gaps:
+        # - evening(day) → morning(day+1): only 8 hours rest
+        # - night(day) → evening(day+1): only 8 hours rest
+        # With few employees (e.g., 3), forcing ZERO 8-8 patterns makes it impossible
+        # to give each employee variety in shift types. So we allow 8-8 but penalize it.
+
+        # LIMIT: Maximum 1 eight-eight pattern per employee (SOFT but heavily penalized if exceeded)
+        # Count employees with more than 1 eight-eight pattern - this gets HUGE penalty
+        employees_with_excess_88 = []
+        for emp_id in self.employee_ids:
+            excess_88 = self.model.NewBoolVar(f'excess_88_{emp_id}')
+            emp_88_count = self.eight_eight_violations[emp_id]
+            # excess_88 = 1 if employee has MORE than 1 eight-eight pattern
+            self.model.Add(emp_88_count >= 2).OnlyEnforceIf(excess_88)
+            self.model.Add(emp_88_count <= 1).OnlyEnforceIf(excess_88.Not())
+            employees_with_excess_88.append(excess_88)
+        total_excess_88 = sum(employees_with_excess_88)
+
+        # For reporting: count total 8-8 violations
         total_88_count = sum(self.eight_eight_violations.values())
 
-        # Objective 4: Employees without morning shifts (if they were available for mornings)
+        # HARD CONSTRAINT: Every employee MUST have at least 1 morning shift (if available)
         # IMPORTANT: Only count Sunday-Thursday (days 0-4) mornings, NOT Friday
         employees_without_morning = []
         for emp_id in self.employee_ids:
@@ -413,12 +536,19 @@ class ShiftSchedulingModel:
             )
 
             if has_morning_availability:
-                no_morning = self.model.NewBoolVar(f'no_morning_{emp_id}')
                 morning_count = self.employee_morning_counts[emp_id]
+                # HARD CONSTRAINT: Must have at least 1 morning shift!
+                self.model.Add(morning_count >= 1)
+                emp_name = self.employees.get(emp_id, {}).get('name', emp_id)
+                print(f"   ✓ {emp_name}: MUST have at least 1 morning shift (HARD)", file=sys.stderr)
+
+                # Also track for reporting (soft penalty for optimization)
+                no_morning = self.model.NewBoolVar(f'no_morning_{emp_id}')
                 self.model.Add(morning_count == 0).OnlyEnforceIf(no_morning)
                 self.model.Add(morning_count >= 1).OnlyEnforceIf(no_morning.Not())
                 employees_without_morning.append(no_morning)
         total_no_morning = sum(employees_without_morning) if employees_without_morning else 0
+        print(f"✓ Added HARD constraint: every employee must have at least 1 morning shift", file=sys.stderr)
 
         # Objective 5: Fairness - minimize gap between max and min shifts (TOTAL count)
         max_shifts = self.model.NewIntVar(0, len(self.valid_shifts), 'max_shifts')
@@ -464,7 +594,11 @@ class ShiftSchedulingModel:
         # Total shift type fairness (sum of all three gaps)
         shift_type_fairness = morning_fairness_gap + evening_fairness_gap + night_fairness_gap
 
-        # Objective 6: Employees with less than 3 shifts (soft constraint)
+        # Objective 6: Employee variety penalty - sum of all employee variety gaps
+        # This ensures each employee gets a MIX of shift types, not just one type
+        total_variety_penalty = sum(self.employee_variety_gaps.values())
+
+        # Objective 7: Employees with less than 3 shifts (soft constraint)
         employees_under_3 = []
         for emp_id in self.employee_ids:
             under_3 = self.model.NewBoolVar(f'under_3_{emp_id}')
@@ -480,12 +614,14 @@ class ShiftSchedulingModel:
 
         # Fixed priorities (must always be strict)
         weight_unfilled = 1000000      # Priority 1: NEVER compromise on filling shifts
-        weight_88 = 150000             # Priority 2: STRONGLY avoid 8-8 patterns (higher than morning!)
+        weight_excess_88 = 500000      # Priority 1b: HUGE penalty for >1 eight-eight per employee!
+        weight_88 = 50000              # Priority 2: Avoid 8-8 patterns (but allow 1 per employee)
 
         # FAIRNESS IS NOW HEAVILY EMPHASIZED
         # This ensures equal distribution of shifts is a TOP priority
         weight_fairness = 50000        # Priority 3a: EQUAL DISTRIBUTION (FIXED - very high!)
-        weight_shift_type_fairness = 25000  # Priority 3b: VARIETY in shift types (FIXED - high!)
+        weight_shift_type_fairness = 25000  # Priority 3b: VARIETY in shift types between employees (FIXED - high!)
+        weight_variety = 80000         # Priority 3c: VARIETY per employee - each employee gets mix of shift types!
 
         # Randomized lower priorities (±15% variation creates different "flavors")
         # These weights can vary without compromising critical constraints
@@ -510,21 +646,24 @@ class ShiftSchedulingModel:
 
         # Weighted objective function (lexicographic priorities via large weight gaps)
         # Note: 8-8-8 patterns now HARD constraint (ZERO allowed!)
-        # Note: 8-8 patterns now SOFT constraint with very high penalty (minimize usage)
+        # Note: 8-8 patterns - max 1 per employee allowed, more than 1 gets HUGE penalty
         # Critical constraints have fixed weights, lower priorities are randomized
         objective = (
             total_unfilled * weight_unfilled +           # Priority 1: No unfilled shifts (FIXED)
-            total_88_count * weight_88 +                 # Priority 2: Minimize 8-8 patterns (FIXED - VERY HIGH!)
+            total_excess_88 * weight_excess_88 +         # Priority 1b: HUGE penalty for >1 eight-eight per employee!
+            total_88_count * weight_88 +                 # Priority 2: Minimize 8-8 patterns (allow up to 1 per employee)
+            total_variety_penalty * weight_variety +     # Priority 3c: Each employee gets MIX of shift types!
             fairness_gap * weight_fairness +             # Priority 3a: EQUAL total shifts (FIXED - VERY HIGH!)
-            shift_type_fairness * weight_shift_type_fairness +  # Priority 3b: VARIETY in shift types (FIXED - HIGH!)
+            shift_type_fairness * weight_shift_type_fairness +  # Priority 3b: VARIETY in shift types between employees
             total_no_morning * weight_morning +          # Priority 4: Everyone gets morning (FIXED - HIGH!)
             total_under_3 * weight_min3 +                # Priority 5: Min 3 shifts (RANDOMIZED)
             tie_breaker                                  # Priority 6: Random tie-breaking (larger weights)
         )
 
-        print(f"✓ Priority weights - 8-8:150000 Morning:75000 TotalFairness:50000 ShiftTypeFairness:25000 Min3:{weight_min3}", file=sys.stderr)
+        print(f"✓ Priority weights - Excess88:500000 8-8:50000 Variety:80000 Morning:75000 Fairness:50000 Min3:{weight_min3}", file=sys.stderr)
         print(f"✓ 8-8-8 patterns: HARD CONSTRAINT (ZERO allowed!)", file=sys.stderr)
-        print(f"✓ 8-8 patterns: SOFT constraint with VERY HIGH penalty (minimize usage)", file=sys.stderr)
+        print(f"✓ 8-8 patterns: Max 1 per employee allowed, >1 gets HUGE penalty (500,000)", file=sys.stderr)
+        print(f"✓ Morning shift: HARD CONSTRAINT (every employee must have at least 1)", file=sys.stderr)
 
         self.model.Minimize(objective)
 
@@ -536,9 +675,11 @@ class ShiftSchedulingModel:
             print(f"  Objective value: {solver.ObjectiveValue()}", file=sys.stderr)
             print(f"  Unfilled shifts: {solver.Value(total_unfilled)}", file=sys.stderr)
             print(f"  8-8-8 violations: {solver.Value(total_888)}", file=sys.stderr)
-            print(f"  8-8 patterns (max 1 per employee - HARD): {solver.Value(total_88_count)}", file=sys.stderr)
+            print(f"  8-8 patterns (max 1 per employee): {solver.Value(total_88_count)}", file=sys.stderr)
+            print(f"  Employees with >1 eight-eight: {solver.Value(total_excess_88)}", file=sys.stderr)
             print(f"  No morning: {solver.Value(total_no_morning) if employees_without_morning else 0}", file=sys.stderr)
             print(f"  Fairness gap (total shifts): {solver.Value(fairness_gap)}", file=sys.stderr)
+            print(f"  Employee variety penalty (per-employee mix): {solver.Value(total_variety_penalty)}", file=sys.stderr)
             print(f"  Shift type fairness (morning/evening/night gaps): {solver.Value(shift_type_fairness)}", file=sys.stderr)
             if morning_shift_counts:
                 print(f"    - Morning gap: {solver.Value(morning_fairness_gap)}", file=sys.stderr)
@@ -580,9 +721,11 @@ class ShiftSchedulingModel:
                 'objective_value': solver.ObjectiveValue(),
                 'unfilled_shifts': solver.Value(total_unfilled),
                 'eight_eight_eight_violations': solver.Value(total_888),
-                'eight_eight_patterns': solver.Value(total_88_count),  # Total 8-8 patterns (max 1 per employee)
+                'eight_eight_patterns': solver.Value(total_88_count),  # Total 8-8 patterns
+                'employees_with_excess_88': solver.Value(total_excess_88),  # Employees with >1 eight-eight
                 'employees_without_morning': solver.Value(total_no_morning) if employees_without_morning else 0,
                 'fairness_gap': solver.Value(fairness_gap),
+                'variety_penalty': solver.Value(total_variety_penalty),  # Per-employee shift type variety
                 'shift_type_fairness': solver.Value(shift_type_fairness),
                 'employees_under_3_shifts': solver.Value(total_under_3),
                 'solve_time_seconds': solver.WallTime(),

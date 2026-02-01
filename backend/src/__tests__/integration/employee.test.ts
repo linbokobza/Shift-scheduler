@@ -15,7 +15,7 @@ describe('Employee API', () => {
         .send({
           name: 'New Employee',
           email: 'newemployee@test.com',
-          password: 'password123',
+          password: 'Password123',
           role: 'employee',
         })
         .expect(201);
@@ -43,7 +43,7 @@ describe('Employee API', () => {
         .send({
           name: 'Duplicate',
           email: 'existing@test.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(400);
 
@@ -73,7 +73,7 @@ describe('Employee API', () => {
         .send({
           name: 'New Employee',
           email: 'another@test.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(403);
 
@@ -89,7 +89,7 @@ describe('Employee API', () => {
         .send({
           name: 'Lowercase Test',
           email: 'UPPERCASE@TEST.COM',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(201);
 
@@ -118,7 +118,7 @@ describe('Employee API', () => {
       await User.create({
         name: 'Inactive',
         email: 'inactive@test.com',
-        password: 'password123',
+        password: 'Password123',
         role: 'employee',
         isActive: false,
       });
@@ -274,7 +274,7 @@ describe('Employee API', () => {
       const inactive = await User.create({
         name: 'Inactive',
         email: 'toggleinactive@test.com',
-        password: 'password123',
+        password: 'Password123',
         role: 'employee',
         isActive: false,
       });
@@ -355,7 +355,7 @@ describe('Employee API', () => {
 
     it('should not delete manager accounts', async () => {
       const manager1 = await createTestManager();
-      const manager2 = await createTestUser('Manager 2', 'manager2@test.com', 'password123', 'manager');
+      const manager2 = await createTestUser('Manager 2', 'manager2@test.com', 'Password123', 'manager');
 
       const response = await request(app)
         .delete(`/api/employees/${manager2.id}?confirm=true`)

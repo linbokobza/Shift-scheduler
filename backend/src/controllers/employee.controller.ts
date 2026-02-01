@@ -12,6 +12,12 @@ export const createEmployee = async (req: AuthRequest, res: Response): Promise<v
     throw new AppError('Name, email, and password are required', 400);
   }
 
+  // Password validation: min 8 chars, 1 uppercase, 1 lowercase, 1 digit
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    throw new AppError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit', 400);
+  }
+
   // Check if email already exists
   const existingUser = await User.findOne({ email: email.toLowerCase() });
   if (existingUser) {

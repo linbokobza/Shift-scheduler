@@ -31,7 +31,14 @@ const userSchema = new Schema<IUser>(
     password: {
       type: String,
       required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters'],
+      minlength: [8, 'Password must be at least 8 characters'],
+      validate: {
+        validator: function(password: string) {
+          // Require at least 1 uppercase, 1 lowercase, and 1 digit
+          return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
+        },
+        message: 'Password must contain at least 1 uppercase letter, 1 lowercase letter, and 1 digit'
+      },
       select: false, // Don't include password by default in queries
     },
     role: {

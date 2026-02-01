@@ -149,8 +149,9 @@ export const updatePassword = async (req: AuthRequest, res: Response): Promise<v
     throw new AppError('Current password and new password are required', 400);
   }
 
-  if (newPassword.length < 6) {
-    throw new AppError('New password must be at least 6 characters', 400);
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    throw new AppError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit', 400);
   }
 
   if (currentPassword === newPassword) {
@@ -241,8 +242,9 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     throw new AppError('Token and new password are required', 400);
   }
 
-  if (newPassword.length < 6) {
-    throw new AppError('Password must be at least 6 characters', 400);
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    throw new AppError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit', 400);
   }
 
   try {

@@ -28,8 +28,21 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError('הסיסמה החדשה חייבת להכיל לפחות 6 תווים');
+    // Password validation: min 8 chars, 1 uppercase, 1 lowercase, 1 digit
+    if (newPassword.length < 8) {
+      setError('הסיסמה חייבת להכיל לפחות 8 תווים');
+      return;
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      setError('הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית');
+      return;
+    }
+    if (!/[a-z]/.test(newPassword)) {
+      setError('הסיסמה חייבת להכיל לפחות אות קטנה אחת באנגלית');
+      return;
+    }
+    if (!/\d/.test(newPassword)) {
+      setError('הסיסמה חייבת להכיל לפחות ספרה אחת');
       return;
     }
 
@@ -53,11 +66,24 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
   };
 
   const generateRandomPassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let password = '';
-    for (let i = 0; i < 8; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lower = 'abcdefghijklmnopqrstuvwxyz';
+    const digits = '0123456789';
+    const all = upper + lower + digits;
+
+    // Guarantee at least one of each required type
+    let password =
+      upper.charAt(Math.floor(Math.random() * upper.length)) +
+      lower.charAt(Math.floor(Math.random() * lower.length)) +
+      digits.charAt(Math.floor(Math.random() * digits.length));
+
+    // Fill remaining with random chars (total 12 chars for good strength)
+    for (let i = 0; i < 9; i++) {
+      password += all.charAt(Math.floor(Math.random() * all.length));
     }
+
+    // Shuffle the password
+    password = password.split('').sort(() => Math.random() - 0.5).join('');
     setNewPassword(password);
     setConfirmPassword(password);
   };
@@ -108,7 +134,7 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
                 required
                 disabled={isLoading}
-                minLength={6}
+                minLength={8}
               />
               <button
                 type="button"
@@ -142,7 +168,7 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
                 required
                 disabled={isLoading}
-                minLength={6}
+                minLength={8}
               />
               <button
                 type="button"

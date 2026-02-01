@@ -36,8 +36,21 @@ const ResetPasswordPage: React.FC = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError('הסיסמה חייבת להכיל לפחות 6 תווים');
+    // Password validation: min 8 chars, 1 uppercase, 1 lowercase, 1 digit
+    if (newPassword.length < 8) {
+      setError('הסיסמה חייבת להכיל לפחות 8 תווים');
+      return;
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      setError('הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית');
+      return;
+    }
+    if (!/[a-z]/.test(newPassword)) {
+      setError('הסיסמה חייבת להכיל לפחות אות קטנה אחת באנגלית');
+      return;
+    }
+    if (!/\d/.test(newPassword)) {
+      setError('הסיסמה חייבת להכיל לפחות ספרה אחת');
       return;
     }
 
@@ -103,7 +116,7 @@ const ResetPasswordPage: React.FC = () => {
                 placeholder="••••••••"
                 required
                 disabled={isLoading || !token}
-                minLength={6}
+                minLength={8}
               />
               <button
                 type="button"
@@ -130,7 +143,7 @@ const ResetPasswordPage: React.FC = () => {
                 placeholder="••••••••"
                 required
                 disabled={isLoading || !token}
-                minLength={6}
+                minLength={8}
               />
               <button
                 type="button"
