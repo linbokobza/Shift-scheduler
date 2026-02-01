@@ -34,6 +34,12 @@ interface ORToolsInput {
     type: 'no-work' | 'morning-only';
   }>;
   weekStart: string;
+  // Frozen assignments - shifts that should not be changed by the optimizer
+  frozenAssignments?: {
+    [day: string]: {
+      [shiftId: string]: string | null; // employeeId or null for "frozen empty"
+    };
+  };
 }
 
 interface ORToolsOutput {

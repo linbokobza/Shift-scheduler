@@ -23,7 +23,10 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
+  // Only show global loading spinner during initial auth check (when we have a token to validate)
+  // Don't show it during login attempts - let LoginForm handle its own loading state
+  const hasToken = localStorage.getItem('authToken');
+  if (isLoading && hasToken) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">

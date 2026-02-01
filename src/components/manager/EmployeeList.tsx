@@ -1,12 +1,12 @@
 import React from 'react';
-import { User, ToggleLeft, ToggleRight, Plus, Trash2, UserPlus, Key } from 'lucide-react';
+import { User, ToggleLeft, ToggleRight, Plus, Trash2, UserPlus, Key, Check, X } from 'lucide-react';
 import { User as UserType } from '../../types';
 import PasswordManager from '../PasswordManager';
 
 interface EmployeeListProps {
   employees: UserType[];
   onToggleActive: (employeeId: string) => void;
-  onAddEmployee: (name: string, email: string) => void;
+  onAddEmployee: (name: string, email: string, password: string) => Promise<void>;
   onRemoveEmployee: (employeeId: string) => void;
   onResetPassword: (employeeId: string) => void;
 }
@@ -23,17 +23,54 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
   const [newEmployeeEmail, setNewEmployeeEmail] = React.useState('');
   const [newEmployeePassword, setNewEmployeePassword] = React.useState('');
   const [resetPasswordEmployee, setResetPasswordEmployee] = React.useState<string | null>(null);
+  const [passwordError, setPasswordError] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const employeeUsers = employees.filter(emp => emp.role === 'employee');
 
-  const handleAddEmployee = (e: React.FormEvent) => {
+  // Password validation function
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) return 'הסיסמה חייבת להכיל לפחות 8 תווים';
+    if (!/[A-Z]/.test(password)) return 'הסיסמה חייבת להכיל לפחות אות גדולה אחת באנגלית';
+    if (!/[a-z]/.test(password)) return 'הסיסמה חייבת להכיל לפחות אות קטנה אחת באנגלית';
+    if (!/\d/.test(password)) return 'הסיסמה חייבת להכיל לפחות ספרה אחת';
+    return null;
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setNewEmployeePassword(value);
+    if (value) {
+      const error = validatePassword(value);
+      setPasswordError(error || '');
+    } else {
+      setPasswordError('');
+    }
+  };
+
+  const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate password before submission
+    const error = validatePassword(newEmployeePassword);
+    if (error) {
+      setPasswordError(error);
+      return;
+    }
+
     if (newEmployeeName.trim() && newEmployeeEmail.trim() && newEmployeePassword.trim()) {
-      onAddEmployee(newEmployeeName.trim(), newEmployeeEmail.trim(), newEmployeePassword.trim());
-      setNewEmployeeName('');
-      setNewEmployeeEmail('');
-      setNewEmployeePassword('');
-      setShowAddForm(false);
+      setIsSubmitting(true);
+      try {
+        await onAddEmployee(newEmployeeName.trim(), newEmployeeEmail.trim(), newEmployeePassword.trim());
+        setNewEmployeeName('');
+        setNewEmployeeEmail('');
+        setNewEmployeePassword('');
+        setPasswordError('');
+        setShowAddForm(false);
+      } catch {
+        // Error is handled in parent component
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -117,13 +154,39 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   type="password"
                   id="employee-password"
                   value={newEmployeePassword}
-                  onChange={(e) => setNewEmployeePassword(e.target.value)}
-                  className="w-full px-3 py-2 min-h-[44px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  className={`w-full px-3 py-2 min-h-[44px] border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    newEmployeePassword && passwordError ? 'border-red-500' : newEmployeePassword && !passwordError ? 'border-green-500' : 'border-gray-300'
+                  }`}
                   placeholder="סיסמה לעובד"
                   required
-                  minLength={6}
+                  minLength={8}
+                  disabled={isSubmitting}
                 />
-                <p className="text-xs text-gray-500 mt-1">מינימום 6 תווים</p>
+                {/* Live password requirements indicator */}
+                {newEmployeePassword && (
+                  <div className="mt-2 grid grid-cols-2 gap-1 text-xs">
+                    <div className={`flex items-center ${newEmployeePassword.length >= 8 ? 'text-green-600' : 'text-gray-400'}`}>
+                      {newEmployeePassword.length >= 8 ? <Check className="w-3 h-3 ml-1" /> : <X className="w-3 h-3 ml-1" />}
+                      לפחות 8 תווים
+                    </div>
+                    <div className={`flex items-center ${/[A-Z]/.test(newEmployeePassword) ? 'text-green-600' : 'text-gray-400'}`}>
+                      {/[A-Z]/.test(newEmployeePassword) ? <Check className="w-3 h-3 ml-1" /> : <X className="w-3 h-3 ml-1" />}
+                      אות גדולה באנגלית
+                    </div>
+                    <div className={`flex items-center ${/[a-z]/.test(newEmployeePassword) ? 'text-green-600' : 'text-gray-400'}`}>
+                      {/[a-z]/.test(newEmployeePassword) ? <Check className="w-3 h-3 ml-1" /> : <X className="w-3 h-3 ml-1" />}
+                      אות קטנה באנגלית
+                    </div>
+                    <div className={`flex items-center ${/\d/.test(newEmployeePassword) ? 'text-green-600' : 'text-gray-400'}`}>
+                      {/\d/.test(newEmployeePassword) ? <Check className="w-3 h-3 ml-1" /> : <X className="w-3 h-3 ml-1" />}
+                      ספרה אחת לפחות
+                    </div>
+                  </div>
+                )}
+                {!newEmployeePassword && (
+                  <p className="text-xs text-gray-500 mt-1">מינימום 8 תווים, אות גדולה, אות קטנה וספרה</p>
+                )}
               </div>
             </div>
             <div className="flex justify-end space-x-2">
@@ -134,16 +197,19 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   setNewEmployeeName('');
                   setNewEmployeeEmail('');
                   setNewEmployeePassword('');
+                  setPasswordError('');
                 }}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors ml-2"
+                disabled={isSubmitting}
               >
                 ביטול
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={isSubmitting || !!passwordError}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                הוסף עובד
+                {isSubmitting ? 'מוסיף...' : 'הוסף עובד'}
               </button>
             </div>
           </form>

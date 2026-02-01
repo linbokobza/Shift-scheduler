@@ -164,14 +164,19 @@ export class ScheduleService {
     // Convert assignments to Map with ObjectIds
     const assignmentsMap = this.convertObjectToMap(assignments);
 
-    // Convert employeeIds to ObjectIds
+    // Convert employeeIds to ObjectIds (but keep special codes like "119" as strings)
     assignmentsMap.forEach((dayMap, day) => {
       const newDayMap = new Map();
       dayMap.forEach((employeeId: string | null, shiftId: string) => {
-        newDayMap.set(
-          shiftId,
-          employeeId ? new mongoose.Types.ObjectId(employeeId) : null
-        );
+        if (!employeeId) {
+          newDayMap.set(shiftId, null);
+        } else if (mongoose.Types.ObjectId.isValid(employeeId) && employeeId.length === 24) {
+          // Valid ObjectId - convert it
+          newDayMap.set(shiftId, new mongoose.Types.ObjectId(employeeId));
+        } else {
+          // Special code like "119-emergency-service" - keep as string
+          newDayMap.set(shiftId, employeeId);
+        }
       });
       assignmentsMap.set(day, newDayMap);
     });

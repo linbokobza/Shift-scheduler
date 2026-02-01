@@ -674,16 +674,16 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
                 : isHolidayBlocked
                   ? ` ${holiday?.name || 'חג'}`
                   : currentAssignment
-                    ? (employeeName.split(' ')[0] || employeeName)
+                    ? employeeName
                     : '-'
               }
             </div>
 
-            {/* Freeze Badge - only visible to managers (not readonly) */}
-            {isFrozen && currentAssignment && !readonly && (
-              <div className="bg-yellow-400 text-yellow-900 text-[8px] lg:text-[9px] px-1 py-0.5 rounded font-bold mt-0.5 inline-flex items-center gap-0.5 shadow-sm">
+            {/* Freeze Badge - only visible to managers (not readonly), works for both assigned and empty shifts */}
+            {isFrozen && !readonly && (
+              <div className={`${currentAssignment ? 'bg-yellow-400 text-yellow-900' : 'bg-gray-400 text-gray-900'} text-[8px] lg:text-[9px] px-1 py-0.5 rounded font-bold mt-0.5 inline-flex items-center gap-0.5 shadow-sm`}>
                 <Snowflake className="w-2 h-2" />
-                <span>קפוא</span>
+                <span>{currentAssignment ? 'קפוא' : 'ריק קפוא'}</span>
               </div>
             )}
 

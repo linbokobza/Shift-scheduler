@@ -15,7 +15,7 @@ describe('Authorization & Access Control', () => {
         .send({
           name: 'New Employee',
           email: 'new@test.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(403);
     });
@@ -358,7 +358,7 @@ describe('Authorization & Access Control', () => {
         .send({
           name: 'Hacked',
           email: 'hacked@test.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(401);
     });
@@ -380,7 +380,7 @@ describe('Authorization & Access Control', () => {
         .send({
           name: 'Via Manipulation',
           email: 'manipulation@test.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(401);
     });
@@ -423,7 +423,7 @@ describe('Authorization & Access Control', () => {
       const inactive = await User.create({
         name: 'Inactive User',
         email: 'inactiveauth@test.com',
-        password: 'password123',
+        password: 'Password123',
         role: 'employee',
         isActive: false,
       });

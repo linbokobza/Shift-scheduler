@@ -140,24 +140,26 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
           </div>
         </div>
 
-        {/* Freeze Checkbox Section */}
-        {currentEmployeeId && (
-          <div className="px-4 pt-2 pb-3 border-b border-gray-200">
-            <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
-              <input
-                type="checkbox"
-                checked={isFrozenLocal}
-                onChange={(e) => setIsFrozenLocal(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-gray-700">להקפיא משמרת</span>
-              <Snowflake className="w-4 h-4 text-blue-500" />
-              <span className="text-xs text-gray-500 mr-auto">
-                (העובד ישאר במשמרת זו ולא ישובץ במשמרות אחרות השבוע)
-              </span>
-            </label>
-          </div>
-        )}
+        {/* Freeze Checkbox Section - works for both assigned and empty shifts */}
+        <div className="px-4 pt-2 pb-3 border-b border-gray-200">
+          <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+            <input
+              type="checkbox"
+              checked={isFrozenLocal}
+              onChange={(e) => setIsFrozenLocal(e.target.checked)}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              {currentEmployeeId ? 'להקפיא משמרת' : 'להקפיא כ"לא משובץ"'}
+            </span>
+            <Snowflake className="w-4 h-4 text-blue-500" />
+            <span className="text-xs text-gray-500 mr-auto">
+              {currentEmployeeId
+                ? '(העובד ישאר במשמרת זו ולא ישובץ במשמרות אחרות השבוע)'
+                : '(המשמרת תישאר ריקה גם אחרי אופטימיזציה)'}
+            </span>
+          </label>
+        </div>
 
         {/* Content */}
         <div className="p-4 max-h-[70vh] overflow-y-auto">

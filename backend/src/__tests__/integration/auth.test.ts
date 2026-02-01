@@ -11,7 +11,7 @@ describe('Auth API', () => {
         .send({
           name: 'New User',
           email: 'newuser@test.com',
-          password: 'password123',
+          password: 'Password123',
           role: 'employee',
         })
         .expect(201);
@@ -49,7 +49,7 @@ describe('Auth API', () => {
         .send({
           name: 'Duplicate User',
           email: 'existing@test.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(409);
 
@@ -59,13 +59,13 @@ describe('Auth API', () => {
 
   describe('POST /api/auth/login', () => {
     it('should login successfully with correct credentials', async () => {
-      await createTestUser('Login User', 'login@test.com', 'password123');
+      await createTestUser('Login User', 'login@test.com', 'Password123');
 
       const response = await request(app)
         .post('/api/auth/login')
         .send({
           email: 'login@test.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(200);
 
@@ -75,13 +75,13 @@ describe('Auth API', () => {
     });
 
     it('should reject login with incorrect password', async () => {
-      await createTestUser('Login User', 'login@test.com', 'correct-password');
+      await createTestUser('Login User', 'login@test.com', 'CorrectPass1');
 
       const response = await request(app)
         .post('/api/auth/login')
         .send({
           email: 'login@test.com',
-          password: 'wrong-password',
+          password: 'WrongPass1',
         })
         .expect(401);
 
@@ -93,7 +93,7 @@ describe('Auth API', () => {
         .post('/api/auth/login')
         .send({
           email: 'nonexistent@test.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(401);
 
@@ -104,7 +104,7 @@ describe('Auth API', () => {
       await User.create({
         name: 'Inactive User',
         email: 'inactive@test.com',
-        password: 'password123',
+        password: 'Password123',
         role: 'employee',
         isActive: false,
       });
@@ -113,7 +113,7 @@ describe('Auth API', () => {
         .post('/api/auth/login')
         .send({
           email: 'inactive@test.com',
-          password: 'password123',
+          password: 'Password123',
         })
         .expect(403);
 
@@ -154,14 +154,14 @@ describe('Auth API', () => {
 
   describe('PUT /api/auth/password', () => {
     it('should update password successfully', async () => {
-      const testUser = await createTestUser('Password User', 'password@test.com', 'old-password');
+      const testUser = await createTestUser('Password User', 'password@test.com', 'OldPass123');
 
       const response = await request(app)
         .put('/api/auth/update-password')
         .set('Authorization', `Bearer ${testUser.token}`)
         .send({
-          currentPassword: 'old-password',
-          newPassword: 'new-password123',
+          currentPassword: 'OldPass123',
+          newPassword: 'NewPass123',
         })
         .expect(200);
 
@@ -172,7 +172,7 @@ describe('Auth API', () => {
         .post('/api/auth/login')
         .send({
           email: 'password@test.com',
-          password: 'new-password123',
+          password: 'NewPass123',
         })
         .expect(200);
 
@@ -180,14 +180,14 @@ describe('Auth API', () => {
     });
 
     it('should reject password update with incorrect current password', async () => {
-      const testUser = await createTestUser('Password User 2', 'password2@test.com', 'correct-password');
+      const testUser = await createTestUser('Password User 2', 'password2@test.com', 'CorrectPass1');
 
       const response = await request(app)
         .put('/api/auth/update-password')
         .set('Authorization', `Bearer ${testUser.token}`)
         .send({
-          currentPassword: 'wrong-password',
-          newPassword: 'new-password123',
+          currentPassword: 'WrongPass1',
+          newPassword: 'NewPass123',
         })
         .expect(401);
 

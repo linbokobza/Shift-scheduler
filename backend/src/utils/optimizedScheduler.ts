@@ -144,17 +144,31 @@ export async function generateOptimizedSchedule(
   });
 
   // מיפוי משמרות מוקפאות - אלו יישארו קבועות
-  const frozenShifts = new Map<string, string>(); // key: "day_shiftId", value: employeeId
+  const frozenShifts = new Map<string, string | null>(); // key: "day_shiftId", value: employeeId or null for "frozen empty"
+  const frozenForOrTools: { [day: string]: { [shiftId: string]: string | null } } = {};
+
   if (frozenAssignments && existingSchedule?.assignments) {
     Object.keys(frozenAssignments).forEach(dayStr => {
       const dayFrozen = frozenAssignments[dayStr];
       if (dayFrozen) {
         Object.keys(dayFrozen).forEach(shiftId => {
           if (dayFrozen[shiftId]) {
-            const employeeId = existingSchedule.assignments?.[dayStr]?.[shiftId];
+            const rawEmployeeId = existingSchedule.assignments?.[dayStr]?.[shiftId];
+            // Convert ObjectId to string if needed
+            const employeeId = rawEmployeeId ? rawEmployeeId.toString() : null;
+            // Support both frozen with employee AND frozen empty (null)
+            frozenShifts.set(`${dayStr}_${shiftId}`, employeeId);
+
+            // Build frozenForOrTools structure
+            if (!frozenForOrTools[dayStr]) {
+              frozenForOrTools[dayStr] = {};
+            }
+            frozenForOrTools[dayStr][shiftId] = employeeId;
+
             if (employeeId) {
-              frozenShifts.set(`${dayStr}_${shiftId}`, employeeId);
               console.log(`[Scheduler] Frozen shift: day ${dayStr}, shift ${shiftId}, employee ${employeeId}`);
+            } else {
+              console.log(`[Scheduler] Frozen EMPTY shift: day ${dayStr}, shift ${shiftId}`);
             }
           }
         });
@@ -171,7 +185,8 @@ export async function generateOptimizedSchedule(
       availabilities,
       vacations,
       holidays,
-      weekStart
+      weekStart,
+      frozenAssignments: Object.keys(frozenForOrTools).length > 0 ? frozenForOrTools : undefined
     };
 
     const ortoolsResult = await solveWithORTools(ortoolsInput, 60000);
@@ -188,15 +203,33 @@ export async function generateOptimizedSchedule(
       // שמירת משמרות מוקפאות - דריסת התוצאה של OR-Tools
       frozenShifts.forEach((employeeId, key) => {
         const [dayStr, shiftId] = key.split('_');
-        if (!convertedAssignments[dayStr]) {
-          convertedAssignments[dayStr] = {};
+        // Only override if there's an actual employee (not frozen empty)
+        if (employeeId) {
+          if (!convertedAssignments[dayStr]) {
+            convertedAssignments[dayStr] = {};
+          }
+          convertedAssignments[dayStr][shiftId] = employeeId;
+          console.log(`[Scheduler] Preserving frozen assignment: day ${dayStr}, shift ${shiftId}, employee ${employeeId}`);
+        } else {
+          // Frozen empty - ensure it stays null (Python already handled this)
+          if (convertedAssignments[dayStr]) {
+            convertedAssignments[dayStr][shiftId] = null;
+          }
+          console.log(`[Scheduler] Preserving frozen EMPTY: day ${dayStr}, shift ${shiftId}`);
         }
-        convertedAssignments[dayStr][shiftId] = employeeId;
-        console.log(`[Scheduler] Preserving frozen assignment: day ${dayStr}, shift ${shiftId}, employee ${employeeId}`);
       });
 
       // בדיקת התנגשויות עם משמרות מוקפאות והסרת שיבוצים בעייתיים
+      // Skip frozen empty shifts and 119 - they don't have conflicts with employees
+      const EMERGENCY_119_ID = '119-emergency-service';
+
       frozenShifts.forEach((frozenEmployeeId, key) => {
+        // Skip frozen empty shifts and 119 emergency service
+        if (!frozenEmployeeId || frozenEmployeeId.includes('119')) {
+          console.log(`[Scheduler] Skipping conflict check for ${key} (empty or 119)`);
+          return;
+        }
+
         const [dayStr, frozenShiftId] = key.split('_');
         const day = parseInt(dayStr);
 

@@ -188,6 +188,20 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     setCurrentWeekStart(newWeekStart);
   };
 
+  // Helper function to translate backend errors to Hebrew
+  const translatePasswordError = (error: string): string => {
+    if (error.includes('8 characters') || error.includes('uppercase') || error.includes('lowercase') || error.includes('digit')) {
+      return 'הסיסמה חייבת להכיל לפחות 8 תווים, אות גדולה באנגלית, אות קטנה באנגלית וספרה';
+    }
+    if (error.includes('Email already in use')) {
+      return 'כתובת האימייל כבר קיימת במערכת';
+    }
+    if (error.includes('required')) {
+      return 'יש למלא את כל השדות הנדרשים';
+    }
+    return error;
+  };
+
   // Employee management handlers
   const handleAddEmployee = async (name: string, email: string, password: string) => {
     try {
@@ -200,7 +214,10 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
       alert('עובד נוסף בהצלחה!');
     } catch (error: any) {
       console.error('Error creating employee:', error);
-      alert(error.response?.data?.message || 'שגיאה בהוספת עובד');
+      const backendError = error.response?.data?.error || error.response?.data?.message || '';
+      const hebrewError = translatePasswordError(backendError) || 'שגיאה בהוספת עובד';
+      alert(hebrewError);
+      throw error; // Re-throw to let EmployeeList know the operation failed
     }
   };
 
