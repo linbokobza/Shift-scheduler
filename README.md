@@ -185,70 +185,6 @@ curl -X POST http://localhost:5001/api/auth/register \
 - `POST /holidays` - Add holiday (manager)
 
 ---
-
-## 🧮 Optimization Algorithm
-
-### Algorithm Overview
-
-The schedule generator uses a **greedy constraint satisfaction algorithm** with multiple attempts to find optimal solutions.
-
-```typescript
-for (attempt = 0; attempt < 50; attempt++) {
-  1. Shuffle unassigned shifts (for variety)
-  2. For each shift:
-     a. Find all valid candidates (pass hard constraints)
-     b. Score each candidate based on soft constraints
-     c. Select best candidate
-     d. Assign shift
-  3. Calculate overall schedule quality
-  4. Keep best schedule across all attempts
-}
-```
-
-### Hard Constraints (Must Pass)
-
-```typescript
-function isValidCandidate(employee, day, shift) {
-  return (
-    hasAvailability(employee, day, shift) &&          // Employee marked available
-    !onVacation(employee, day) &&                      // Not on vacation
-    !hasOtherShiftToday(employee, day) &&              // Max 1 shift per day
-    !hasNightToMorningConflict(employee, day, shift) && // No morning after night
-    !hasThreeConsecutiveDays(employee, day) &&         // No 3 days in a row
-    respectsHolidayRules(day, shift)                   // Holiday constraints
-  );
-}
-```
-
-### Soft Constraints (Scored)
-
-```typescript
-function scoreCandidate(employee, shift, allEmployees) {
-  let score = 0;
-
-  // Fairness: Prefer employees with fewer shifts
-  const avgShifts = calculateAverage(allEmployees);
-  const shiftGap = avgShifts - employee.totalShifts;
-  score += shiftGap * 500; // High weight
-
-  // Morning priority: Prefer employees without morning shifts yet
-  if (shift === 'morning' && employee.morningShifts === 0) {
-    score += 5000; // Very high weight
-  }
-
-  // Balance: Prefer different shift types
-  const shiftTypeVariety = calculateVariety(employee.shifts);
-  score += shiftTypeVariety * 300;
-
-  // Minimum load: Bonus for employees with < 3 shifts
-  if (employee.totalShifts < 3) {
-    score += 1000;
-  }
-
-  return score;
-}
-```
-
 ### Quality Metrics
 
 After generation, the schedule is analyzed:
@@ -296,13 +232,6 @@ This project demonstrates:
 - ✅ **Documentation**
 
 ---
-
-## 🤝 Contributing
-
-This is a portfolio project, but suggestions and feedback are welcome!
-
----
-
 ## 📝 License
 
 ISC
@@ -311,21 +240,9 @@ ISC
 
 ## 👨‍💻 Author
 
-**[Your Name]**
+**Lin Bokobza**
 
 Built as a full-stack TypeScript showcase project demonstrating modern web development practices, database design, and algorithm implementation.
 
 ---
 
-## 🔗 Resources
-
-- [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-- [Express.js](https://expressjs.com/)
-- [React](https://reactjs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [JWT](https://jwt.io/)
-- [TanStack Query](https://tanstack.com/query/)
-
----
-
-**Last Updated**: October 2025
