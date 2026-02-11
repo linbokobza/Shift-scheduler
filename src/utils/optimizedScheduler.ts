@@ -298,9 +298,6 @@ function optimizeSchedule(
     const unlockedShifts = allShifts.filter(({ day, shiftId }) => !lockedEmployeeAssignments.has(`${day}_${shiftId}`));
     const shuffledShifts = [...unlockedShifts].sort(() => Math.random() - 0.5);
 
-    // הקצאה עם היוריסטיקות חזקות
-    let failed = false;
-
     for (const { day, shiftId } of shuffledShifts) {
 
       // בניית רשימת מועמדים זמינים
@@ -359,9 +356,8 @@ function optimizeSchedule(
       });
 
       if (candidates.length === 0) {
-        console.log(`Attempt ${attempt}: No candidates for day ${day}, shift ${shiftId}`);
-        failed = true;
-        break;
+        attemptAssignments[day][shiftId] = null;
+        continue;
       }
 
       // בחירת המועמד הטוב ביותר לפי היוריסטיקות
@@ -385,10 +381,6 @@ function optimizeSchedule(
       if (shiftId === 'morning') counts.morning++;
       else if (shiftId === 'evening') counts.evening++;
       else if (shiftId === 'night') counts.night++;
-    }
-
-    if (failed) {
-      continue; // נסה ניסיון הבא
     }
 
     // חישוב ציון
@@ -468,20 +460,20 @@ function selectBestCandidate(
     const avgEvening = Array.from(employeeShiftCounts.values()).reduce((sum, c) => sum + c.evening, 0) / allEmployees.length;
     const avgNight = Array.from(employeeShiftCounts.values()).reduce((sum, c) => sum + c.night, 0) / allEmployees.length;
 
-    if (shiftId === 'morning' && counts.morning < avgMorning) score -= 300;
-    else if (shiftId === 'evening' && counts.evening < avgEvening) score -= 300;
-    else if (shiftId === 'night' && counts.night < avgNight) score -= 300;
+    if (shiftId === 'morning' && counts.morning < avgMorning) score -= 100;
+    else if (shiftId === 'evening' && counts.evening < avgEvening) score -= 100;
+    else if (shiftId === 'night' && counts.night < avgNight) score -= 100;
 
-    // קנס על משמרות 8-8
+    // קנס מופחת על משמרות 8-8 (מותר יותר 8-8 מאשר חלוקה לא הוגנת)
     if (day > 0) {
       const prevEvening = currentAssignments[day - 1]['evening'];
       const prevNight = currentAssignments[day - 1]['night'];
 
       if (shiftId === 'morning' && prevEvening === emp.id) {
-        score += 50; // הגדלתי את הקנס
+        score += 20; // קנס מופחת - 8-8 מותר
       }
       if (shiftId === 'evening' && prevNight === emp.id) {
-        score += 50; // הגדלתי את הקנס
+        score += 20; // קנס מופחת - 8-8 מותר
       }
     }
 

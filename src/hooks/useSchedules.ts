@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { scheduleAPI } from '../api';
 import { Schedule } from '../types';
+import { parseLocalDate } from '../utils/dateUtils';
 
 // Query keys
 export const scheduleKeys = {
@@ -122,7 +123,7 @@ export const usePublishedSchedulesForMonth = (year: number, month: number) => {
 
       // Filter for schedules that overlap with the calendar view (including padding days)
       return data.schedules.filter((schedule) => {
-        const weekStart = new Date(schedule.weekStart);
+        const weekStart = parseLocalDate(schedule.weekStart);
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 6);
 

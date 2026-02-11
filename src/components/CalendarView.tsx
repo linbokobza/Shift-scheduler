@@ -93,6 +93,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   };
 
   const getEmployeeColor = (employeeName: string): string => {
+    if (employeeName === '119') return 'bg-red-100 text-red-800 border-red-200';
+    if (employeeName === 'ללא שיבוץ') return 'bg-gray-100 text-gray-600 border-gray-300';
     const employee = employees.find(emp => emp.name === employeeName);
     if (!employee) return 'bg-gray-100 text-gray-800 border-gray-200';
 
@@ -323,11 +325,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 sm:w-4 sm:h-4 bg-red-100 border border-red-200 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
-              <span className="text-gray-700">מחלה</span>
+              <span className="text-gray-700">מחלה / 119</span>
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 sm:w-4 sm:h-4 bg-purple-100 border border-purple-200 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
               <span className="text-gray-700">חג</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-3 h-3 sm:w-4 sm:h-4 bg-gray-100 border border-gray-300 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
+              <span className="text-gray-700">ללא שיבוץ</span>
             </div>
             <div className="flex items-center">
               <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 border border-blue-300 rounded ml-1 sm:ml-2 flex-shrink-0"></div>

@@ -211,14 +211,30 @@ class ShiftSchedulingModel:
                         )
                         print(f"🚨 Day {day} {shift}: Frozen to 119 (emergency service)", file=sys.stderr)
                     elif frozen_emp_id in self.employee_ids:
-                        # FROZEN WITH EMPLOYEE - this specific employee must be assigned
-                        self.model.Add(self.x[(frozen_emp_id, day, shift)] == 1)
-                        # And no one else can be assigned
-                        for other_emp in self.employee_ids:
-                            if other_emp != frozen_emp_id:
-                                self.model.Add(self.x[(other_emp, day, shift)] == 0)
                         emp_name = self.employees.get(frozen_emp_id, {}).get('name', frozen_emp_id)
-                        print(f"🔒 Day {day} {shift}: Frozen to {emp_name}", file=sys.stderr)
+                        if self._is_employee_available(frozen_emp_id, day, shift):
+                            # FROZEN WITH EMPLOYEE - this specific employee must be assigned
+                            self.model.Add(self.x[(frozen_emp_id, day, shift)] == 1)
+                            # And no one else can be assigned
+                            for other_emp in self.employee_ids:
+                                if other_emp != frozen_emp_id:
+                                    self.model.Add(self.x[(other_emp, day, shift)] == 0)
+                            print(f"🔒 Day {day} {shift}: Frozen to {emp_name}", file=sys.stderr)
+                        else:
+                            # Frozen employee is no longer available - unfreeze and treat as normal shift
+                            print(f"⚠️  Day {day} {shift}: Frozen employee {emp_name} is NOT available - unfreezing", file=sys.stderr)
+                            available_employees = [
+                                e for e in self.employee_ids
+                                if self._is_employee_available(e, day, shift)
+                            ]
+                            if available_employees:
+                                self.model.Add(
+                                    sum(self.x[(e, day, shift)] for e in self.employee_ids) == 1
+                                )
+                            else:
+                                self.model.Add(
+                                    sum(self.x[(e, day, shift)] for e in self.employee_ids) == 0
+                                )
                     else:
                         print(f"⚠️  Day {day} {shift}: Frozen employee {frozen_emp_id} not found!", file=sys.stderr)
             else:
@@ -441,12 +457,13 @@ class ShiftSchedulingModel:
 
         OPTIMIZATION PRIORITIES (highest to lowest):
         1. Minimize unfilled shifts (if someone available) - Weight: 1,000,000 (FIXED)
-        2. Minimize 8-8 patterns (evening→morning, night→evening) - Weight: 150,000 (FIXED - VERY HIGH!)
-        3. Ensure at least 1 morning per employee (if available) - Weight: 75,000 (FIXED - HIGH!)
-        4a. ⭐ EQUAL TOTAL SHIFTS ⭐ - Weight: 50,000 (FIXED - HEAVILY EMPHASIZED!)
+        2. Penalize >1 eight-eight per employee - Weight: 100,000 (RELAXED - allows more 8-8)
+        3a. ⭐ EQUAL TOTAL SHIFTS ⭐ - Weight: 100,000 (FIXED - HEAVILY EMPHASIZED!)
             Minimize gap between employee with most/least TOTAL shifts
-        4b. ⭐ VARIETY IN SHIFT TYPES ⭐ - Weight: 25,000 (FIXED - HIGH!)
-            Minimize gaps in morning/evening/night distribution (no employee gets only nights!)
+        3b. Ensure at least 1 morning per employee (if available) - Weight: 75,000 (FIXED)
+        4a. Shift type balance between employees - Weight: 20,000 (RELAXED - 8-8 preferred over forced balance)
+        4b. Minimize 8-8 patterns - Weight: 15,000 (RELAXED - 8-8 is acceptable)
+        4c. Per-employee variety - Weight: 10,000 (RELAXED - not critical)
         5. Ensure minimum 3 shifts per employee (soft target) - Weight: ~100
         6. Random tie-breaking for variety (1000-3000 per assignment) - Creates different schedules
 
@@ -455,8 +472,8 @@ class ShiftSchedulingModel:
         - Maximum 60 seconds search time
         - Explores many solutions to find the absolute best (not just first good one)
 
-        Note: Fairness includes BOTH total count AND shift type variety. Each employee should
-        get a balanced mix of morning/evening/night shifts, not all of one type.
+        Note: Fairness focuses on equal TOTAL shift count. Shift type balance (morning/evening/night)
+        is a lower priority - allowing 8-8 patterns is preferred over forcing equal type distribution.
         """
 
         solver = cp_model.CpSolver() 
@@ -524,7 +541,7 @@ class ShiftSchedulingModel:
         # For reporting: count total 8-8 violations
         total_88_count = sum(self.eight_eight_violations.values())
 
-        # HARD CONSTRAINT: Every employee MUST have at least 1 morning shift (if available)
+        # SOFT CONSTRAINT: Every employee SHOULD have at least 1 morning shift (if available)
         # IMPORTANT: Only count Sunday-Thursday (days 0-4) mornings, NOT Friday
         employees_without_morning = []
         for emp_id in self.employee_ids:
@@ -537,18 +554,13 @@ class ShiftSchedulingModel:
 
             if has_morning_availability:
                 morning_count = self.employee_morning_counts[emp_id]
-                # HARD CONSTRAINT: Must have at least 1 morning shift!
-                self.model.Add(morning_count >= 1)
-                emp_name = self.employees.get(emp_id, {}).get('name', emp_id)
-                print(f"   ✓ {emp_name}: MUST have at least 1 morning shift (HARD)", file=sys.stderr)
-
-                # Also track for reporting (soft penalty for optimization)
+                # SOFT CONSTRAINT: Track employees without morning shifts for optimization penalty
                 no_morning = self.model.NewBoolVar(f'no_morning_{emp_id}')
                 self.model.Add(morning_count == 0).OnlyEnforceIf(no_morning)
                 self.model.Add(morning_count >= 1).OnlyEnforceIf(no_morning.Not())
                 employees_without_morning.append(no_morning)
         total_no_morning = sum(employees_without_morning) if employees_without_morning else 0
-        print(f"✓ Added HARD constraint: every employee must have at least 1 morning shift", file=sys.stderr)
+        print(f"✓ Morning shift: SOFT constraint (penalized in objective function)", file=sys.stderr)
 
         # Objective 5: Fairness - minimize gap between max and min shifts (TOTAL count)
         max_shifts = self.model.NewIntVar(0, len(self.valid_shifts), 'max_shifts')
@@ -614,14 +626,14 @@ class ShiftSchedulingModel:
 
         # Fixed priorities (must always be strict)
         weight_unfilled = 1000000      # Priority 1: NEVER compromise on filling shifts
-        weight_excess_88 = 500000      # Priority 1b: HUGE penalty for >1 eight-eight per employee!
-        weight_88 = 50000              # Priority 2: Avoid 8-8 patterns (but allow 1 per employee)
+        weight_excess_88 = 100000      # Priority 1b: Penalty for >1 eight-eight per employee (relaxed to allow more 8-8)
+        weight_88 = 15000              # Priority 2: Avoid 8-8 patterns (relaxed - 8-8 is acceptable)
 
-        # FAIRNESS IS NOW HEAVILY EMPHASIZED
-        # This ensures equal distribution of shifts is a TOP priority
-        weight_fairness = 50000        # Priority 3a: EQUAL DISTRIBUTION (FIXED - very high!)
-        weight_shift_type_fairness = 25000  # Priority 3b: VARIETY in shift types between employees (FIXED - high!)
-        weight_variety = 80000         # Priority 3c: VARIETY per employee - each employee gets mix of shift types!
+        # FAIRNESS: Equal TOTAL shifts is top priority, shift type balance is relaxed
+        # Allowing more 8-8 patterns is preferable to forcing equal morning/evening/night distribution
+        weight_fairness = 100000       # Priority 3a: EQUAL total shift count between employees (UNCHANGED)
+        weight_shift_type_fairness = 20000  # Priority 3b: Shift type balance (RELAXED - 8-8 is preferred over forced balance)
+        weight_variety = 10000         # Priority 3c: Per-employee mix (RELAXED - not critical)
 
         # Randomized lower priorities (±15% variation creates different "flavors")
         # These weights can vary without compromising critical constraints
@@ -660,10 +672,10 @@ class ShiftSchedulingModel:
             tie_breaker                                  # Priority 6: Random tie-breaking (larger weights)
         )
 
-        print(f"✓ Priority weights - Excess88:500000 8-8:50000 Variety:80000 Morning:75000 Fairness:50000 Min3:{weight_min3}", file=sys.stderr)
+        print(f"✓ Priority weights - Excess88:100000 Fairness:100000 Morning:75000 ShiftTypeFairness:20000 8-8:15000 Variety:10000 Min3:{weight_min3}", file=sys.stderr)
         print(f"✓ 8-8-8 patterns: HARD CONSTRAINT (ZERO allowed!)", file=sys.stderr)
         print(f"✓ 8-8 patterns: Max 1 per employee allowed, >1 gets HUGE penalty (500,000)", file=sys.stderr)
-        print(f"✓ Morning shift: HARD CONSTRAINT (every employee must have at least 1)", file=sys.stderr)
+        print(f"✓ Morning shift: SOFT constraint (penalized in objective function)", file=sys.stderr)
 
         self.model.Minimize(objective)
 

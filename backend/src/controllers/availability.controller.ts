@@ -33,32 +33,34 @@ export const getAllAvailabilities = async (req: Request, res: Response): Promise
     .sort({ weekStart: -1, employeeId: 1 });
 
   res.status(200).json({
-    availabilities: availabilities.map(av => {
-      const populatedEmployee = av.employeeId as any;
-      // Convert Map to plain object if needed
-      let shiftsObj: any;
-      if (av.shifts instanceof Map) {
-        shiftsObj = {};
-        (av.shifts as any).forEach((dayShifts: any, day: string) => {
-          if (dayShifts instanceof Map) {
-            shiftsObj[day] = Object.fromEntries(dayShifts);
-          } else {
-            shiftsObj[day] = dayShifts;
-          }
-        });
-      } else {
-        shiftsObj = av.shifts;
-      }
+    availabilities: availabilities
+      .filter(av => av.employeeId != null)
+      .map(av => {
+        const populatedEmployee = av.employeeId as any;
+        // Convert Map to plain object if needed
+        let shiftsObj: any;
+        if (av.shifts instanceof Map) {
+          shiftsObj = {};
+          (av.shifts as any).forEach((dayShifts: any, day: string) => {
+            if (dayShifts instanceof Map) {
+              shiftsObj[day] = Object.fromEntries(dayShifts);
+            } else {
+              shiftsObj[day] = dayShifts;
+            }
+          });
+        } else {
+          shiftsObj = av.shifts;
+        }
 
-      return {
-        id: av._id.toString(),
-        employeeId: populatedEmployee._id ? populatedEmployee._id.toString() : av.employeeId.toString(),
-        employeeName: populatedEmployee.name,
-        weekStart: formatDate(av.weekStart),
-        shifts: shiftsObj,
-        submittedAt: av.submittedAt.toISOString(),
-      };
-    }),
+        return {
+          id: av._id.toString(),
+          employeeId: populatedEmployee._id ? populatedEmployee._id.toString() : av.employeeId.toString(),
+          employeeName: populatedEmployee.name,
+          weekStart: formatDate(av.weekStart),
+          shifts: shiftsObj,
+          submittedAt: av.submittedAt.toISOString(),
+        };
+      }),
   });
 };
 
@@ -142,14 +144,46 @@ export const createAvailability = async (req: AuthRequest, res: Response): Promi
     throw new AppError('You can only submit your own availability', 403);
   }
 
-  // Check if availability already exists
+  // Check if availability already exists - if so, update it instead of throwing error
   const existing = await Availability.findOne({
     employeeId,
     weekStart: new Date(weekStart),
   });
 
   if (existing) {
-    throw new AppError('Availability already exists for this week. Use PUT to update.', 409);
+    // Update existing availability instead of rejecting
+    const existingShiftsMap = new Map();
+    Object.entries(shifts).forEach(([day, dayShifts]) => {
+      const dayMap = new Map();
+      Object.entries(dayShifts as any).forEach(([shiftId, shiftData]) => {
+        dayMap.set(shiftId, shiftData);
+      });
+      existingShiftsMap.set(day, dayMap);
+    });
+
+    existing.shifts = existingShiftsMap as any;
+    existing.submittedAt = new Date();
+    await existing.save();
+
+    // Audit log
+    await createAuditLog(req, {
+      action: 'UPDATE_AVAILABILITY',
+      entityType: 'availability',
+      entityId: existing._id,
+      changes: { weekStart, employeeId },
+    });
+
+    res.status(200).json({
+      message: 'Availability updated successfully',
+      availability: {
+        id: existing._id.toString(),
+        employeeId: existing.employeeId.toString(),
+        weekStart: formatDate(existing.weekStart),
+        shifts: convertShiftsMapToObject(existing.shifts),
+        submittedAt: existing.submittedAt.toISOString(),
+      },
+    });
+    return;
   }
 
   // Convert shifts object to Map
