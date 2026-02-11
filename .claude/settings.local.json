@@ -46,7 +46,8 @@
       "Bash(timeout 45 npm test)",
       "Bash(npm run test:frontend:*)",
       "Bash(timeout /t 5)",
-      "Bash(Select-String -Pattern \"error|frozen|119\" -CaseSensitive:$false)"
+      "Bash(Select-String -Pattern \"error|frozen|119\" -CaseSensitive:$false)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
