@@ -63,14 +63,21 @@ export const getShiftsForDate = (
 
   // Helper function to resolve employee ID to name
   const getEmployeeName = (employeeId: string | null): string | null => {
-    if (!employeeId) return null;
+    if (!employeeId) return 'ללא שיבוץ';
+    if (employeeId === '119-emergency-service') return '119';
     const employee = employees.find((e) => e.id === employeeId);
     return employee?.name || null;
   };
 
+  // Friday (5): only morning shift. Saturday (6): no shifts.
+  const isFriday = dayOfWeek === 5;
+  const isSaturday = dayOfWeek === 6;
+
+  if (isSaturday) return null;
+
   return {
     morning: getEmployeeName(dayAssignments['morning']),
-    evening: getEmployeeName(dayAssignments['evening']),
-    night: getEmployeeName(dayAssignments['night']),
+    evening: isFriday ? null : getEmployeeName(dayAssignments['evening']),
+    night: isFriday ? null : getEmployeeName(dayAssignments['night']),
   };
 };

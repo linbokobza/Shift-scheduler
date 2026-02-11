@@ -122,6 +122,8 @@ export class ScheduleService {
       map.forEach((value, key) => {
         if (value instanceof Map) {
           result[key] = this.convertMapToObject(value);
+        } else if (value && typeof value === 'object' && value._bsontype === 'ObjectId') {
+          result[key] = value.toString();
         } else {
           result[key] = value;
         }
@@ -148,6 +150,29 @@ export class ScheduleService {
   }
 
   /**
+   * Convert assignments object to Map with proper ObjectId types for employee IDs
+   */
+  static convertAssignmentsToMap(assignments: ShiftAssignment): Map<string, any> {
+    const assignmentsMap = this.convertObjectToMap(assignments);
+
+    assignmentsMap.forEach((dayMap, day) => {
+      const newDayMap = new Map();
+      dayMap.forEach((employeeId: string | null, shiftId: string) => {
+        if (!employeeId) {
+          newDayMap.set(shiftId, null);
+        } else if (mongoose.Types.ObjectId.isValid(employeeId) && employeeId.length === 24) {
+          newDayMap.set(shiftId, new mongoose.Types.ObjectId(employeeId));
+        } else {
+          newDayMap.set(shiftId, employeeId);
+        }
+      });
+      assignmentsMap.set(day, newDayMap);
+    });
+
+    return assignmentsMap;
+  }
+
+  /**
    * Save generated schedule to database
    */
   static async saveSchedule(
@@ -162,24 +187,7 @@ export class ScheduleService {
     await Schedule.deleteMany({ weekStart });
 
     // Convert assignments to Map with ObjectIds
-    const assignmentsMap = this.convertObjectToMap(assignments);
-
-    // Convert employeeIds to ObjectIds (but keep special codes like "119" as strings)
-    assignmentsMap.forEach((dayMap, day) => {
-      const newDayMap = new Map();
-      dayMap.forEach((employeeId: string | null, shiftId: string) => {
-        if (!employeeId) {
-          newDayMap.set(shiftId, null);
-        } else if (mongoose.Types.ObjectId.isValid(employeeId) && employeeId.length === 24) {
-          // Valid ObjectId - convert it
-          newDayMap.set(shiftId, new mongoose.Types.ObjectId(employeeId));
-        } else {
-          // Special code like "119-emergency-service" - keep as string
-          newDayMap.set(shiftId, employeeId);
-        }
-      });
-      assignmentsMap.set(day, newDayMap);
-    });
+    const assignmentsMap = this.convertAssignmentsToMap(assignments);
 
     const lockedMap = lockedAssignments ? this.convertObjectToMap(lockedAssignments) : undefined;
     const frozenMap = frozenAssignments ? this.convertObjectToMap(frozenAssignments) : undefined;
@@ -214,10 +222,10 @@ export class ScheduleService {
         : undefined,
       isPublished: schedule.isPublished,
       publishedAt: schedule.publishedAt?.toISOString(),
-      createdBy: schedule.createdBy.toString(),
+      createdBy: schedule.createdBy?.toString() ?? null,
       optimizationScore: schedule.optimizationScore,
-      createdAt: schedule.createdAt.toISOString(),
-      updatedAt: schedule.updatedAt.toISOString(),
+      createdAt: schedule.createdAt?.toISOString() ?? null,
+      updatedAt: schedule.updatedAt?.toISOString() ?? null,
     };
   }
 }

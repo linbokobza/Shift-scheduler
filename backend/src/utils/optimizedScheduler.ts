@@ -221,8 +221,6 @@ export async function generateOptimizedSchedule(
 
       // בדיקת התנגשויות עם משמרות מוקפאות והסרת שיבוצים בעייתיים
       // Skip frozen empty shifts and 119 - they don't have conflicts with employees
-      const EMERGENCY_119_ID = '119-emergency-service';
-
       frozenShifts.forEach((frozenEmployeeId, key) => {
         // Skip frozen empty shifts and 119 emergency service
         if (!frozenEmployeeId || frozenEmployeeId.includes('119')) {
@@ -318,7 +316,7 @@ function optimizeSchedule(
   allShifts: Array<{ day: number; shiftId: string; date: string }>,
   availabilityMap: Map<string, AvailabilityData>,
   vacationMap: Map<string, Set<string>>,
-  frozenShifts: Map<string, string> = new Map()
+  frozenShifts: Map<string, string | null> = new Map()
 ): { assignments: ShiftAssignment; score: number } | null {
 
   // אתחול assignments
@@ -357,6 +355,7 @@ function optimizeSchedule(
 
     // עדכון ספירות למשמרות מוקפאות
     frozenShifts.forEach((employeeId, key) => {
+      if (!employeeId) return; // frozen empty - skip
       const [, shiftId] = key.split('_');
       const counts = employeeShiftCounts.get(employeeId);
       if (counts) {
@@ -509,10 +508,12 @@ function selectBestCandidate(
     const counts = employeeShiftCounts.get(emp.id)!;
     let score = 0;
 
-    // בונוס ענק לעובדים עם פחות משמרות (הוגנות)
+    // הוגנות: בונוס למי שמתחת לממוצע, קנס למי שמעל
     const avgShifts = Array.from(employeeShiftCounts.values()).reduce((sum, c) => sum + c.total, 0) / allEmployees.length;
     if (counts.total < avgShifts) {
       score -= (avgShifts - counts.total) * 500;
+    } else if (counts.total > avgShifts) {
+      score += (counts.total - avgShifts) * 400;
     }
 
     // בונוס גדול לעובדים ללא משמרת בוקר
@@ -525,20 +526,25 @@ function selectBestCandidate(
     const avgEvening = Array.from(employeeShiftCounts.values()).reduce((sum, c) => sum + c.evening, 0) / allEmployees.length;
     const avgNight = Array.from(employeeShiftCounts.values()).reduce((sum, c) => sum + c.night, 0) / allEmployees.length;
 
-    if (shiftId === 'morning' && counts.morning < avgMorning) score -= 300;
-    else if (shiftId === 'evening' && counts.evening < avgEvening) score -= 300;
-    else if (shiftId === 'night' && counts.night < avgNight) score -= 300;
+    if (shiftId === 'morning' && counts.morning < avgMorning) score -= 200;
+    else if (shiftId === 'evening' && counts.evening < avgEvening) score -= 200;
+    else if (shiftId === 'night' && counts.night < avgNight) score -= 200;
 
-    // קנס חזק יותר על משמרות 8-8 + בונוס למי שעדיין לא היה לו
+    // קנס לעובדים מעל הממוצע בסוג משמרת זה (מופחת - 8-8 עדיף על חלוקה מאולצת)
+    if (shiftId === 'morning' && counts.morning > avgMorning) score += 150;
+    else if (shiftId === 'evening' && counts.evening > avgEvening) score += 150;
+    else if (shiftId === 'night' && counts.night > avgNight) score += 150;
+
+    // קנס מופחת על משמרות 8-8 (מותר יותר 8-8 מאשר חלוקה לא הוגנת)
     if (day > 0) {
       const prevEvening = currentAssignments[day - 1]['evening'];
       const prevNight = currentAssignments[day - 1]['night'];
 
       if (shiftId === 'morning' && prevEvening === emp.id) {
-        score += 200; // קנס חזק יותר
+        score += 80; // קנס מופחת - 8-8 מותר
       }
       if (shiftId === 'evening' && prevNight === emp.id) {
-        score += 200; // קנס חזק יותר
+        score += 80; // קנס מופחת - 8-8 מותר
       }
 
       // בונוס גדול למי שעדיין לא היה לו 8-8
@@ -607,6 +613,10 @@ function calculateOptimizationScore(
     if (avgShiftsPerEmployee >= 3 && counts.total < 3) {
       score += (3 - counts.total) * 400; // קנס קטן יותר - soft constraint
     }
+    // קנס על יותר מדי משמרות
+    if (counts.total > 5) {
+      score += (counts.total - 5) * 600;
+    }
   });
 
   // קנס על חוסר איזון בסוג משמרות
@@ -618,7 +628,7 @@ function calculateOptimizationScore(
   const eveningRange = Math.max(...eveningTotals) - Math.min(...eveningTotals);
   const nightRange = Math.max(...nightTotals) - Math.min(...nightTotals);
 
-  score += (morningRange + eveningRange + nightRange) * 80;
+  score += (morningRange + eveningRange + nightRange) * 300;
 
   // קנס על משמרות 8-8
   employees.forEach(emp => {

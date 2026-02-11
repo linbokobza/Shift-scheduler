@@ -143,7 +143,7 @@ export const updateSchedule = async (req: AuthRequest, res: Response): Promise<v
 
   // Update
   if (assignments) {
-    schedule.assignments = ScheduleService.convertObjectToMap(assignments) as any;
+    schedule.assignments = ScheduleService.convertAssignmentsToMap(assignments) as any;
   }
 
   if (lockedAssignments) {
