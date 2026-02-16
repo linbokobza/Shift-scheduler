@@ -25,24 +25,42 @@ export const useAuthProvider = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored auth token and validate
     const checkAuth = async () => {
       const token = localStorage.getItem('authToken');
-      if (token) {
+      const storedUser = localStorage.getItem('currentUser');
+
+      if (token && storedUser) {
+        // Restore user from localStorage immediately so reload doesn't flash login
         try {
-          const response = await authAPI.getMe();
-          setUser(response.user);
-        } catch (error) {
-          // Token invalid or expired - always clear and show login
+          setUser(JSON.parse(storedUser));
+        } catch {
+          // corrupted data
           localStorage.removeItem('authToken');
           localStorage.removeItem('currentUser');
           setUser(null);
+          setIsLoading(false);
+          return;
+        }
+        setIsLoading(false);
+
+        // Validate token in the background
+        try {
+          const response = await authAPI.getMe();
+          setUser(response.user);
+          localStorage.setItem('currentUser', JSON.stringify(response.user));
+        } catch (error: any) {
+          if (error.response?.status === 401) {
+            // Token truly expired/invalid - log out
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            setUser(null);
+          }
+          // For network errors, keep the user logged in with cached data
         }
       } else {
-        // No token found - ensure user is null (show login screen)
         setUser(null);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     checkAuth();

@@ -45,7 +45,8 @@ axiosInstance.interceptors.response.use(
       // Skip redirect for login and password update requests - let the form handle the error
       const isLoginRequest = error.config?.url?.includes('/auth/login');
       const isPasswordUpdate = error.config?.url?.includes('/auth/update-password');
-      if (!isLoginRequest && !isPasswordUpdate) {
+      const isAuthCheck = error.config?.url?.includes('/auth/me');
+      if (!isLoginRequest && !isPasswordUpdate && !isAuthCheck) {
         // Token expired or invalid - redirect to login
         localStorage.removeItem('authToken');
         localStorage.removeItem('currentUser');
