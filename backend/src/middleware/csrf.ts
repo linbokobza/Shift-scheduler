@@ -5,15 +5,42 @@ import { AppError } from './errorHandler';
 // Store CSRF tokens in memory (in production, use Redis or similar)
 const csrfTokens = new Map<string, { token: string; createdAt: number }>();
 
-// Cleanup expired tokens (older than 1 hour)
+// Max tokens to prevent memory exhaustion from many unique IPs
+const MAX_TOKENS = 1000;
+const TOKEN_TTL = 3600000; // 1 hour in ms
+
+// Cleanup expired tokens
 setInterval(() => {
   const now = Date.now();
   for (const [key, value] of csrfTokens.entries()) {
-    if (now - value.createdAt > 3600000) {
+    if (now - value.createdAt > TOKEN_TTL) {
       csrfTokens.delete(key);
     }
   }
 }, 600000); // Cleanup every 10 minutes
+
+/**
+ * Remove expired tokens and, if still over limit, evict the oldest entry.
+ */
+const evictIfNeeded = (): void => {
+  if (csrfTokens.size < MAX_TOKENS) return;
+
+  // First pass: remove expired tokens
+  const now = Date.now();
+  for (const [key, value] of csrfTokens.entries()) {
+    if (now - value.createdAt > TOKEN_TTL) {
+      csrfTokens.delete(key);
+    }
+  }
+
+  // If still at limit, evict oldest entry (Map iterates in insertion order)
+  if (csrfTokens.size >= MAX_TOKENS) {
+    const oldestKey = csrfTokens.keys().next().value;
+    if (oldestKey !== undefined) {
+      csrfTokens.delete(oldestKey);
+    }
+  }
+};
 
 /**
  * Generate a CSRF token for the user
@@ -27,6 +54,9 @@ export const generateCSRFToken = (req: Request, res: Response): void => {
   let csrfData = csrfTokens.get(sessionId);
 
   if (!csrfData) {
+    // Enforce size limit before adding
+    evictIfNeeded();
+
     // Generate a new token
     const token = crypto.randomBytes(32).toString('hex');
     csrfData = {
