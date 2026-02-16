@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogIn, Loader2, User, Shield } from 'lucide-react';
+import { LogIn, Loader2, User, Shield, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { USERS } from '../data/mockData';
 import ForgotPasswordModal from './ForgotPasswordModal';
@@ -7,6 +7,7 @@ import ForgotPasswordModal from './ForgotPasswordModal';
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { login, isLoading } = useAuth();
@@ -79,16 +80,25 @@ const LoginForm = () => {
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
               סיסמה
             </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="••••••••"
-              required
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="••••••••"
+                required
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
           {error && (
