@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  updatePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   isLoading: boolean;
 }
 
@@ -80,17 +80,13 @@ export const useAuthProvider = () => {
     }
   };
 
-  const updatePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
-    setIsLoading(true);
-
+  const updatePassword = async (currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
     try {
       await authAPI.updatePassword(currentPassword, newPassword);
-      setIsLoading(false);
-      return true;
-    } catch (error) {
-      console.error('Update password failed:', error);
-      setIsLoading(false);
-      return false;
+      return { success: true };
+    } catch (error: any) {
+      const message = error.response?.data?.error || 'אירעה שגיאה בשינוי הסיסמה';
+      return { success: false, error: message };
     }
   };
 
