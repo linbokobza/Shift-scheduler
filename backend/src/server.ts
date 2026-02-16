@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
+import path from 'path';
 import 'express-async-errors';
 
 import { connectDatabase } from './config/database';
@@ -91,7 +92,19 @@ app.use('/api/vacations', vacationRoutes);
 app.use('/api/holidays', holidayRoutes);
 app.use('/api/audit', auditRoutes);
 
-// 404 handler
+// Serve frontend static files in production/ngrok mode
+const frontendBuildPath = path.join(__dirname, '../../dist');
+app.use(express.static(frontendBuildPath));
+
+// All non-API routes serve the frontend (SPA fallback)
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  res.sendFile(path.join(frontendBuildPath, 'index.html'));
+});
+
+// 404 handler (only for API routes now)
 app.use(notFoundHandler);
 
 // Error handler (must be last)
