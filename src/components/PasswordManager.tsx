@@ -49,14 +49,17 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      const success = await updatePassword(currentPassword, newPassword);
-      if (success) {
+      const result = await updatePassword(currentPassword, newPassword);
+      if (result.success) {
         setSuccess('הסיסמה שונתה בהצלחה!');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
         setTimeout(() => {
           onClose();
         }, 2000);
       } else {
-        setError('הסיסמה הנוכחית שגויה');
+        setError(result.error || 'אירעה שגיאה בשינוי הסיסמה');
       }
     } catch (error) {
       setError('אירעה שגיאה בשינוי הסיסמה');
