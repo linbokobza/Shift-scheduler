@@ -49,9 +49,9 @@ fi
 
 echo -e "${GREEN}ngrok URL: ${NGROK_URL}${NC}"
 
-# --- Step 4: Build frontend with ngrok URL ---
-echo -e "${YELLOW}Building frontend with ngrok URL...${NC}"
-VITE_API_URL="${NGROK_URL}/api" npm run build
+# --- Step 4: Build frontend ---
+echo -e "${YELLOW}Building frontend...${NC}"
+npm run build
 
 # --- Step 5: Update backend CORS ---
 # Add ngrok URL to CORS_ORIGIN in backend/.env
