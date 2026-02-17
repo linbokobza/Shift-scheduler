@@ -5,6 +5,13 @@ import { authenticateJWT } from '../middleware';
 const router = Router();
 
 /**
+ * @route   GET /api/auth/quick-login-users
+ * @desc    Get active users for quick login buttons
+ * @access  Public
+ */
+router.get('/quick-login-users', authController.getQuickLoginUsers);
+
+/**
  * @route   POST /api/auth/register
  * @desc    Register a new user
  * @access  Public
