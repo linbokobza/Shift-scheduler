@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LogIn, Loader2, User, Shield, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { USERS } from '../data/mockData';
+import { axiosInstance } from '../api/axios.config';
 import ForgotPasswordModal from './ForgotPasswordModal';
 
 const LoginForm = () => {
@@ -11,6 +11,20 @@ const LoginForm = () => {
   const [error, setError] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { login, isLoading } = useAuth();
+  const [quickLoginUsers, setQuickLoginUsers] = useState<{ id: string; name: string; email: string; role: string }[]>([]);
+
+  useEffect(() => {
+    axiosInstance.get('/auth/quick-login-users')
+      .then(res => {
+        setQuickLoginUsers(res.data.users.map((u: any) => ({
+          id: u._id,
+          name: u.name,
+          email: u.email,
+          role: u.role === 'manager' ? 'מנהל' : 'עובד',
+        })));
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,26 +36,14 @@ const LoginForm = () => {
     }
   };
 
-  // Load current employees for quick login
-  const savedEmployees = localStorage.getItem('employees');
-  const currentEmployees = savedEmployees ? JSON.parse(savedEmployees) : USERS;
-
-  const quickLoginUsers = currentEmployees.map((emp: any) => ({
-    id: emp.id,
-    name: emp.name,
-    email: emp.email,
-    role: emp.role === 'manager' ? 'מנהל' : 'עובד',
-    password: 'password' // All demo users have same password
-  }));
-
-  const handleQuickLogin = async (userEmail: string, userPassword: string) => {
+  const handleQuickLogin = async (userEmail: string) => {
+    const quickPassword = 'Password1';
     setError('');
     setEmail(userEmail);
-    setPassword(userPassword);
+    setPassword(quickPassword);
 
-    // Automatically submit the form
     setTimeout(async () => {
-      const success = await login(userEmail, userPassword);
+      const success = await login(userEmail, quickPassword);
       if (!success) {
         setError('אימייל או סיסמה שגויים');
       }
@@ -139,7 +141,7 @@ const LoginForm = () => {
             {quickLoginUsers.map((user) => (
               <button
                 key={user.id}
-                onClick={() => handleQuickLogin(user.email, user.password)}
+                onClick={() => handleQuickLogin(user.email)}
                 disabled={isLoading}
                 className="w-full bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 rounded-lg p-3 transition-all border border-gray-200 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed text-right"
               >

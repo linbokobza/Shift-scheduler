@@ -7,6 +7,11 @@ import { createAuditLog } from '../middleware/auditLogger';
 import { logger } from '../utils/logger';
 import { sendPasswordResetEmail } from '../services/email.service';
 
+export const getQuickLoginUsers = async (_req: Request, res: Response): Promise<void> => {
+  const users = await User.find({ isActive: true }).select('name email role').lean();
+  res.status(200).json({ users });
+};
+
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { name, email, password, role } = req.body;
 

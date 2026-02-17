@@ -4,7 +4,7 @@ import { User, Availability, VacationDay, Schedule, Holiday, ValidationError, Sc
 import { formatDate, isSubmissionDeadlinePassed } from '../../utils/dateUtils';
 import { generateSchedule } from '../../utils/scheduleUtils';
 import { generateOptimizedSchedule } from '../../utils/optimizedScheduler';
-import { USERS, getMockAvailability, getMockVacationDays, getMockHolidays, mockSchedules } from '../../data/mockData';
+import { getMockAvailability, getMockVacationDays, getMockHolidays, mockSchedules } from '../../data/mockData';
 import WeekNavigator from '../WeekNavigator';
 import ScheduleView from '../ScheduleView';
 import SubmissionsModal from './SubmissionsModal';
@@ -31,7 +31,7 @@ const ManagerDashboard = () => {
     }
     return submissionWeek;
   });
-  const [employees, setEmployees] = useState<User[]>(USERS);
+  const [employees, setEmployees] = useState<User[]>([]);
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [vacationDays, setVacationDays] = useState<VacationDay[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -55,7 +55,7 @@ const ManagerDashboard = () => {
     const savedHolidays = localStorage.getItem('holidays');
     const savedSchedules = localStorage.getItem('schedules');
 
-    setEmployees(savedEmployees ? JSON.parse(savedEmployees) : USERS);
+    setEmployees(savedEmployees ? JSON.parse(savedEmployees) : []);
     setAvailabilities(savedAvailabilities ? JSON.parse(savedAvailabilities) : getMockAvailability());
     setVacationDays(savedVacations ? JSON.parse(savedVacations) : getMockVacationDays());
     setHolidays(savedHolidays ? JSON.parse(savedHolidays) : getMockHolidays());

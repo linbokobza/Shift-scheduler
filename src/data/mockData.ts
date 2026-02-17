@@ -1,4 +1,4 @@
-import { User, Shift, Availability, VacationDay, Schedule } from '../types';
+import { Shift, Availability, VacationDay, Schedule, Holiday } from '../types';
 
 export const SHIFTS: Shift[] = [
   {
@@ -31,44 +31,6 @@ export const DAYS = [
   'רביעי',
   'חמישי',
   'שישי'
-];
-
-export const USERS: User[] = [
-  {
-    id: '1',
-    name: 'דניאל כהן',
-    email: 'daniel@company.com',
-    role: 'employee',
-    isActive: true
-  },
-  {
-    id: '2',
-    name: 'שרה לוי',
-    email: 'sarah@company.com',
-    role: 'employee',
-    isActive: true
-  },
-  {
-    id: '3',
-    name: 'מיכאל דוד',
-    email: 'michael@company.com',
-    role: 'employee',
-    isActive: true
-  },
-  {
-    id: '4',
-    name: 'רחל אברהם',
-    email: 'rachel@company.com',
-    role: 'employee',
-    isActive: false
-  },
-  {
-    id: 'manager',
-    name: 'אלון מנהל',
-    email: 'manager@company.com',
-    role: 'manager',
-    isActive: true
-  }
 ];
 
 // Mock data for demonstration
