@@ -8,7 +8,7 @@ import { useAvailabilities, useUpdateAvailability } from '../../hooks/useAvailab
 import { useScheduleByWeek, useGenerateSchedule } from '../../hooks/useSchedules';
 import { useVacations, useCreateVacation, useDeleteVacation, useHolidays, useCreateHoliday, useDeleteHoliday } from '../../hooks/useVacations';
 import { useShiftAvailability } from '../../hooks/useShiftAvailability';
-import { formatDate, getSubmissionWeek, isSubmissionDeadlinePassed } from '../../utils/dateUtils';
+import { formatDate, getWeekStart } from '../../utils/dateUtils';
 import { ManagerDashboardMobile } from './mobile/ManagerDashboardMobile';
 import { ManagerDashboardDesktop } from './desktop/ManagerDashboardDesktop';
 import { AvailabilityStatus } from '../../types';
@@ -21,18 +21,7 @@ interface ManagerDashboardAPIProps {}
 const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   const queryClient = useQueryClient();
 
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
-    const submissionWeek = getSubmissionWeek();
-    const isDeadlinePassed = isSubmissionDeadlinePassed(submissionWeek);
-
-    // If deadline passed for current submission week, show next submission week
-    if (isDeadlinePassed) {
-      const nextWeek = new Date(submissionWeek);
-      nextWeek.setDate(nextWeek.getDate() + 7);
-      return nextWeek;
-    }
-    return submissionWeek;
-  });
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => getWeekStart(new Date()));
   const [activeMenu, setActiveMenu] = useState<MenuOption>('employees');
   const [isPublishing, setIsPublishing] = useState(false);
 

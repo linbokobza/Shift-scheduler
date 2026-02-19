@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Availability, AvailabilityStatus } from '../../types';
-import { formatDate, isSubmissionDeadlinePassed, getSubmissionWeek, getNextWeek } from '../../utils/dateUtils';
+import { formatDate, isSubmissionDeadlinePassed, getSubmissionWeek, getNextWeek, getWeekStart } from '../../utils/dateUtils';
 import { validateAvailabilitySubmission } from '../../utils/scheduleValidation';
 import { useEmployees } from '../../hooks/useEmployees';
 import { useAvailabilities, useCreateAvailability, useUpdateAvailability } from '../../hooks/useAvailabilities';
@@ -12,16 +12,7 @@ import { EmployeeDashboardDesktop } from './desktop/EmployeeDashboardDesktop';
 
 const EmployeeDashboardAPI = () => {
   const { user } = useAuth();
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
-    const submissionWeek = getSubmissionWeek();
-    const isDeadlinePassed = isSubmissionDeadlinePassed(submissionWeek);
-
-    // If deadline passed for current submission week, show next submission week
-    if (isDeadlinePassed) {
-      return getNextWeek(submissionWeek);
-    }
-    return submissionWeek;
-  });
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => getWeekStart(new Date()));
   const [availability, setAvailability] = useState<Availability['shifts']>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);

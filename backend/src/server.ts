@@ -18,6 +18,7 @@ import scheduleRoutes from './routes/schedule.routes';
 import vacationRoutes from './routes/vacation.routes';
 import holidayRoutes from './routes/holiday.routes';
 import auditRoutes from './routes/audit.routes';
+import publicRoutes from './routes/public.routes';
 
 // Load environment variables
 dotenv.config();
@@ -91,6 +92,7 @@ app.use('/api/schedules', scheduleRoutes);
 app.use('/api/vacations', vacationRoutes);
 app.use('/api/holidays', holidayRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/public', publicRoutes);
 
 // Serve frontend static files in production/ngrok mode
 const frontendBuildPath = path.join(__dirname, '../../dist');
