@@ -31,7 +31,7 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     // Load saved preference from localStorage
     const saved = localStorage.getItem(STORAGE_KEY);
-    return (saved === 'cards' || saved === 'table') ? saved : 'cards';
+    return (saved === 'cards' || saved === 'table') ? saved : 'table';
   });
   const vacationDates = vacationDays.map(v => v.date);
 
