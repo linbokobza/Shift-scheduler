@@ -54,10 +54,8 @@ const LoginForm = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-3 lg:p-4">
       <div className="bg-white rounded-2xl shadow-xl p-6 lg:p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="bg-blue-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-            <LogIn className="w-6 h-6 lg:w-8 lg:h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">מערכת ניהול משמרות</h1>
+          <img src="/logo.png" alt="ShiftLock" className="w-16 h-16 mx-auto mb-4" />
+          <img src="/name.png" alt="ShiftLock" className="h-8 mx-auto mb-2" />
           <p className="text-gray-600">היכנסו עם הפרטים שלכם</p>
         </div>
 

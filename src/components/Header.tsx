@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogOut, Calendar, User, Key } from 'lucide-react';
+import { LogOut, User, Key } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import PasswordManager from './PasswordManager';
 
@@ -15,10 +15,8 @@ const Header: React.FC<HeaderProps> = () => {
         <div className="max-w-7xl mx-auto container-mobile">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="bg-blue-600 rounded-lg p-2 ml-3">
-                <Calendar className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
-              </div>
-              <h1 className="mobile-text-lg font-bold text-gray-900 mr-3">מערכת ניהול משמרות</h1>
+              <img src="/logo.png" alt="ShiftLock" className="w-8 h-8 lg:w-10 lg:h-10 ml-2" />
+              <img src="/name.png" alt="ShiftLock" className="h-5 lg:h-6" />
             </div>
 
             {/* Desktop User Info */}
