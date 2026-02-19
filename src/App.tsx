@@ -8,6 +8,7 @@ import Header from './components/Header';
 import EmployeeDashboard from './components/employee/EmployeeDashboardAPI';
 import ManagerDashboard from './components/manager/ManagerDashboardAPI';
 import ResetPasswordPage from './components/ResetPasswordPage';
+import PublicSchedulePage from './components/PublicSchedulePage';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -39,8 +40,9 @@ const AppContent = () => {
 
   return (
     <Routes>
-      {/* Reset password page - public route */}
+      {/* Public routes */}
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/public/schedule" element={<PublicSchedulePage />} />
 
       {/* Protected routes */}
       {!user ? (
