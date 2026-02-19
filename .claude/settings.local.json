@@ -47,7 +47,8 @@
       "Bash(npm run test:frontend:*)",
       "Bash(timeout /t 5)",
       "Bash(Select-String -Pattern \"error|frozen|119\" -CaseSensitive:$false)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npx ts-node-dev:*)"
     ],
     "deny": [],
     "ask": []
