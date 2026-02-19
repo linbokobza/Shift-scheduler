@@ -67,13 +67,18 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 
   // Find user with password field
+  logger.info(`Login attempt: email="${email}", password length=${password?.length}`);
   const user = await User.findOne({ email }).select('+password');
   if (!user) {
+    logger.info(`Login failed: no user found for email="${email}"`);
     throw new AppError('Invalid credentials', 401);
   }
 
+  logger.info(`User found: ${user.email}, has password: ${!!user.password}`);
+
   // Check password
   const isPasswordValid = await user.comparePassword(password);
+  logger.info(`Password valid: ${isPasswordValid}`);
   if (!isPasswordValid) {
     throw new AppError('Invalid credentials', 401);
   }
