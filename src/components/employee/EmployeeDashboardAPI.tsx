@@ -12,7 +12,10 @@ import { EmployeeDashboardDesktop } from './desktop/EmployeeDashboardDesktop';
 
 const EmployeeDashboardAPI = () => {
   const { user } = useAuth();
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => getWeekStart(new Date()));
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    const submissionWeek = getSubmissionWeek();
+    return isSubmissionDeadlinePassed(submissionWeek) ? getNextWeek(submissionWeek) : submissionWeek;
+  });
   const [availability, setAvailability] = useState<Availability['shifts']>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
