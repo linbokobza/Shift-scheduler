@@ -42,7 +42,7 @@ const AppContent = () => {
     <Routes>
       {/* Public routes */}
       <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route path="/public/schedule" element={<PublicSchedulePage />} />
+      <Route path="/public" element={<PublicSchedulePage />} />
 
       {/* Protected routes */}
       {!user ? (

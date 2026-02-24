@@ -62,6 +62,12 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Skip ngrok browser warning for all responses
+app.use((_req, res, next) => {
+  res.setHeader('ngrok-skip-browser-warning', 'true');
+  next();
+});
+
 // HTTPS enforcement in production
 if (process.env.NODE_ENV === 'production') {
   app.use((req, _res, next) => {
