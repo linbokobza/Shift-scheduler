@@ -9,10 +9,17 @@ export const scheduleAPI = {
   },
 
   getByWeek: async (weekStart: string): Promise<{ schedule: Schedule | null }> => {
-    const response = await axiosInstance.get('/schedules/week', {
-      params: { weekStart },
-    });
-    return response.data;
+    try {
+      const response = await axiosInstance.get('/schedules/week', {
+        params: { weekStart },
+      });
+      return response.data;
+    } catch (error: ny) {
+      if (error.response?.status === 404) {
+        return { schedule: null };
+      }
+      throw error;
+    }
   },
 
   generate: async (weekStart: string): Promise<ScheduleGenerationResult & { schedule: Schedule }> => {
