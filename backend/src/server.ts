@@ -1,5 +1,6 @@
 import express, { Application } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import path from 'path';
@@ -59,8 +60,9 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(cookieParser());
 
 // Skip ngrok browser warning for all responses
 app.use((_req, res, next) => {
@@ -70,11 +72,9 @@ app.use((_req, res, next) => {
 
 // HTTPS enforcement in production
 if (process.env.NODE_ENV === 'production') {
-  app.use((req, _res, next) => {
+  app.use((req, res, next) => {
     if (req.header('x-forwarded-proto') !== 'https') {
-      logger.warn(`Non-HTTPS request detected: ${req.method} ${req.url}`);
-      // Optionally redirect to HTTPS
-      // res.redirect(`https://${req.header('host')}${req.url}`);
+      return res.redirect(301, `https://${req.header('host')}${req.url}`);
     }
     next();
   });

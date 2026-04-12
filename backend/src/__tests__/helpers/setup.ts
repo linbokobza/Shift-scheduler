@@ -1,6 +1,9 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 
+// Ensure required env vars exist in test environment
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key-for-jest-only';
+
 let mongod: MongoMemoryServer | undefined;
 
 beforeAll(async () => {

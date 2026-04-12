@@ -92,10 +92,11 @@ describe('LoginForm', () => {
       expect(screen.getByText(/התחברות מהירה/i)).toBeInTheDocument();
     });
 
-    it('should render application title', () => {
+    it('should render application logo/title image', () => {
       renderLoginForm();
 
-      expect(screen.getByText(/מערכת ניהול משמרות/i)).toBeInTheDocument();
+      // Application title is rendered as an image (name.png), not text
+      expect(screen.getAllByAltText(/ShiftLock/i).length).toBeGreaterThan(0);
     });
   });
 

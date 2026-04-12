@@ -1,8 +1,26 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import * as authController from '../controllers/auth.controller';
 import { authenticateJWT } from '../middleware';
 
 const router = Router();
+
+// Rate limiters
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { error: 'Too many login attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { error: 'Too many password reset requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 /**
  * @route   GET /api/auth/quick-login-users
@@ -23,7 +41,7 @@ router.post('/register', authController.register);
  * @desc    Login user
  * @access  Public
  */
-router.post('/login', authController.login);
+router.post('/login', loginLimiter, authController.login);
 
 /**
  * @route   GET /api/auth/me
@@ -51,7 +69,7 @@ router.put('/update-password', authenticateJWT, authController.updatePassword);
  * @desc    Request password reset
  * @access  Public
  */
-router.post('/forgot-password', authController.forgotPassword);
+router.post('/forgot-password', forgotPasswordLimiter, authController.forgotPassword);
 
 /**
  * @route   POST /api/auth/reset-password

@@ -12,7 +12,6 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onBa
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [resetToken, setResetToken] = useState('');
   const [resetLink, setResetLink] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,9 +28,6 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onBa
     try {
       const response = await authAPI.forgotPassword(email);
       setSuccess(true);
-      if (response.resetToken) {
-        setResetToken(response.resetToken);
-      }
       if (response.resetLink) {
         setResetLink(response.resetLink);
       }
@@ -54,10 +50,10 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onBa
               אם כתובת האימייל קיימת במערכת, תקבלו הודעת דוא"ל עם קישור לאיפוס הסיסמה.
             </p>
 
-            {resetToken && (
+            {resetLink && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
                 <p className="text-xs text-gray-600 mb-2">
-                  (מצב פיתוח - קישור בדוא"ל):
+                  (מצב פיתוח - קישור לאיפוס):
                 </p>
                 <a
                   href={resetLink}
@@ -67,12 +63,6 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onBa
                 >
                   {resetLink}
                 </a>
-                <p className="text-xs text-gray-500 mt-2">
-                  או העתיקו את הטוקן:
-                </p>
-                <code className="text-xs bg-gray-100 p-2 block mt-1 break-all rounded">
-                  {resetToken}
-                </code>
               </div>
             )}
 

@@ -48,7 +48,13 @@
       "Bash(timeout /t 5)",
       "Bash(Select-String -Pattern \"error|frozen|119\" -CaseSensitive:$false)",
       "Bash(grep:*)",
-      "Bash(npx ts-node-dev:*)"
+      "Bash(npx ts-node-dev:*)",
+      "Bash(npx jest --forceExit)",
+      "Bash(npx jest:*)",
+      "Bash(npx vitest:*)",
+      "Bash(git -C \"c:\\\\Users\\\\User\\\\Desktop\\\\Lin\\\\project\" log --oneline --follow src/__tests__/hooks/useAuth.test.ts)",
+      "Bash(git -C \"c:\\\\Users\\\\User\\\\Desktop\\\\Lin\\\\project\" show --stat HEAD)",
+      "Bash(git -C \"c:\\\\Users\\\\User\\\\Desktop\\\\Lin\\\\project\" status src/__tests__/hooks/useAuth.test.ts)"
     ],
     "deny": [],
     "ask": []

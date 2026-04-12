@@ -64,33 +64,25 @@ export const getAllAvailabilities = async (req: Request, res: Response): Promise
   });
 };
 
-export const getAvailabilityByEmployee = async (req: Request, res: Response): Promise<void> => {
+export const getAvailabilityByEmployee = async (req: AuthRequest, res: Response): Promise<void> => {
   const { employeeId } = req.params;
   const { weekStart } = req.query;
-
-  console.log('🔍 getAvailabilityByEmployee called:', { employeeId, weekStart });
 
   if (!weekStart) {
     throw new AppError('weekStart query parameter is required', 400);
   }
 
-  // Debug: Check what's in the database
-  const allAvailabilities = await Availability.find({ employeeId }).limit(5);
-  console.log('📋 All availabilities for this employee:', allAvailabilities.map(a => ({
-    id: a._id,
-    weekStart: formatDate(a.weekStart),
-    employeeId: a.employeeId.toString()
-  })));
+  // Authorization: employees can only view their own availability
+  if (req.user?.role === 'employee' && req.user._id.toString() !== employeeId) {
+    throw new AppError('You can only view your own availability', 403);
+  }
 
   const availability = await Availability.findOne({
     employeeId,
     weekStart: new Date(weekStart as string),
   });
 
-  console.log('📊 Found availability:', availability ? 'YES' : 'NO', availability?._id);
-
   if (!availability) {
-    console.log('❌ Returning 404 - no availability found');
     res.status(404).json({
       message: 'Availability not found for this employee and week',
       availability: null,
@@ -111,8 +103,6 @@ export const getAvailabilityByEmployee = async (req: Request, res: Response): Pr
   } else {
     shiftsObj = availability.shifts;
   }
-
-  console.log('✅ Returning availability with shifts:', Object.keys(shiftsObj));
 
   res.status(200).json({
     availability: {

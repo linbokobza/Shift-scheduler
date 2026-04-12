@@ -14,6 +14,10 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
+# Run as non-root user for security
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
 # Expose port
 EXPOSE 5001
 

@@ -24,7 +24,11 @@ export const authenticateJWT = async (
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
     // Verify token
-    const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      res.status(500).json({ error: 'Server configuration error' });
+      return;
+    }
     const decoded = jwt.verify(token, jwtSecret) as { userId: string };
 
     // Find user

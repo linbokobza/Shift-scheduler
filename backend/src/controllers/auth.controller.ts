@@ -15,9 +15,12 @@ export const getQuickLoginUsers = async (_req: Request, res: Response): Promise<
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { name, email, password, role } = req.body;
 
-  // Validation
+  // Validation - must be strings to prevent NoSQL injection
   if (!name || !email || !password) {
     throw new AppError('Name, email, and password are required', 400);
+  }
+  if (typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+    throw new AppError('Invalid input', 400);
   }
 
   // Check if user already exists
@@ -38,7 +41,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   logger.info(`New user registered: ${user.email} (${user.role})`);
 
   // Generate JWT
-  const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) throw new AppError('Server configuration error', 500);
   const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
   const token = jwt.sign({ userId: user._id }, jwtSecret, {
@@ -61,24 +65,23 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
 
-  // Validation
+  // Validation - must be strings to prevent NoSQL injection
   if (!email || !password) {
     throw new AppError('Email and password are required', 400);
   }
-
-  // Find user with password field
-  logger.info(`Login attempt: email="${email}", password length=${password?.length}`);
-  const user = await User.findOne({ email }).select('+password');
-  if (!user) {
-    logger.info(`Login failed: no user found for email="${email}"`);
+  if (typeof email !== 'string' || typeof password !== 'string') {
     throw new AppError('Invalid credentials', 401);
   }
 
-  logger.info(`User found: ${user.email}, has password: ${!!user.password}`);
+  // Find user with password field
+  const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+  if (!user) {
+    // Generic message to prevent user enumeration
+    throw new AppError('Invalid credentials', 401);
+  }
 
   // Check password
   const isPasswordValid = await user.comparePassword(password);
-  logger.info(`Password valid: ${isPasswordValid}`);
   if (!isPasswordValid) {
     throw new AppError('Invalid credentials', 401);
   }
@@ -89,7 +92,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 
   // Generate JWT
-  const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) throw new AppError('Server configuration error', 500);
   const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
   const token = jwt.sign({ userId: user._id }, jwtSecret, {
@@ -216,7 +220,8 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
   }
 
   // Generate reset token (valid for 15 minutes)
-  const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) throw new AppError('Server configuration error', 500);
   const resetToken = jwt.sign({ userId: user._id, type: 'reset' }, jwtSecret, {
     expiresIn: '15m',
   } as SignOptions);
@@ -259,7 +264,8 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 
   try {
     // Verify reset token
-    const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) throw new AppError('Server configuration error', 500);
     const decoded = jwt.verify(token, jwtSecret) as { userId: string; type: string };
 
     if (decoded.type !== 'reset') {

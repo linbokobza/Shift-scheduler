@@ -283,7 +283,7 @@ describe('Authentication Security Tests', () => {
         //
         // For now, document current behavior - any non-200 response means
         // the injection didn't authenticate, 200 means it did (vulnerability)
-        expect([200, 400, 401, 500]).toContain(response.status);
+        expect([200, 400, 401, 429, 500]).toContain(response.status);
         if (response.status === 200) {
           console.warn('⚠️ SECURITY VULNERABILITY: NoSQL injection succeeded with payload:', payload);
         }
@@ -303,7 +303,7 @@ describe('Authentication Security Tests', () => {
       // SECURITY NOTE: Current implementation returns 500 when password is an object.
       // Should validate input type and return 400. Injection doesn't succeed but
       // error handling needs improvement.
-      expect([400, 401, 500]).toContain(response.status);
+      expect([400, 401, 429, 500]).toContain(response.status);
     });
   });
 

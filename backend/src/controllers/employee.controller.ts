@@ -4,12 +4,22 @@ import { AppError, AuthRequest } from '../middleware';
 import { createAuditLog } from '../middleware/auditLogger';
 import { formatDate } from '../services/dateUtils.service';
 
+const sanitizeString = (str: string): string => str.replace(/[<>"'`]/g, '').trim();
+
 export const createEmployee = async (req: AuthRequest, res: Response): Promise<void> => {
   const { name, email, password, role } = req.body;
 
-  // Validation
+  // Validation - type check prevents NoSQL injection
   if (!name || !email || !password) {
     throw new AppError('Name, email, and password are required', 400);
+  }
+  if (typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+    throw new AppError('Invalid input', 400);
+  }
+
+  const sanitizedName = sanitizeString(name);
+  if (!sanitizedName) {
+    throw new AppError('Invalid name', 400);
   }
 
   // Password validation: min 8 chars, 1 uppercase, 1 lowercase, 1 digit
@@ -26,7 +36,7 @@ export const createEmployee = async (req: AuthRequest, res: Response): Promise<v
 
   // Create new employee
   const employee = await User.create({
-    name,
+    name: sanitizedName,
     email: email.toLowerCase(),
     password,
     role: role || 'employee',
@@ -113,8 +123,8 @@ export const updateEmployee = async (req: AuthRequest, res: Response): Promise<v
   };
 
   // Update fields
-  if (name !== undefined) employee.name = name;
-  if (email !== undefined) employee.email = email;
+  if (name !== undefined) employee.name = typeof name === 'string' ? sanitizeString(name) : employee.name;
+  if (email !== undefined) employee.email = typeof email === 'string' ? email.toLowerCase() : employee.email;
   if (role !== undefined) employee.role = role;
   if (isActive !== undefined) employee.isActive = isActive;
 
