@@ -49,11 +49,7 @@ fi
 
 echo -e "${GREEN}ngrok URL: ${NGROK_URL}${NC}"
 
-# --- Step 4: Build frontend ---
-echo -e "${YELLOW}Building frontend...${NC}"
-npm run build
-
-# --- Step 5: Update backend CORS ---
+# --- Step 4: Update backend CORS ---
 # Add ngrok URL to CORS_ORIGIN in backend/.env
 if grep -q "CORS_ORIGIN=" backend/.env; then
     sed -i "s|CORS_ORIGIN=.*|CORS_ORIGIN=http://localhost:5173,${NGROK_URL}|" backend/.env
@@ -68,7 +64,18 @@ else
     echo "FRONTEND_URL=${NGROK_URL}" >> backend/.env
 fi
 
+# Update frontend .env with ngrok API URL
+if grep -q "VITE_API_URL=" .env; then
+    sed -i "s|VITE_API_URL=.*|VITE_API_URL=${NGROK_URL}/api|" .env
+else
+    echo "VITE_API_URL=${NGROK_URL}/api" >> .env
+fi
+
 echo -e "${GREEN}Environment updated!${NC}"
+
+# --- Step 5: Build frontend ---
+echo -e "${YELLOW}Building frontend...${NC}"
+npm run build
 
 # --- Step 6: Start backend ---
 echo -e "${GREEN}Starting backend server...${NC}"
