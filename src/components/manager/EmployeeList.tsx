@@ -6,7 +6,7 @@ import PasswordManager from '../PasswordManager';
 interface EmployeeListProps {
   employees: UserType[];
   onToggleActive: (employeeId: string) => void;
-  onAddEmployee: (name: string, email: string, password: string) => Promise<void>;
+  onAddEmployee: (name: string, email: string, password: string, role: 'employee' | 'manager') => Promise<void>;
   onRemoveEmployee: (employeeId: string) => void;
   onResetPassword: (employeeId: string) => void;
 }
@@ -22,11 +22,13 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
   const [newEmployeeName, setNewEmployeeName] = React.useState('');
   const [newEmployeeEmail, setNewEmployeeEmail] = React.useState('');
   const [newEmployeePassword, setNewEmployeePassword] = React.useState('');
+  const [newEmployeeRole, setNewEmployeeRole] = React.useState<'employee' | 'manager'>('employee');
   const [resetPasswordEmployee, setResetPasswordEmployee] = React.useState<string | null>(null);
   const [passwordError, setPasswordError] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const employeeUsers = employees.filter(emp => emp.role === 'employee');
+  const managerUsers = employees.filter(emp => emp.role === 'manager');
 
   // Password validation function
   const validatePassword = (password: string): string | null => {
@@ -60,10 +62,11 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
     if (newEmployeeName.trim() && newEmployeeEmail.trim() && newEmployeePassword.trim()) {
       setIsSubmitting(true);
       try {
-        await onAddEmployee(newEmployeeName.trim(), newEmployeeEmail.trim(), newEmployeePassword.trim());
+        await onAddEmployee(newEmployeeName.trim(), newEmployeeEmail.trim(), newEmployeePassword.trim(), newEmployeeRole);
         setNewEmployeeName('');
         setNewEmployeeEmail('');
         setNewEmployeePassword('');
+        setNewEmployeeRole('employee');
         setPasswordError('');
         setShowAddForm(false);
       } catch {
@@ -147,6 +150,33 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                 />
               </div>
               <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">תפקיד</label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewEmployeeRole('employee')}
+                    className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
+                      newEmployeeRole === 'employee'
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                    }`}
+                  >
+                    עובד
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewEmployeeRole('manager')}
+                    className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
+                      newEmployeeRole === 'manager'
+                        ? 'bg-purple-600 text-white border-purple-600'
+                        : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400'
+                    }`}
+                  >
+                    מנהל
+                  </button>
+                </div>
+              </div>
+              <div className="md:col-span-2">
                 <label htmlFor="employee-password" className="block text-sm font-medium text-gray-700 mb-1">
                   סיסמה
                 </label>
@@ -197,6 +227,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   setNewEmployeeName('');
                   setNewEmployeeEmail('');
                   setNewEmployeePassword('');
+                  setNewEmployeeRole('employee');
                   setPasswordError('');
                 }}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors ml-2"
@@ -216,12 +247,61 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
         )}
 
         <p className="text-xs lg:text-sm text-blue-700 mt-1">
-          {employeeUsers.length} עובדים במערכת
+          {employeeUsers.length} עובדים ו-{managerUsers.length} מנהלים במערכת
         </p>
       </div>
 
       <div className="p-3 lg:p-4">
+        {managerUsers.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-sm font-semibold text-purple-800 mb-2 flex items-center">
+              <User className="w-4 h-4 ml-1 text-purple-600" />
+              מנהלים
+            </h4>
+            <div className="space-y-2 lg:space-y-3">
+              {managerUsers.map((manager) => (
+                <div
+                  key={manager.id}
+                  className="flex items-center justify-between p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors group border border-purple-100"
+                >
+                  <div className="flex items-center min-w-0 flex-1">
+                    <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-sm flex-shrink-0">
+                      {manager.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div className="mr-2 lg:mr-3 min-w-0">
+                      <div className="font-medium text-gray-900 text-sm lg:text-base truncate">{manager.name}</div>
+                      <div className="text-xs lg:text-sm text-gray-500 truncate">{manager.email}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1 lg:space-x-2 flex-shrink-0">
+                    <span className="text-xs text-purple-600 font-medium bg-purple-100 px-2 py-0.5 rounded-full">מנהל</span>
+                    <button
+                      onClick={() => handleResetPassword(manager.id, manager.name)}
+                      className="text-blue-500 hover:text-blue-700 p-1 rounded transition-colors lg:opacity-0 lg:group-hover:opacity-100 ml-1 lg:ml-2"
+                    >
+                      <Key className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleRemoveEmployee(manager.id, manager.name)}
+                      className="text-red-500 hover:text-red-700 p-1 rounded transition-colors lg:opacity-0 lg:group-hover:opacity-100 ml-1 lg:ml-2"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-gray-200 mt-4 mb-2" />
+          </div>
+        )}
+
         <div className="space-y-2 lg:space-y-3">
+          {employeeUsers.length > 0 && (
+            <h4 className="text-sm font-semibold text-blue-800 mb-2 flex items-center">
+              <User className="w-4 h-4 ml-1 text-blue-600" />
+              עובדים
+            </h4>
+          )}
           {employeeUsers.map((employee) => (
             <div
               key={employee.id}
@@ -275,8 +355,8 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
               </div>
             </div>
           ))}
-          
-          {employeeUsers.length === 0 && (
+
+          {employeeUsers.length === 0 && managerUsers.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <User className="w-12 h-12 mx-auto mb-2 text-gray-300" />
               <p>אין עובדים במערכת</p>
