@@ -15,6 +15,7 @@ interface EmployeeDashboardDesktopProps {
   vacations: VacationDay[];
   holidays: Holiday[];
   currentWeekStart: Date;
+  scheduleWeekStart: Date;
   validationErrors: string[];
   hasChanges: boolean;
   isDeadlinePassed: boolean;
@@ -26,6 +27,7 @@ interface EmployeeDashboardDesktopProps {
   onCommentChange: (day: string, shiftId: string, comment: string) => void;
   onSave: () => Promise<void>;
   onWeekChange: (weekStart: Date) => void;
+  onScheduleWeekChange: (weekStart: Date) => void;
   goToSubmissionWeek: () => void;
   isCurrentWeekSubmissionWeek: boolean;
   getDeadlineText: () => string;
@@ -38,6 +40,7 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
   vacations,
   holidays,
   currentWeekStart,
+  scheduleWeekStart,
   validationErrors,
   hasChanges,
   isDeadlinePassed,
@@ -47,6 +50,7 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
   onCommentChange,
   onSave,
   onWeekChange,
+  onScheduleWeekChange,
   goToSubmissionWeek,
   isCurrentWeekSubmissionWeek,
   getDeadlineText
@@ -90,13 +94,21 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
       </div>
 
       {/* Week Navigator */}
-      <WeekNavigator
-        currentWeekStart={currentWeekStart}
-        onWeekChange={onWeekChange}
-        showSubmissionWeekButton={true}
-        onGoToSubmissionWeek={goToSubmissionWeek}
-        isCurrentWeekSubmissionWeek={isCurrentWeekSubmissionWeek}
-      />
+      {showSchedule ? (
+        <WeekNavigator
+          currentWeekStart={scheduleWeekStart}
+          onWeekChange={onScheduleWeekChange}
+          showSubmissionWeekButton={false}
+        />
+      ) : (
+        <WeekNavigator
+          currentWeekStart={currentWeekStart}
+          onWeekChange={onWeekChange}
+          showSubmissionWeekButton={true}
+          onGoToSubmissionWeek={goToSubmissionWeek}
+          isCurrentWeekSubmissionWeek={isCurrentWeekSubmissionWeek}
+        />
+      )}
 
       {/* Tab Toggle */}
       <div className="bg-white rounded-lg shadow-sm border mb-6">
@@ -122,13 +134,9 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
-                disabled={!currentSchedule || !isSchedulePublished}
               >
                 <Eye className="w-4 h-4 ml-1" />
                 צפייה בסידור
-                {(!currentSchedule || !isSchedulePublished) && (
-                  <span className="text-xs mr-1">(לא זמין)</span>
-                )}
               </button>
             </div>
 
@@ -208,15 +216,22 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
 
       {/* Main Content */}
       {showSchedule ? (
-        <ScheduleView
-          schedule={currentSchedule}
-          employees={employees}
-          availabilities={[]}
-          vacationDays={vacations}
-          holidays={holidays}
-          weekStart={currentWeekStart}
-          readonly={true}
-        />
+        currentSchedule && isSchedulePublished ? (
+          <ScheduleView
+            schedule={currentSchedule}
+            employees={employees}
+            availabilities={[]}
+            vacationDays={vacations}
+            holidays={holidays}
+            weekStart={scheduleWeekStart}
+            readonly={true}
+          />
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
+            <p className="text-gray-600 text-lg mb-2">אין סידור זמין לשבוע זה</p>
+            <p className="text-gray-400 text-sm">הסידור טרם פורסם</p>
+          </div>
+        )
       ) : (
         <div className="grid grid-cols-3 gap-6">
           {/* Left: Availability Grid (2/3) */}

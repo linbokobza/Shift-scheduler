@@ -16,11 +16,13 @@ const EmployeeDashboardAPI = () => {
     const submissionWeek = getSubmissionWeek();
     return isSubmissionDeadlinePassed(submissionWeek) ? getNextWeek(submissionWeek) : submissionWeek;
   });
+  const [scheduleWeekStart, setScheduleWeekStart] = useState(() => getWeekStart());
   const [availability, setAvailability] = useState<Availability['shifts']>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const weekStartString = formatDate(currentWeekStart);
+  const scheduleWeekStartString = formatDate(scheduleWeekStart);
   const isDeadlinePassed = isSubmissionDeadlinePassed(currentWeekStart);
 
   // Fetch data with React Query
@@ -44,7 +46,7 @@ const EmployeeDashboardAPI = () => {
 
   console.log('📊 Found availability:', existingAvailability ? 'YES' : 'NO');
 
-  const { data: currentSchedule, isLoading: scheduleLoading } = useScheduleByWeek(weekStartString);
+  const { data: currentSchedule, isLoading: scheduleLoading } = useScheduleByWeek(scheduleWeekStartString);
   const { data: vacations = [] } = useVacations({ employeeId: user?.id });
   const { data: holidays = [] } = useHolidays();
 
@@ -193,6 +195,7 @@ const EmployeeDashboardAPI = () => {
     vacations,
     holidays,
     currentWeekStart,
+    scheduleWeekStart,
     validationErrors,
     hasChanges,
     isDeadlinePassed,
@@ -202,6 +205,7 @@ const EmployeeDashboardAPI = () => {
     onCommentChange: handleCommentChange,
     onSave: handleSave,
     onWeekChange: setCurrentWeekStart,
+    onScheduleWeekChange: setScheduleWeekStart,
     goToSubmissionWeek,
     isCurrentWeekSubmissionWeek: isCurrentWeekSubmissionWeek(),
     getDeadlineText

@@ -19,6 +19,7 @@ interface EmployeeDashboardMobileProps {
   vacations: VacationDay[];
   holidays: Holiday[];
   currentWeekStart: Date;
+  scheduleWeekStart: Date;
   validationErrors: string[];
   hasChanges: boolean;
   isDeadlinePassed: boolean;
@@ -30,6 +31,7 @@ interface EmployeeDashboardMobileProps {
   onCommentChange: (day: string, shiftId: string, comment: string) => void;
   onSave: () => Promise<void>;
   onWeekChange: (weekStart: Date) => void;
+  onScheduleWeekChange: (weekStart: Date) => void;
   goToSubmissionWeek: () => void;
   isCurrentWeekSubmissionWeek: boolean;
   getDeadlineText: () => string;
@@ -42,6 +44,7 @@ export const EmployeeDashboardMobile: React.FC<EmployeeDashboardMobileProps> = (
   vacations,
   holidays,
   currentWeekStart,
+  scheduleWeekStart,
   validationErrors,
   hasChanges,
   isDeadlinePassed,
@@ -51,6 +54,7 @@ export const EmployeeDashboardMobile: React.FC<EmployeeDashboardMobileProps> = (
   onCommentChange,
   onSave,
   onWeekChange,
+  onScheduleWeekChange,
   goToSubmissionWeek,
   isCurrentWeekSubmissionWeek,
   getDeadlineText
@@ -96,13 +100,21 @@ export const EmployeeDashboardMobile: React.FC<EmployeeDashboardMobileProps> = (
           </div>
 
           {/* Week Navigator */}
-          <WeekNavigator
-            currentWeekStart={currentWeekStart}
-            onWeekChange={onWeekChange}
-            showSubmissionWeekButton={true}
-            onGoToSubmissionWeek={goToSubmissionWeek}
-            isCurrentWeekSubmissionWeek={isCurrentWeekSubmissionWeek}
-          />
+          {activeTab === 'schedule' ? (
+            <WeekNavigator
+              currentWeekStart={scheduleWeekStart}
+              onWeekChange={onScheduleWeekChange}
+              showSubmissionWeekButton={false}
+            />
+          ) : (
+            <WeekNavigator
+              currentWeekStart={currentWeekStart}
+              onWeekChange={onWeekChange}
+              showSubmissionWeekButton={true}
+              onGoToSubmissionWeek={goToSubmissionWeek}
+              isCurrentWeekSubmissionWeek={isCurrentWeekSubmissionWeek}
+            />
+          )}
 
           {/* Deadline Status */}
           {activeTab === 'availability' && (
@@ -159,7 +171,7 @@ export const EmployeeDashboardMobile: React.FC<EmployeeDashboardMobileProps> = (
             <ScheduleTabMobile
               schedule={currentSchedule}
               employees={employees}
-              weekStart={currentWeekStart}
+              weekStart={scheduleWeekStart}
               availabilities={[]}
               holidays={holidays}
             />
