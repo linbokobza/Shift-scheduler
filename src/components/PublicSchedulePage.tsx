@@ -72,31 +72,53 @@ const PublicSchedulePage: React.FC = () => {
     try {
       const { toPng } = await import('html-to-image');
 
+      const el = scheduleRef.current;
+
       // Temporarily expand overflow-hidden/auto containers so nothing is cut off
-      const overflowEls = scheduleRef.current.querySelectorAll<HTMLElement>('[class*="overflow"]');
+      const overflowEls = el.querySelectorAll<HTMLElement>('[class*="overflow"]');
       const origStyles: { el: HTMLElement; overflow: string; maxWidth: string; minWidth: string }[] = [];
-      overflowEls.forEach(el => {
+      overflowEls.forEach(node => {
         origStyles.push({
-          el,
-          overflow: el.style.overflow,
-          maxWidth: el.style.maxWidth,
-          minWidth: el.style.minWidth,
+          el: node,
+          overflow: node.style.overflow,
+          maxWidth: node.style.maxWidth,
+          minWidth: node.style.minWidth,
         });
-        el.style.overflow = 'visible';
-        el.style.maxWidth = 'none';
-        el.style.minWidth = 'fit-content';
+        node.style.overflow = 'visible';
+        node.style.maxWidth = 'none';
+        node.style.minWidth = 'fit-content';
       });
 
-      const dataUrl = await toPng(scheduleRef.current, {
+      // Force the capture element to show its full scrollable height
+      const origElHeight = el.style.height;
+      const origElOverflow = el.style.overflow;
+      el.style.height = el.scrollHeight + 'px';
+      el.style.overflow = 'visible';
+
+      // Also expand body/html so html-to-image doesn't clip to viewport
+      const body = document.body;
+      const html = document.documentElement;
+      const origBodyOverflow = body.style.overflow;
+      const origHtmlOverflow = html.style.overflow;
+      body.style.overflow = 'visible';
+      html.style.overflow = 'visible';
+
+      const dataUrl = await toPng(el, {
         pixelRatio: 3,
         backgroundColor: '#ffffff',
+        width: el.scrollWidth,
+        height: el.scrollHeight,
       });
 
       // Restore original styles
-      origStyles.forEach(({ el, overflow, maxWidth, minWidth }) => {
-        el.style.overflow = overflow;
-        el.style.maxWidth = maxWidth;
-        el.style.minWidth = minWidth;
+      el.style.height = origElHeight;
+      el.style.overflow = origElOverflow;
+      body.style.overflow = origBodyOverflow;
+      html.style.overflow = origHtmlOverflow;
+      origStyles.forEach(({ el: node, overflow, maxWidth, minWidth }) => {
+        node.style.overflow = overflow;
+        node.style.maxWidth = maxWidth;
+        node.style.minWidth = minWidth;
       });
 
       const link = document.createElement('a');
