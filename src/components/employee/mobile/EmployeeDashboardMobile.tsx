@@ -92,9 +92,9 @@ export const EmployeeDashboardMobile: React.FC<EmployeeDashboardMobileProps> = (
             <h2 className="text-xl font-bold text-gray-900">הגשת זמינות</h2>
             <button
               onClick={() => setShowCalendar(true)}
-              className="flex items-center bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+              className="flex items-center bg-purple-600 text-white px-2 py-1.5 rounded-lg hover:bg-purple-700 transition-colors text-xs"
             >
-              <CalendarDays className="w-4 h-4 ml-2" />
+              <CalendarDays className="w-3.5 h-3.5 ml-1" />
               לוח שנה
             </button>
           </div>

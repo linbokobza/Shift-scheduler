@@ -30,7 +30,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     // Load saved preference from localStorage
     const saved = localStorage.getItem(STORAGE_KEY);
-    return (saved === 'cards' || saved === 'table') ? saved : 'cards';
+    return (saved === 'cards' || saved === 'table') ? saved : 'table';
   });
   const weekDates = getWeekDates(weekStart);
 

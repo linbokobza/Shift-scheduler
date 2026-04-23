@@ -85,9 +85,9 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
           </div>
           <button
             onClick={() => setShowCalendar(true)}
-            className="flex items-center bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            className="flex items-center bg-purple-600 text-white px-3 py-1.5 rounded-lg hover:bg-purple-700 transition-colors text-sm"
           >
-            <CalendarDays className="w-5 h-5 ml-2" />
+            <CalendarDays className="w-4 h-4 ml-1.5" />
             לוח שנה
           </button>
         </div>
