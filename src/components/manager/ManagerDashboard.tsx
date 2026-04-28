@@ -15,6 +15,7 @@ import AvailabilitySummary from '../AvailabilitySummary';
 import Sidebar from './Sidebar';
 import { getSubmissionWeek } from '../../utils/dateUtils';
 import { axiosInstance } from '../../api/axios.config';
+import { scheduleAPI } from '../../api/schedule.api';
 
 type MenuOption = 'employees' | 'vacations' | 'holidays';
 
@@ -263,6 +264,37 @@ const ManagerDashboard = () => {
     // handleGenerateSchedule already replaces schedules for the same weekStart
     // so we don't need to manually delete the old one
     await handleGenerateSchedule();
+  };
+
+  const handleExtraAssignmentChange = async (day: string, shiftId: string, employeeId: string | null) => {
+    if (!currentSchedule) return;
+
+    const updatedExtraAssignments = {
+      ...currentSchedule.extraAssignments,
+      [day]: {
+        ...(currentSchedule.extraAssignments?.[day] || {}),
+        [shiftId]: employeeId
+      }
+    };
+
+    const updatedSchedule = {
+      ...currentSchedule,
+      extraAssignments: updatedExtraAssignments
+    };
+
+    setSchedules(prev => {
+      const updated = prev.map(s =>
+        s.id === currentSchedule.id ? updatedSchedule : s
+      );
+      localStorage.setItem('schedules', JSON.stringify(updated));
+      return updated;
+    });
+
+    try {
+      await scheduleAPI.update(currentSchedule.id, { extraAssignments: updatedExtraAssignments });
+    } catch (error) {
+      console.error('Failed to save extra assignment to backend:', error);
+    }
   };
 
   const handleScheduleChange = (day: string, shiftId: string, employeeId: string | null) => {
@@ -639,9 +671,11 @@ const ManagerDashboard = () => {
             <ScheduleView
               schedule={currentSchedule || null}
               employees={employees}
+              availabilities={availabilities}
               holidays={holidays}
               weekStart={currentWeekStart}
               onAssignmentChange={handleScheduleChange}
+              onExtraAssignmentChange={handleExtraAssignmentChange}
               onLockToggle={handleLockToggle}
               onFreezeToggle={handleFreezeToggle}
               readonly={false}

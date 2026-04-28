@@ -45,6 +45,11 @@ export interface Schedule {
       [shiftId: string]: string | null; // employeeId
     };
   };
+  extraAssignments?: {
+    [day: string]: {
+      [shiftId: string]: string | null; // extra employeeId added manually by manager
+    };
+  };
   lockedAssignments?: {
     [day: string]: {
       [shiftId: string]: boolean; // true = locked

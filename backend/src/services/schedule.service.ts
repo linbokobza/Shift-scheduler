@@ -214,6 +214,9 @@ export class ScheduleService {
       id: schedule._id.toString(),
       weekStart: formatDate(schedule.weekStart),
       assignments: this.convertMapToObject(schedule.assignments),
+      extraAssignments: schedule.extraAssignments
+        ? this.convertMapToObject(schedule.extraAssignments)
+        : undefined,
       lockedAssignments: schedule.lockedAssignments
         ? this.convertMapToObject(schedule.lockedAssignments)
         : undefined,
