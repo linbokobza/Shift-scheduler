@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Clock, AlertCircle, CheckCircle, Save, Calendar, Eye, ArrowLeft, CalendarDays } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Availability, VacationDay, AvailabilityStatus, Schedule, User, Holiday } from '../../types';
-import { getWeekStart, formatDate, isSubmissionDeadlinePassed, getSubmissionWeek, getNextWeek } from '../../utils/dateUtils';
+import { getWeekStart, formatDate, isSubmissionDeadlinePassed, getSubmissionWeek } from '../../utils/dateUtils';
 import { validateAvailabilitySubmission } from '../../utils/scheduleValidation';
 import { getMockAvailability, getMockVacationDays, getMockHolidays } from '../../data/mockData';
 import WeekNavigator from '../WeekNavigator';
@@ -13,16 +13,7 @@ import CalendarView from '../CalendarView';
 
 const EmployeeDashboard = () => {
   const { user } = useAuth();
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
-    const submissionWeek = getSubmissionWeek();
-    const isDeadlinePassed = isSubmissionDeadlinePassed(submissionWeek);
-    
-    // If deadline passed for current submission week, show next submission week
-    if (isDeadlinePassed) {
-      return getNextWeek(submissionWeek);
-    }
-    return submissionWeek;
-  });
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => getSubmissionWeek());
   const [availability, setAvailability] = useState<Availability['shifts']>({});
   const [vacationDays, setVacationDays] = useState<VacationDay[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -193,27 +184,11 @@ const EmployeeDashboard = () => {
   };
 
   const goToSubmissionWeek = () => {
-    const submissionWeek = getSubmissionWeek();
-    const isDeadlinePassed = isSubmissionDeadlinePassed(submissionWeek);
-    
-    // If deadline passed for current submission week, show next submission week
-    if (isDeadlinePassed) {
-      setCurrentWeekStart(getNextWeek(submissionWeek));
-    } else {
-      setCurrentWeekStart(submissionWeek);
-    }
+    setCurrentWeekStart(getSubmissionWeek());
   };
 
   const isCurrentWeekSubmissionWeek = () => {
-    const submissionWeek = getSubmissionWeek();
-    const isDeadlinePassed = isSubmissionDeadlinePassed(submissionWeek);
-    
-    if (isDeadlinePassed) {
-      const nextSubmissionWeek = getNextWeek(submissionWeek);
-      return formatDate(currentWeekStart) === formatDate(nextSubmissionWeek);
-    } else {
-      return formatDate(currentWeekStart) === formatDate(submissionWeek);
-    }
+    return formatDate(currentWeekStart) === formatDate(getSubmissionWeek());
   };
 
   return (

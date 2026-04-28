@@ -21,10 +21,7 @@ interface ManagerDashboardAPIProps {}
 const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   const queryClient = useQueryClient();
 
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
-    const submissionWeek = getSubmissionWeek();
-    return isSubmissionDeadlinePassed(submissionWeek) ? getNextWeek(submissionWeek) : submissionWeek;
-  });
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => getSubmissionWeek());
   const [activeMenu, setActiveMenu] = useState<MenuOption>('employees');
   const [isPublishing, setIsPublishing] = useState(false);
 
@@ -195,19 +192,19 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   };
 
   // Employee management handlers
-  const handleAddEmployee = async (name: string, email: string, password: string) => {
+  const handleAddEmployee = async (name: string, email: string, password: string, role: 'employee' | 'manager') => {
     try {
       await createEmployeeMutation.mutateAsync({
         name,
         email,
         password,
-        role: 'employee',
+        role,
       });
-      alert('עובד נוסף בהצלחה!');
+      alert(role === 'manager' ? 'מנהל נוסף בהצלחה!' : 'עובד נוסף בהצלחה!');
     } catch (error: any) {
       console.error('Error creating employee:', error);
       const backendError = error.response?.data?.error || error.response?.data?.message || '';
-      const hebrewError = translatePasswordError(backendError) || 'שגיאה בהוספת עובד';
+      const hebrewError = translatePasswordError(backendError) || 'שגיאה בהוספת משתמש';
       alert(hebrewError);
       throw error; // Re-throw to let EmployeeList know the operation failed
     }

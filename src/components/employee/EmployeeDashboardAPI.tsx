@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Availability, AvailabilityStatus } from '../../types';
-import { formatDate, isSubmissionDeadlinePassed, getSubmissionWeek, getNextWeek, getWeekStart } from '../../utils/dateUtils';
+import { formatDate, isSubmissionDeadlinePassed, getSubmissionWeek, getWeekStart } from '../../utils/dateUtils';
 import { validateAvailabilitySubmission } from '../../utils/scheduleValidation';
 import { useEmployees } from '../../hooks/useEmployees';
 import { useAvailabilities, useCreateAvailability, useUpdateAvailability } from '../../hooks/useAvailabilities';
@@ -12,10 +12,7 @@ import { EmployeeDashboardDesktop } from './desktop/EmployeeDashboardDesktop';
 
 const EmployeeDashboardAPI = () => {
   const { user } = useAuth();
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
-    const submissionWeek = getSubmissionWeek();
-    return isSubmissionDeadlinePassed(submissionWeek) ? getNextWeek(submissionWeek) : submissionWeek;
-  });
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => getSubmissionWeek());
   const [availability, setAvailability] = useState<Availability['shifts']>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -162,27 +159,11 @@ const EmployeeDashboardAPI = () => {
   };
 
   const goToSubmissionWeek = () => {
-    const submissionWeek = getSubmissionWeek();
-    const isDeadlinePassed = isSubmissionDeadlinePassed(submissionWeek);
-
-    // If deadline passed for current submission week, show next submission week
-    if (isDeadlinePassed) {
-      setCurrentWeekStart(getNextWeek(submissionWeek));
-    } else {
-      setCurrentWeekStart(submissionWeek);
-    }
+    setCurrentWeekStart(getSubmissionWeek());
   };
 
   const isCurrentWeekSubmissionWeek = () => {
-    const submissionWeek = getSubmissionWeek();
-    const isDeadlinePassed = isSubmissionDeadlinePassed(submissionWeek);
-
-    if (isDeadlinePassed) {
-      const nextSubmissionWeek = getNextWeek(submissionWeek);
-      return formatDate(currentWeekStart) === formatDate(nextSubmissionWeek);
-    } else {
-      return formatDate(currentWeekStart) === formatDate(submissionWeek);
-    }
+    return formatDate(currentWeekStart) === formatDate(getSubmissionWeek());
   };
 
   // Shared props for both mobile and desktop

@@ -134,7 +134,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
         employeesList: employees
       });
     }
-    return employee?.name || `עובד לא נמצא (${employeeId})`;
+    return employee?.name?.split(' ')[0] || `עובד לא נמצא (${employeeId})`;
   };
 
   const getEmployeeColor = (employeeId: string | null): string => {
