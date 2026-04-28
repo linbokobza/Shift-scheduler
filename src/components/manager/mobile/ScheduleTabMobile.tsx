@@ -21,6 +21,7 @@ interface ScheduleTabMobileProps {
   isPublishing: boolean;
   onAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
   onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => void;
+  onExtraAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
   onLockToggle?: (day: string, shiftId: string, locked: boolean) => void;
   onFreezeToggle?: (day: string, shiftId: string, frozen: boolean) => void;
   currentDayIndex?: number;
@@ -41,6 +42,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
   isPublishing,
   onAssignmentChange,
   onBulkAssignmentChange,
+  onExtraAssignmentChange,
   onLockToggle,
   onFreezeToggle,
   currentDayIndex: propCurrentDayIndex,
@@ -283,6 +285,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
             weekStart={weekStart}
             readonly={false}
             onBulkAssignmentChange={onBulkAssignmentChange || (() => {})}
+            onExtraAssignmentChange={onExtraAssignmentChange}
             onLockToggle={onLockToggle}
             onFreezeToggle={onFreezeToggle}
             onPendingChanges={setHasPendingChanges}

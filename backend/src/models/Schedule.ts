@@ -8,6 +8,11 @@ export interface ISchedule extends Document {
       [shiftId: string]: mongoose.Types.ObjectId | null;
     };
   };
+  extraAssignments?: {
+    [day: string]: {
+      [shiftId: string]: mongoose.Types.ObjectId | null;
+    };
+  };
   lockedAssignments?: {
     [day: string]: {
       [shiftId: string]: boolean;
@@ -39,6 +44,13 @@ const scheduleSchema = new Schema<ISchedule>(
         of: Schema.Types.Mixed, // ObjectId or null
       },
       required: true,
+    },
+    extraAssignments: {
+      type: Map,
+      of: {
+        type: Map,
+        of: Schema.Types.Mixed, // ObjectId or null
+      },
     },
     lockedAssignments: {
       type: Map,

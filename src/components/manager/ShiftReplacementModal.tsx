@@ -5,8 +5,9 @@ import { User } from '../../types';
 interface ShiftReplacementModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (employeeId: string | null) => void;
+  onSave: (employeeId: string | null, extraEmployeeId?: string | null) => void;
   currentEmployeeId: string | null;
+  currentExtraEmployeeId?: string | null;
   allEmployees: User[];
   availableEmployeeIds: string[];
   submittedEmployeeIds: string[];
@@ -32,6 +33,7 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
   onClose,
   onSave,
   currentEmployeeId,
+  currentExtraEmployeeId = null,
   allEmployees,
   availableEmployeeIds,
   submittedEmployeeIds,
@@ -41,6 +43,7 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
   onFreezeToggle
 }) => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(currentEmployeeId);
+  const [selectedExtraEmployeeId, setSelectedExtraEmployeeId] = useState<string | null>(currentExtraEmployeeId);
   const [isFrozenLocal, setIsFrozenLocal] = useState<boolean>(isFrozen);
 
   // Reset selection and freeze state when modal opens
@@ -48,9 +51,10 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
     if (isOpen) {
       console.log('🧊 Modal opened - isFrozen prop:', isFrozen, 'currentEmployeeId:', currentEmployeeId);
       setSelectedEmployeeId(currentEmployeeId);
+      setSelectedExtraEmployeeId(currentExtraEmployeeId);
       setIsFrozenLocal(isFrozen);
     }
-  }, [isOpen, currentEmployeeId, isFrozen]);
+  }, [isOpen, currentEmployeeId, currentExtraEmployeeId, isFrozen]);
 
   // Click outside to close
   useEffect(() => {
@@ -108,11 +112,16 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
   });
 
   const handleSave = () => {
-    onSave(selectedEmployeeId);
+    onSave(selectedEmployeeId, selectedExtraEmployeeId);
     if (onFreezeToggle) {
       onFreezeToggle(isFrozenLocal);
     }
   };
+
+  // עובדים זמינים להוספה כעובד נוסף (רק זמינים, לא העובד הראשי)
+  const availableForExtra = allEmployees.filter(
+    emp => availableEmployeeIds.includes(emp.id) && emp.id !== selectedEmployeeId
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -243,6 +252,45 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
               </div>
             </button>
           </div>
+        </div>
+
+        {/* Extra Employee Section */}
+        <div className="border-t px-4 py-3">
+          <div className="text-xs font-semibold text-gray-600 mb-2">עובד נוסף למשמרת</div>
+          {availableForExtra.length === 0 ? (
+            <p className="text-xs text-gray-400">אין עובדים זמינים נוספים</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {availableForExtra.map(emp => {
+                const isSelected = selectedExtraEmployeeId === emp.id;
+                return (
+                  <button
+                    key={emp.id}
+                    onClick={() => setSelectedExtraEmployeeId(isSelected ? null : emp.id)}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs border transition-all ${
+                      isSelected
+                        ? 'bg-green-100 border-green-500 text-green-800 font-semibold'
+                        : 'bg-white border-gray-300 text-gray-700 hover:border-green-400'
+                    }`}
+                  >
+                    <span className="w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center text-[9px] font-bold flex-shrink-0">
+                      {emp.name[0]}
+                    </span>
+                    {emp.name}
+                    {isSelected && <Check className="w-3 h-3 text-green-600" />}
+                  </button>
+                );
+              })}
+              {selectedExtraEmployeeId && (
+                <button
+                  onClick={() => setSelectedExtraEmployeeId(null)}
+                  className="flex items-center gap-1 px-2 py-1 rounded-full text-xs border border-red-300 text-red-600 hover:bg-red-50 transition-all"
+                >
+                  הסר
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Footer */}

@@ -41,7 +41,7 @@ const AvailabilitySummary: React.FC<AvailabilitySummaryProps> = ({
       });
     }
 
-    // ספירת משמרות שהוצבו בפועל
+    // ספירת משמרות שהוצבו בפועל (כולל שיבוץ ידני נוסף)
     let assignedShifts = 0;
     let morningShifts = 0;
     let eveningShifts = 0;
@@ -57,6 +57,20 @@ const AvailabilitySummary: React.FC<AvailabilitySummaryProps> = ({
         }
       });
     });
+
+    // ספירת שיבוצים ידניים נוספים
+    if (schedule.extraAssignments) {
+      Object.keys(schedule.extraAssignments).forEach(day => {
+        Object.keys(schedule.extraAssignments![day]).forEach(shiftId => {
+          if (schedule.extraAssignments![day][shiftId] === employeeId) {
+            assignedShifts++;
+            if (shiftId === 'morning') morningShifts++;
+            else if (shiftId === 'evening') eveningShifts++;
+            else if (shiftId === 'night') nightShifts++;
+          }
+        });
+      });
+    }
 
     return {
       submittedShifts,

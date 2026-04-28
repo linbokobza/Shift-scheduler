@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User as UserIcon, Lock, Unlock, Save, X, MessageSquare, Snowflake } from 'lucide-react';
+import { User as UserIcon, Lock, Unlock, Save, X, MessageSquare, Snowflake, Check } from 'lucide-react';
 import { Schedule, User, Holiday, Availability } from '../types';
 import { SHIFTS, DAYS } from '../data/mockData';
 import { formatDateHebrew, getWeekDates, formatDate } from '../utils/dateUtils';
@@ -37,6 +37,7 @@ interface ScheduleViewProps {
   weekStart: Date;
   onAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
   onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => Promise<void>;
+  onExtraAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
   onLockToggle?: (day: string, shiftId: string, locked: boolean) => void;
   onFreezeToggle?: (day: string, shiftId: string, frozen: boolean) => void;
   onPendingChanges?: (hasPendingChanges: boolean) => void;
@@ -52,6 +53,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   weekStart,
   onAssignmentChange,
   onBulkAssignmentChange,
+  onExtraAssignmentChange,
   onLockToggle,
   onFreezeToggle,
   onPendingChanges,
@@ -302,15 +304,15 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
     setOpenDropdown(null);
   };
 
-  // Handler לשמירה מהמודל
-  const handleReplacementSave = (employeeId: string | null) => {
+  // Handler לשמירה מהמודל (עובד ראשי + עובד נוסף)
+  const handleReplacementSave = (employeeId: string | null, extraEmployeeId?: string | null) => {
     if (!replacementModal) return;
 
-    handleEmployeeSelect(
-      replacementModal.day,
-      replacementModal.shiftId,
-      employeeId
-    );
+    handleEmployeeSelect(replacementModal.day, replacementModal.shiftId, employeeId);
+
+    if (extraEmployeeId !== undefined && onExtraAssignmentChange) {
+      onExtraAssignmentChange(replacementModal.day, replacementModal.shiftId, extraEmployeeId);
+    }
 
     setReplacementModal(null);
   };
@@ -408,8 +410,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                 {weekDates.map((date, dayIndex) => {
                   const dayStr = dayIndex.toString();
                   const currentAssignment = getCurrentAssignment(dayStr, shift.id);
+                  const extraAssignment = schedule?.extraAssignments?.[dayStr]?.[shift.id] || null;
                   const employeeName = getEmployeeName(currentAssignment);
+                  const extraEmployeeName = getEmployeeName(extraAssignment);
                   const employeeColor = getEmployeeColor(currentAssignment);
+                  const extraEmployeeColor = getEmployeeColor(extraAssignment);
                   const employeeColorNoBorder = getEmployeeColorWithoutBorder(currentAssignment);
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
@@ -432,8 +437,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       dayIndex={dayIndex}
                       shiftId={shift.id}
                       currentAssignment={currentAssignment}
+                      extraAssignment={extraAssignment}
                       employeeName={employeeName}
+                      extraEmployeeName={extraEmployeeName}
                       employeeColor={employeeColor}
+                      extraEmployeeColor={extraEmployeeColor}
                       employeeColorNoBorder={employeeColorNoBorder}
                       holiday={holiday}
                       isHolidayBlocked={isHolidayBlocked}
@@ -449,6 +457,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       employeeComment={getEmployeeComment(currentAssignment, dayIndex, shift.id)}
                       allEmployeeComments={allEmployeeComments}
                       onCellClick={handleCellClick}
+                      onExtraAssignmentClick={() => {}}
                       onEmployeeSelect={handleEmployeeSelect}
                       onDropdownClose={() => setOpenDropdown(null)}
                       onLockToggle={handleLockToggle}
@@ -494,8 +503,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                 {DAYS.map((_, dayIndex) => {
                   const dayStr = dayIndex.toString();
                   const currentAssignment = getCurrentAssignment(dayStr, shift.id);
+                  const extraAssignment = schedule?.extraAssignments?.[dayStr]?.[shift.id] || null;
                   const employeeName = getEmployeeName(currentAssignment);
+                  const extraEmployeeName = getEmployeeName(extraAssignment);
                   const employeeColor = getEmployeeColor(currentAssignment);
+                  const extraEmployeeColor = getEmployeeColor(extraAssignment);
                   const employeeColorNoBorder = getEmployeeColorWithoutBorder(currentAssignment);
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
@@ -519,8 +531,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       dayIndex={dayIndex}
                       shiftId={shift.id}
                       currentAssignment={currentAssignment}
+                      extraAssignment={extraAssignment}
                       employeeName={employeeName}
+                      extraEmployeeName={extraEmployeeName}
                       employeeColor={employeeColor}
+                      extraEmployeeColor={extraEmployeeColor}
                       employeeColorNoBorder={employeeColorNoBorder}
                       holiday={holiday}
                       isHolidayBlocked={isHolidayBlocked}
@@ -536,6 +551,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       employeeComment={getEmployeeComment(currentAssignment, dayIndex, shift.id)}
                       allEmployeeComments={allEmployeeComments}
                       onCellClick={handleCellClick}
+                      onExtraAssignmentClick={() => {}}
                       onEmployeeSelect={handleEmployeeSelect}
                       onDropdownClose={() => setOpenDropdown(null)}
                       onLockToggle={handleLockToggle}
@@ -555,6 +571,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
           onClose={() => setReplacementModal(null)}
           onSave={handleReplacementSave}
           currentEmployeeId={getCurrentAssignment(replacementModal.day, replacementModal.shiftId)}
+          currentExtraEmployeeId={schedule?.extraAssignments?.[replacementModal.day]?.[replacementModal.shiftId] || null}
           allEmployees={activeEmployees}
           availableEmployeeIds={getAvailableEmployeesForShift(
             parseInt(replacementModal.day),
@@ -580,6 +597,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
           onFreezeToggle={(frozen) => handleFreezeToggle(replacementModal.day, replacementModal.shiftId, frozen)}
         />
       )}
+
     </div>
   );
 };
@@ -590,8 +608,11 @@ interface ShiftCellProps {
   dayIndex: number;
   shiftId: string;
   currentAssignment: string | null;
+  extraAssignment: string | null;
   employeeName: string;
+  extraEmployeeName: string;
   employeeColor: string;
+  extraEmployeeColor: string;
   employeeColorNoBorder: string;
   holiday: Holiday | undefined;
   isHolidayBlocked: boolean;
@@ -607,6 +628,7 @@ interface ShiftCellProps {
   employeeComment?: string;
   allEmployeeComments: { [employeeId: string]: string };
   onCellClick: (day: string, shiftId: string) => void;
+  onExtraAssignmentClick: (day: string, shiftId: string) => void;
   onEmployeeSelect: (day: string, shiftId: string, employeeId: string | null) => void;
   onDropdownClose: () => void;
   onLockToggle: (day: string, shiftId: string, event: React.MouseEvent) => void;
@@ -614,29 +636,28 @@ interface ShiftCellProps {
 
 const ShiftCell: React.FC<ShiftCellProps> = ({
   dayStr,
-  dayIndex,
   shiftId,
   currentAssignment,
+  extraAssignment,
   employeeName,
+  extraEmployeeName,
   employeeColor,
   employeeColorNoBorder,
   holiday,
   isHolidayBlocked,
   isRestrictedTime,
   availableEmployees,
-  isPending,
   isDropdownOpen,
   isLocked,
   isFrozen,
   readonly,
-  showLockControls,
   employees,
   employeeComment,
   allEmployeeComments,
   onCellClick,
+  onExtraAssignmentClick,
   onEmployeeSelect,
   onDropdownClose,
-  onLockToggle,
 }) => {
   const cellRef = useRef<HTMLDivElement>(null);
   const hasComment = employeeComment && employeeComment.length > 0;
@@ -647,12 +668,21 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
     setShowCommentModal(true);
   };
 
+  const handleExtraClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!readonly && !isRestrictedTime && !isHolidayBlocked) {
+      onExtraAssignmentClick(dayStr, shiftId);
+    }
+  };
+
+  const canAddExtra = !readonly && !isRestrictedTime && !isHolidayBlocked && !!currentAssignment;
+
   return (
     <td className="px-1 lg:px-2 py-2 lg:py-4 border-b">
       <div className="relative" ref={cellRef}>
         <div
           className={`
-            min-h-[48px] lg:h-16 rounded flex items-center justify-center transition-all cursor-pointer text-[10px] lg:text-xs
+            min-h-[48px] lg:h-16 rounded flex flex-col items-center justify-center transition-all cursor-pointer text-[10px] lg:text-xs
             ${isRestrictedTime
               ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed border lg:border-2'
               : isHolidayBlocked
@@ -667,27 +697,27 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
           `}
           onClick={() => onCellClick(dayStr, shiftId)}
         >
-          <div className="text-center px-1 lg:px-2">
+          <div className="text-center px-1 lg:px-2 w-full">
             <div className={`font-medium leading-tight ${currentAssignment ? 'font-semibold' : ''}`}>
               {isRestrictedTime
                 ? '×'
                 : isHolidayBlocked
                   ? ` ${holiday?.name || 'חג'}`
                   : currentAssignment
-                    ? employeeName
+                    ? extraAssignment
+                      ? `${employeeName} + ${extraEmployeeName}`
+                      : employeeName
                     : '-'
               }
             </div>
 
-            {/* Freeze Badge - only visible to managers (not readonly), works for both assigned and empty shifts */}
+            {/* Freeze Badge */}
             {isFrozen && !readonly && (
               <div className={`${currentAssignment ? 'bg-yellow-400 text-yellow-900' : 'bg-gray-400 text-gray-900'} text-[8px] lg:text-[9px] px-1 py-0.5 rounded font-bold mt-0.5 inline-flex items-center gap-0.5 shadow-sm`}>
                 <Snowflake className="w-2 h-2" />
                 <span>{currentAssignment ? 'קפוא' : 'ריק קפוא'}</span>
               </div>
             )}
-
-            {/* Lock icon removed per user request - lock/unlock button at top-left remains */}
           </div>
         </div>
 
@@ -703,8 +733,6 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
             employeeComments={allEmployeeComments}
           />
         )}
-
-        {/* Lock/Unlock button removed per user request */}
 
         {/* Comment icon - desktop only - only shown when comment exists */}
         {hasComment && currentAssignment && !isRestrictedTime && !isHolidayBlocked && (
@@ -737,6 +765,107 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
         )}
       </div>
     </td>
+  );
+};
+
+// Modal להוספת עובד נוסף ידנית למשמרת
+interface ExtraAssignmentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (employeeId: string | null) => void;
+  currentExtraEmployeeId: string | null;
+  availableEmployees: User[];
+  shiftInfo: { dayName: string; shiftName: string; shiftTime: string };
+}
+
+const ExtraAssignmentModal: React.FC<ExtraAssignmentModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  currentExtraEmployeeId,
+  availableEmployees,
+  shiftInfo,
+}) => {
+  const [selectedId, setSelectedId] = useState<string | null>(currentExtraEmployeeId);
+
+  useEffect(() => {
+    if (isOpen) setSelectedId(currentExtraEmployeeId);
+  }, [isOpen, currentExtraEmployeeId]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white rounded-lg shadow-xl max-w-sm w-full">
+        <div className="bg-green-50 border-b border-green-200 p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-green-900">הוספת עובד נוסף - {shiftInfo.dayName}</h3>
+              <p className="text-xs text-green-700">{shiftInfo.shiftName} ({shiftInfo.shiftTime})</p>
+            </div>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-4 max-h-[60vh] overflow-y-auto">
+          {availableEmployees.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-4">אין עובדים זמינים נוספים למשמרת זו</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {availableEmployees.map((emp) => {
+                const isSelected = selectedId === emp.id;
+                return (
+                  <button
+                    key={emp.id}
+                    onClick={() => setSelectedId(isSelected ? null : emp.id)}
+                    className={`p-2 rounded-lg transition-all text-right border ${
+                      isSelected ? 'border-2 border-green-500 bg-green-50' : 'border-gray-200 bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
+                        {emp.name.split(' ').map((n: string) => n[0]).join('')}
+                      </div>
+                      <div className="font-medium text-sm text-gray-900 truncate">{emp.name}</div>
+                      {isSelected && <Check className="w-4 h-4 text-green-600 flex-shrink-0 mr-auto" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Remove extra option */}
+          {currentExtraEmployeeId && (
+            <button
+              onClick={() => setSelectedId(null)}
+              className={`mt-3 w-full p-2 rounded-lg border text-sm text-red-600 hover:bg-red-50 transition-colors ${
+                selectedId === null ? 'border-2 border-red-400 bg-red-50' : 'border-gray-200'
+              }`}
+            >
+              הסר עובד נוסף
+            </button>
+          )}
+        </div>
+
+        <div className="border-t p-2 flex justify-center gap-2">
+          <button onClick={onClose} className="bg-gray-600 text-white px-6 py-1 rounded text-xs hover:bg-gray-700 transition-colors">
+            ביטול
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onSave(selectedId); }}
+            className="bg-green-600 text-white px-6 py-1 rounded text-xs hover:bg-green-700 transition-colors"
+          >
+            שמור
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

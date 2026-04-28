@@ -39,6 +39,7 @@ interface ManagerDashboardMobileProps {
   onAddHoliday: (date: string, name: string, type: 'no-work' | 'morning-only') => void;
   onRemoveHoliday: (holidayId: string) => void;
   onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => void;
+  onExtraAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
   onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
   onLockToggle?: (day: string, shiftId: string, locked: boolean) => void;
@@ -79,6 +80,7 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
   onAddHoliday,
   onRemoveHoliday,
   onBulkAssignmentChange,
+  onExtraAssignmentChange,
   onAvailabilityChange,
   onCommentChange,
   onLockToggle,
@@ -183,6 +185,7 @@ export const ManagerDashboardMobile: React.FC<ManagerDashboardMobileProps> = ({
               onGenerateSchedule={onGenerateSchedule}
               onPublishSchedule={onPublishSchedule}
               onBulkAssignmentChange={onBulkAssignmentChange}
+              onExtraAssignmentChange={onExtraAssignmentChange}
               onLockToggle={onLockToggle}
               onFreezeToggle={onFreezeToggle}
               isGenerating={isGenerating}

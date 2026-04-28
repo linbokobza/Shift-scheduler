@@ -24,6 +24,7 @@ export const scheduleAPI = {
     id: string,
     data: {
       assignments?: Schedule['assignments'];
+      extraAssignments?: Schedule['extraAssignments'];
       lockedAssignments?: Schedule['lockedAssignments'];
       frozenAssignments?: Schedule['frozenAssignments'];
     }

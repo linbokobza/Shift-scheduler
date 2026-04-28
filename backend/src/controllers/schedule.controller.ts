@@ -133,7 +133,7 @@ export const generateSchedule = async (req: AuthRequest, res: Response): Promise
 
 export const updateSchedule = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { assignments, lockedAssignments, frozenAssignments } = req.body;
+  const { assignments, extraAssignments, lockedAssignments, frozenAssignments } = req.body;
 
   const schedule = await Schedule.findById(id);
 
@@ -144,6 +144,10 @@ export const updateSchedule = async (req: AuthRequest, res: Response): Promise<v
   // Update
   if (assignments) {
     schedule.assignments = ScheduleService.convertAssignmentsToMap(assignments) as any;
+  }
+
+  if (extraAssignments !== undefined) {
+    schedule.extraAssignments = ScheduleService.convertAssignmentsToMap(extraAssignments) as any;
   }
 
   if (lockedAssignments) {
