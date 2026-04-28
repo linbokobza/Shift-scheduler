@@ -194,11 +194,6 @@ export const deleteEmployee = async (req: AuthRequest, res: Response): Promise<v
     throw new AppError('Employee not found', 404);
   }
 
-  // Prevent deleting managers
-  if (employee.role === 'manager') {
-    throw new AppError('Cannot delete manager accounts', 400);
-  }
-
   // 2. Check for future schedule assignments
   const today = new Date();
   today.setHours(0, 0, 0, 0);
