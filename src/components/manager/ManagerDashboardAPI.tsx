@@ -21,10 +21,7 @@ interface ManagerDashboardAPIProps {}
 const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   const queryClient = useQueryClient();
 
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
-    const submissionWeek = getSubmissionWeek();
-    return isSubmissionDeadlinePassed(submissionWeek) ? getNextWeek(submissionWeek) : submissionWeek;
-  });
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => getSubmissionWeek());
   const [activeMenu, setActiveMenu] = useState<MenuOption>('employees');
   const [isPublishing, setIsPublishing] = useState(false);
 

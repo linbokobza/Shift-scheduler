@@ -19,18 +19,7 @@ import { axiosInstance } from '../../api/axios.config';
 type MenuOption = 'employees' | 'vacations' | 'holidays';
 
 const ManagerDashboard = () => {
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
-    const submissionWeek = getSubmissionWeek();
-    const isDeadlinePassed = isSubmissionDeadlinePassed(submissionWeek);
-
-    // If deadline passed for current submission week, show next submission week
-    if (isDeadlinePassed) {
-      const nextWeek = new Date(submissionWeek);
-      nextWeek.setDate(nextWeek.getDate() + 7);
-      return nextWeek;
-    }
-    return submissionWeek;
-  });
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => getSubmissionWeek());
   const [employees, setEmployees] = useState<User[]>([]);
   const [availabilities, setAvailabilities] = useState<Availability[]>([]);
   const [vacationDays, setVacationDays] = useState<VacationDay[]>([]);

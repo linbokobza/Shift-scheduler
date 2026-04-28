@@ -122,13 +122,9 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
-                disabled={!currentSchedule || !isSchedulePublished}
               >
                 <Eye className="w-4 h-4 ml-1" />
                 צפייה בסידור
-                {(!currentSchedule || !isSchedulePublished) && (
-                  <span className="text-xs mr-1">(לא זמין)</span>
-                )}
               </button>
             </div>
 
