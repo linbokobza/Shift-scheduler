@@ -638,7 +638,7 @@ class ShiftSchedulingModel:
         # Randomized lower priorities (±15% variation creates different "flavors")
         # These weights can vary without compromising critical constraints
         # Note: 8-8 patterns now HARD constraint (removed from objective)
-        weight_morning = 75000                             # Priority 4: Morning shifts (FIXED - higher than fairness!)
+        weight_morning = 200000                            # Priority 4: Morning shifts (FIXED - highest after unfilled!)
         weight_min3 = random.randint(85, 115)              # Priority 5: Min 3 shifts (~100)
 
         # Add STRONG random tie-breaking to generate DIFFERENT schedules with same perfect score
@@ -672,7 +672,7 @@ class ShiftSchedulingModel:
             tie_breaker                                  # Priority 6: Random tie-breaking (larger weights)
         )
 
-        print(f"✓ Priority weights - Excess88:100000 Fairness:100000 Morning:75000 ShiftTypeFairness:20000 8-8:15000 Variety:10000 Min3:{weight_min3}", file=sys.stderr)
+        print(f"✓ Priority weights - Morning:200000 Excess88:100000 Fairness:100000 ShiftTypeFairness:20000 8-8:15000 Variety:10000 Min3:{weight_min3}", file=sys.stderr)
         print(f"✓ 8-8-8 patterns: HARD CONSTRAINT (ZERO allowed!)", file=sys.stderr)
         print(f"✓ 8-8 patterns: Max 1 per employee allowed, >1 gets HUGE penalty (500,000)", file=sys.stderr)
         print(f"✓ Morning shift: SOFT constraint (penalized in objective function)", file=sys.stderr)

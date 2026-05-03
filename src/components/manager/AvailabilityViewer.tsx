@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Eye, Edit3, Save, MessageSquare, AlertCircle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Eye, Edit3, Save, MessageSquare } from 'lucide-react';
 import { User, Availability, VacationDay, AvailabilityStatus, Holiday } from '../../types';
 import { SHIFTS, DAYS } from '../../data/mockData';
 import { formatDateHebrew, getWeekDates, formatDate } from '../../utils/dateUtils';
 import { ShiftAvailabilityAnalysis } from '../../utils/availabilityUtils';
+import { useAvailabilities } from '../../hooks/useAvailabilities';
 
 interface AvailabilityViewerProps {
   employees: User[];
@@ -11,7 +12,8 @@ interface AvailabilityViewerProps {
   vacationDays: VacationDay[];
   holidays: Holiday[];
   weekStart: Date;
-  onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
+  onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => Promise<void>;
+  onAvailabilityToggle: (employeeId: string, day: string, shiftId: string) => Promise<void>;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
   selectedEmployee: string | null;
   onSelectedEmployeeChange: (employeeId: string | null) => void;
@@ -27,6 +29,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   holidays,
   weekStart,
   onAvailabilityChange,
+  onAvailabilityToggle,
   onCommentChange,
   selectedEmployee,
   onSelectedEmployeeChange,
@@ -35,6 +38,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   shiftAnalysis
 }) => {
   const [selectedCell, setSelectedCell] = useState<{ day: string; shift: string; comment: string } | null>(null);
+  const isSaving = useRef(false);
 
   // Use the submission week from the props
   const submissionWeekStart = weekStart;
@@ -42,16 +46,12 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   const weekDates = getWeekDates(submissionWeekStart);
   const activeEmployees = employees.filter(emp => emp.role === 'employee' && emp.isActive);
 
-  // Helper function to check if a shift is unavailable
-  const isShiftUnavailable = (dayIndex: number, shiftId: string): boolean => {
-    if (!shiftAnalysis) return false;
-    return shiftAnalysis.unavailableShifts.some(
-      shift => shift.day === dayIndex && shift.shiftId === shiftId
-    );
-  };
+  // Subscribe directly to the live cache so optimistic updates trigger re-render
+  const { data: liveAvailabilities } = useAvailabilities();
 
   const getEmployeeAvailability = (employeeId: string) => {
-    return availabilities.find(a => a.employeeId === employeeId && a.weekStart === weekStartString);
+    const source = liveAvailabilities ?? availabilities;
+    return source.find(a => a.employeeId === employeeId && a.weekStart === weekStartString);
   };
 
   const getEmployeeVacations = (employeeId: string) => {
@@ -121,22 +121,21 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
     return false;
   };
 
-  const handleCellClick = (day: string, shiftId: string) => {
-    if (!editMode || !selectedEmployee) return;
-    
+  const handleCellClick = async (day: string, shiftId: string) => {
+    if (!editMode || !selectedEmployee || isSaving.current) return;
+
     const dayIndex = parseInt(day);
     if (isVacationDay(selectedEmployee, dayIndex) || isHolidayShiftBlocked(dayIndex, shiftId)) return;
-    
+
     const isRestrictedTime = (dayIndex === 5 && (shiftId === 'evening' || shiftId === 'night')) || dayIndex === 6;
     if (isRestrictedTime) return;
 
-    const employeeAvailability = getEmployeeAvailability(selectedEmployee);
-    const currentStatus = employeeAvailability?.shifts[day]?.[shiftId]?.status;
-    const statuses: AvailabilityStatus[] = ['available', 'unavailable'];
-    const currentIndex = statuses.indexOf(currentStatus || 'available');
-    const nextStatus = statuses[(currentIndex + 1) % statuses.length];
-    
-    onAvailabilityChange(selectedEmployee, day, shiftId, nextStatus);
+    isSaving.current = true;
+    try {
+      await onAvailabilityToggle(selectedEmployee, day, shiftId);
+    } finally {
+      isSaving.current = false;
+    }
   };
 
   const handleCommentClick = (day: string, shiftId: string, comment: string, e?: React.MouseEvent) => {
@@ -219,6 +218,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
         </div>
 
         {selectedEmployee && (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead className="bg-gray-50">
@@ -226,47 +226,24 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                   <th className="px-2 py-2 text-right font-medium text-gray-700 border-b">
                     משמרת
                   </th>
-                  {DAYS.map((day, index) => {
-                    // Check if any shift on this day is unavailable
-                    const hasDayWarning = SHIFTS.some(s => isShiftUnavailable(index, s.id));
-
-                    return (
-                      <th key={index} className="px-2 py-2 text-center font-medium text-gray-700 border-b min-w-[80px]">
-                        <div className="flex items-center justify-center gap-1">
-                          <div className="text-center">
-                            <div className="text-xs">{day}</div>
-                            <div className="text-[10px] text-gray-500 font-normal">
-                              {formatDateHebrew(weekDates[index])}
-                            </div>
-                          </div>
-                          {hasDayWarning && (
-                            <div
-                              className="bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-                            >
-                              !
-                            </div>
-                          )}
+                  {DAYS.map((day, index) => (
+                    <th key={index} className="px-2 py-2 text-center font-medium text-gray-700 border-b min-w-[80px]">
+                      <div className="text-center">
+                        <div className="text-xs">{day}</div>
+                        <div className="text-[10px] text-gray-500 font-normal">
+                          {formatDateHebrew(weekDates[index])}
                         </div>
-                      </th>
-                    );
-                  })}
+                      </div>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {SHIFTS.map((shift) => {
-                  // Check if this shift has any unavailable days
-                  const hasShiftWarning = DAYS.some((_, i) => isShiftUnavailable(i, shift.id));
-
-                  return (
+                {SHIFTS.map((shift) => (
                     <tr key={shift.id} className="hover:bg-gray-50">
                       <td className="px-2 py-2 border-b">
-                        <div className="flex items-center gap-1">
-                          <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${shift.color}`}>
-                            {shift.name}
-                          </div>
-                          {hasShiftWarning && (
-                            <AlertCircle className="w-3 h-3 text-red-500 flex-shrink-0" />
-                          )}
+                        <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${shift.color}`}>
+                          {shift.name}
                         </div>
                       </td>
                     {DAYS.map((_, dayIndex) => {
@@ -291,16 +268,14 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                                 ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed'
                                 : isVacation
                                 ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed'
-                                : cellData
-                                  ? `${hasComment ? getStatusColorWithoutBorder(cellData.status) : getStatusColor(cellData.status)} hover:opacity-80 shadow-sm ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border lg:border-2 lg:border-gray-200' : ''}`
-                                  : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100'
+                                : `${hasComment ? getStatusColorWithoutBorder(cellData?.status ?? 'available') : getStatusColor(cellData?.status ?? 'available')} hover:opacity-80 shadow-sm ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border lg:border-2 lg:border-gray-200' : ''}`
                               }
                             `}
-                            onClick={() => {
+                            onClick={async () => {
                               if (!editMode && hasComment && !isHolidayBlocked) {
                                 handleCommentClick(dayStr, shift.id, cellData?.comment || '', undefined);
                               } else {
-                                handleCellClick(dayStr, shift.id);
+                                await handleCellClick(dayStr, shift.id);
                               }
                             }}
                           >
@@ -331,11 +306,22 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                       );
                     })}
                     </tr>
-                  );
-                })}
+                ))}
               </tbody>
             </table>
           </div>
+
+          {shiftAnalysis && shiftAnalysis.unavailableShifts.length > 0 && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800" dir="rtl">
+              <span className="font-semibold">משמרות ללא עובדים זמינים: </span>
+              {shiftAnalysis.unavailableShifts.map((s, i) => (
+                <span key={i}>
+                  {s.dayName} {s.shiftName}{i < shiftAnalysis.unavailableShifts.length - 1 ? ', ' : ''}
+                </span>
+              ))}
+            </div>
+          )}
+          </>
         )}
 
         {!selectedEmployee && (

@@ -15,7 +15,9 @@ export const useAvailabilities = (weekStart?: string) => {
   return useQuery({
     queryKey: weekStart ? availabilityKeys.byWeek(weekStart) : availabilityKeys.all,
     queryFn: async () => {
+      console.log('[queryFn] fetching availabilities from server');
       const data = await availabilityAPI.getAll(weekStart);
+      console.log('[queryFn] got', data.availabilities.length, 'availabilities from server');
       return data.availabilities;
     },
   });
@@ -43,15 +45,31 @@ export const useCreateAvailability = () => {
       weekStart: string;
       shifts: Availability['shifts'];
     }) => availabilityAPI.create(data),
-    onSuccess: (response, variables) => {
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: availabilityKeys.all });
-      queryClient.invalidateQueries({
-        queryKey: availabilityKeys.byWeek(variables.weekStart)
-      });
-      queryClient.invalidateQueries({
-        queryKey: availabilityKeys.byEmployee(variables.employeeId, variables.weekStart)
-      });
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: availabilityKeys.all });
+      const previous = queryClient.getQueryData<Availability[]>(availabilityKeys.all);
+      const optimistic: Availability = {
+        id: '__optimistic__',
+        employeeId: variables.employeeId,
+        weekStart: variables.weekStart,
+        shifts: variables.shifts,
+      } as Availability;
+      queryClient.setQueryData<Availability[]>(availabilityKeys.all, (old) =>
+        old ? [...old, optimistic] : [optimistic]
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context: any) => {
+      if (context?.previous) {
+        queryClient.setQueryData(availabilityKeys.all, context.previous);
+      }
+    },
+    onSuccess: (response) => {
+      queryClient.setQueryData<Availability[]>(availabilityKeys.all, (old) =>
+        old
+          ? old.map((a) => (a.id === '__optimistic__' ? response.availability : a))
+          : [response.availability]
+      );
     },
   });
 };
@@ -63,9 +81,21 @@ export const useUpdateAvailability = () => {
   return useMutation({
     mutationFn: ({ id, shifts }: { id: string; shifts: Availability['shifts'] }) =>
       availabilityAPI.update(id, { shifts }),
-    onSuccess: () => {
-      // Invalidate all availability queries
-      queryClient.invalidateQueries({ queryKey: availabilityKeys.all });
+    onMutate: async ({ id, shifts }) => {
+      await queryClient.cancelQueries({ queryKey: availabilityKeys.all });
+      const previous = queryClient.getQueryData<Availability[]>(availabilityKeys.all);
+      queryClient.setQueryData<Availability[]>(availabilityKeys.all, (old) =>
+        old ? old.map((a) => (a.id === id ? { ...a, shifts } : a)) : old
+      );
+      const after = queryClient.getQueryData<Availability[]>(availabilityKeys.all);
+      const updatedEntry = after?.find(a => a.id === id);
+      console.log(`[onMutate] after setQueryData - found id? ${!!updatedEntry} | shifts object same as input? ${updatedEntry?.shifts === shifts}`);
+      return { previous };
+    },
+    onError: (_err, _vars, context: any) => {
+      if (context?.previous) {
+        queryClient.setQueryData(availabilityKeys.all, context.previous);
+      }
     },
   });
 };

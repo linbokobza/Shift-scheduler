@@ -4,14 +4,15 @@ import { axiosInstance } from '../../api/axios.config';
 import { scheduleAPI } from '../../api/schedule.api';
 import { employeeAPI } from '../../api/employee.api';
 import { useEmployees, useToggleEmployeeActive, useCreateEmployee, useDeleteEmployee } from '../../hooks/useEmployees';
-import { useAvailabilities, useUpdateAvailability } from '../../hooks/useAvailabilities';
+import { useAvailabilities, useUpdateAvailability, useCreateAvailability, availabilityKeys } from '../../hooks/useAvailabilities';
+import { SHIFTS } from '../../data/mockData';
 import { useScheduleByWeek, useGenerateSchedule } from '../../hooks/useSchedules';
 import { useVacations, useCreateVacation, useDeleteVacation, useHolidays, useCreateHoliday, useDeleteHoliday } from '../../hooks/useVacations';
 import { useShiftAvailability } from '../../hooks/useShiftAvailability';
 import { formatDate, getWeekStart, getSubmissionWeek, isSubmissionDeadlinePassed, getNextWeek } from '../../utils/dateUtils';
 import { ManagerDashboardMobile } from './mobile/ManagerDashboardMobile';
 import { ManagerDashboardDesktop } from './desktop/ManagerDashboardDesktop';
-import { AvailabilityStatus } from '../../types';
+import { AvailabilityStatus, Availability } from '../../types';
 import DeleteEmployeeModal from './DeleteEmployeeModal';
 
 type MenuOption = 'employees' | 'vacations' | 'holidays';
@@ -58,6 +59,7 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   const createHolidayMutation = useCreateHoliday();
   const deleteHolidayMutation = useDeleteHoliday();
   const updateAvailabilityMutation = useUpdateAvailability();
+  const createAvailabilityMutation = useCreateAvailability();
 
   const activeEmployees = employees.filter(emp => emp.role === 'employee' && emp.isActive);
 
@@ -272,30 +274,84 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     // TODO: Implement password reset
   };
 
-  const handleAvailabilityChange = async (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => {
-    // Find the employee's availability for the current week
-    const employeeAvailability = availabilities.find(
-      a => a.employeeId === employeeId && a.weekStart === weekStartString
-    );
-
-    if (!employeeAvailability) {
-      console.error('No availability found for employee');
-      return;
+  const buildDefaultShifts = (overrideDay?: string, overrideShift?: string, overrideStatus?: AvailabilityStatus, overrideComment?: string) => {
+    const shifts: Record<string, Record<string, { status: AvailabilityStatus; comment?: string }>> = {};
+    for (let day = 0; day < 6; day++) {
+      shifts[day.toString()] = {};
+      for (const shift of SHIFTS) {
+        const isOverride = overrideDay === day.toString() && overrideShift === shift.id;
+        shifts[day.toString()][shift.id] = {
+          status: isOverride && overrideStatus ? overrideStatus : 'available',
+          ...(isOverride && overrideComment ? { comment: overrideComment } : {}),
+        };
+      }
     }
+    return shifts;
+  };
 
-    // Create updated shifts object
-    const updatedShifts = { ...employeeAvailability.shifts };
-    if (!updatedShifts[day]) {
-      updatedShifts[day] = {};
-    }
-    updatedShifts[day][shiftId] = {
-      ...updatedShifts[day][shiftId],
-      status
-    };
+  const getCurrentAvailabilities = (): Availability[] =>
+    queryClient.getQueryData<Availability[]>(availabilityKeys.all) ?? availabilities;
 
+  const handleAvailabilityToggle = async (employeeId: string, day: string, shiftId: string) => {
     try {
+      const existing = getCurrentAvailabilities().find(
+        a => a.employeeId === employeeId && a.weekStart === weekStartString
+      );
+
+      const currentStatus = existing?.shifts[day]?.[shiftId]?.status;
+      const nextStatus: AvailabilityStatus = currentStatus === 'unavailable' ? 'available' : 'unavailable';
+      const cacheData = queryClient.getQueryData<Availability[]>(availabilityKeys.all);
+      const cacheEntry = cacheData?.find(a => a.employeeId === employeeId && a.weekStart === weekStartString);
+      console.log(`[TOGGLE] currentStatus=${currentStatus} nextStatus=${nextStatus} | cacheEntry day=${day} shift=${shiftId}:`, JSON.stringify(cacheEntry?.shifts?.[day]?.[shiftId]));
+
+      if (!existing) {
+        const shifts = buildDefaultShifts(day, shiftId, nextStatus);
+        await createAvailabilityMutation.mutateAsync({
+          employeeId,
+          weekStart: weekStartString,
+          shifts: shifts as any,
+        });
+        return;
+      }
+
+      const updatedShifts = { ...existing.shifts };
+      if (!updatedShifts[day]) updatedShifts[day] = {};
+      updatedShifts[day] = { ...updatedShifts[day] };
+      updatedShifts[day][shiftId] = { ...updatedShifts[day][shiftId], status: nextStatus };
+
       await updateAvailabilityMutation.mutateAsync({
-        id: employeeAvailability.id,
+        id: existing.id,
+        shifts: updatedShifts
+      });
+    } catch (error) {
+      console.error('Error updating availability:', error);
+      alert('שגיאה בעדכון הזמינות');
+    }
+  };
+
+  const handleAvailabilityChange = async (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => {
+    try {
+      const existing = getCurrentAvailabilities().find(
+        a => a.employeeId === employeeId && a.weekStart === weekStartString
+      );
+
+      if (!existing) {
+        const shifts = buildDefaultShifts(day, shiftId, status);
+        await createAvailabilityMutation.mutateAsync({
+          employeeId,
+          weekStart: weekStartString,
+          shifts: shifts as any,
+        });
+        return;
+      }
+
+      const updatedShifts = { ...existing.shifts };
+      if (!updatedShifts[day]) updatedShifts[day] = {};
+      updatedShifts[day] = { ...updatedShifts[day] };
+      updatedShifts[day][shiftId] = { ...updatedShifts[day][shiftId], status };
+
+      await updateAvailabilityMutation.mutateAsync({
+        id: existing.id,
         shifts: updatedShifts
       });
     } catch (error) {
@@ -305,29 +361,27 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   };
 
   const handleCommentChange = async (employeeId: string, day: string, shiftId: string, comment: string) => {
-    // Find the employee's availability for the current week
-    const employeeAvailability = availabilities.find(
-      a => a.employeeId === employeeId && a.weekStart === weekStartString
-    );
-
-    if (!employeeAvailability) {
-      console.error('No availability found for employee');
-      return;
-    }
-
-    // Create updated shifts object
-    const updatedShifts = { ...employeeAvailability.shifts };
-    if (!updatedShifts[day]) {
-      updatedShifts[day] = {};
-    }
-    updatedShifts[day][shiftId] = {
-      ...updatedShifts[day][shiftId],
-      comment
-    };
-
     try {
+      const existing = getCurrentAvailabilities().find(
+        a => a.employeeId === employeeId && a.weekStart === weekStartString
+      );
+
+      if (!existing) {
+        const shifts = buildDefaultShifts(day, shiftId, 'available', comment);
+        await createAvailabilityMutation.mutateAsync({
+          employeeId,
+          weekStart: weekStartString,
+          shifts: shifts as any,
+        });
+        return;
+      }
+
+      const updatedShifts = { ...existing.shifts };
+      if (!updatedShifts[day]) updatedShifts[day] = {};
+      updatedShifts[day][shiftId] = { ...updatedShifts[day][shiftId], comment };
+
       await updateAvailabilityMutation.mutateAsync({
-        id: employeeAvailability.id,
+        id: existing.id,
         shifts: updatedShifts
       });
     } catch (error) {
@@ -454,6 +508,7 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     onBulkAssignmentChange: handleBulkAssignmentChange,
     onExtraAssignmentChange: handleExtraAssignmentChange,
     onAvailabilityChange: handleAvailabilityChange,
+    onAvailabilityToggle: handleAvailabilityToggle,
     onCommentChange: handleCommentChange,
     onLockToggle: handleLockToggle,
     onFreezeToggle: handleFreezeToggle,
