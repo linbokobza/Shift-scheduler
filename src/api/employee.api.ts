@@ -32,6 +32,11 @@ export const employeeAPI = {
     return response.data;
   },
 
+  resetPassword: async (id: string): Promise<{ message: string }> => {
+    const response = await axiosInstance.patch(`/employees/${id}/reset-password`);
+    return response.data;
+  },
+
   delete: async (
     id: string,
     options: { confirm?: boolean; removeFromSchedules?: boolean } = {}

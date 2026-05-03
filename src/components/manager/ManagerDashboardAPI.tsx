@@ -267,9 +267,12 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     setFutureSchedulesForDelete([]);
   };
 
-  const handleResetPassword = (employeeId: string) => {
-    console.log('Reset password:', employeeId);
-    // TODO: Implement password reset
+  const handleResetPassword = async (employeeId: string) => {
+    try {
+      await employeeAPI.resetPassword(employeeId);
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'שגיאה באיפוס הסיסמה');
+    }
   };
 
   const handleAvailabilityChange = async (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => {
