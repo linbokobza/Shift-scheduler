@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar, CalendarDays, Send } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Calendar, CalendarDays, Send, Camera } from 'lucide-react';
 import WeekNavigator from '../../WeekNavigator';
 import ScheduleView from '../../ScheduleView';
 import Sidebar from '../Sidebar';
@@ -9,6 +9,7 @@ import CalendarView from '../../CalendarView';
 import UnavailableShiftsAlert from '../UnavailableShiftsAlert';
 import { Availability, Schedule, User, VacationDay, Holiday, AvailabilityStatus } from '../../../types';
 import { ShiftAvailabilityAnalysis } from '../../../utils/availabilityUtils';
+import { formatDate } from '../../../utils/dateUtils';
 
 interface ManagerDashboardDesktopProps {
   // Data
@@ -98,6 +99,40 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
 }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const scheduleRef = useRef<HTMLDivElement>(null);
+
+  const handleExport = async () => {
+    if (!scheduleRef.current) return;
+    setIsExporting(true);
+    try {
+      const { toPng } = await import('html-to-image');
+      const overflowEls = scheduleRef.current.querySelectorAll<HTMLElement>('[class*="overflow"]');
+      const origStyles: { el: HTMLElement; overflow: string; maxWidth: string; minWidth: string }[] = [];
+      overflowEls.forEach(el => {
+        origStyles.push({ el, overflow: el.style.overflow, maxWidth: el.style.maxWidth, minWidth: el.style.minWidth });
+        el.style.overflow = 'visible';
+        el.style.maxWidth = 'none';
+        el.style.minWidth = 'fit-content';
+      });
+      const dataUrl = await toPng(scheduleRef.current, { pixelRatio: 3, backgroundColor: '#ffffff' });
+      origStyles.forEach(({ el, overflow, maxWidth, minWidth }) => {
+        el.style.overflow = overflow;
+        el.style.maxWidth = maxWidth;
+        el.style.minWidth = minWidth;
+      });
+      const link = document.createElement('a');
+      link.download = `schedule-${formatDate(currentWeekStart)}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch {
+      alert('שגיאה בייצוא. אנא נסה שוב.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-8 overflow-x-hidden" dir="rtl">
@@ -216,34 +251,46 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                           ניתן לערוך את הסידור על ידי לחיצה על התאים. לחץ "פרסם סידור" כדי לפרסם לעובדים.
                         </p>
                       </div>
-                      <button
-                        onClick={onPublishSchedule}
-                        disabled={isPublishing || hasPendingChanges}
-                        className="w-full lg:w-auto bg-blue-600 text-white px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 flex items-center justify-center text-sm lg:text-base lg:ml-2"
-                      >
-                        {isPublishing ? (
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-1" />
-                        ) : (
-                          <Send className="w-4 h-4 ml-1" />
-                        )}
-                        {isPublishing ? 'מפרסם...' : 'פרסם סידור'}
-                      </button>
+                      <div className="flex gap-2 w-full lg:w-auto">
+                        <button
+                          onClick={handleExport}
+                          disabled={isExporting}
+                          className="flex-1 lg:flex-none bg-green-600 text-white px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-sm lg:text-base"
+                        >
+                          <Camera className="w-4 h-4" />
+                          {isExporting ? 'מייצא...' : 'שמור כתמונה'}
+                        </button>
+                        <button
+                          onClick={onPublishSchedule}
+                          disabled={isPublishing || hasPendingChanges}
+                          className="flex-1 lg:flex-none bg-blue-600 text-white px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 text-sm lg:text-base"
+                        >
+                          {isPublishing ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Send className="w-4 h-4" />
+                          )}
+                          {isPublishing ? 'מפרסם...' : 'פרסם סידור'}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <ScheduleView
-                    schedule={currentSchedule}
-                    employees={employees}
-                    availabilities={availabilities}
-                    holidays={holidays}
-                    weekStart={currentWeekStart}
-                    readonly={false}
-                    onBulkAssignmentChange={onBulkAssignmentChange}
-                    onExtraAssignmentChange={onExtraAssignmentChange}
-                    onLockToggle={onLockToggle}
-                    onFreezeToggle={onFreezeToggle}
-                    onPendingChanges={setHasPendingChanges}
-                    showLockControls={true}
-                  />
+                  <div ref={scheduleRef}>
+                    <ScheduleView
+                      schedule={currentSchedule}
+                      employees={employees}
+                      availabilities={availabilities}
+                      holidays={holidays}
+                      weekStart={currentWeekStart}
+                      readonly={false}
+                      onBulkAssignmentChange={onBulkAssignmentChange}
+                      onExtraAssignmentChange={onExtraAssignmentChange}
+                      onLockToggle={onLockToggle}
+                      onFreezeToggle={onFreezeToggle}
+                      onPendingChanges={setHasPendingChanges}
+                      showLockControls={true}
+                    />
+                  </div>
                 </>
               ) : (
                 <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
