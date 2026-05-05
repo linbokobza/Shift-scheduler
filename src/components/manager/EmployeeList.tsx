@@ -83,10 +83,10 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
     }
   };
 
-  const handleResetPassword = (employeeId: string, employeeName: string) => {
+  const handleResetPassword = async (employeeId: string, employeeName: string) => {
     if (window.confirm(`האם אתה בטוח שברצונך לאפס את הסיסמה של ${employeeName}?`)) {
-      onResetPassword(employeeId);
-      alert(`הסיסמה של ${employeeName} אופסה ל: password`);
+      await onResetPassword(employeeId);
+      alert(`הסיסמה של ${employeeName} אופסה ל: Aa123456`);
     }
   };
 

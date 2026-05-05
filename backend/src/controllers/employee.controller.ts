@@ -183,6 +183,29 @@ export const toggleEmployeeActive = async (req: AuthRequest, res: Response): Pro
   });
 };
 
+export const resetEmployeePassword = async (req: AuthRequest, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  const employee = await User.findById(id);
+
+  if (!employee) {
+    throw new AppError('Employee not found', 404);
+  }
+
+  const defaultPassword = 'Aa123456';
+  employee.password = defaultPassword;
+  await employee.save();
+
+  await createAuditLog(req, {
+    action: 'UPDATE_EMPLOYEE',
+    entityType: 'employee',
+    entityId: employee._id,
+    changes: { action: 'password_reset' },
+  });
+
+  res.status(200).json({ message: 'Password reset successfully' });
+};
+
 export const deleteEmployee = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   const removeFromSchedules = req.query.removeFromSchedules === 'true';

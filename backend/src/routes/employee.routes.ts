@@ -40,6 +40,13 @@ router.put('/:id', authenticateJWT, requireManager, employeeController.updateEmp
 router.patch('/:id/toggle-active', authenticateJWT, requireManager, employeeController.toggleEmployeeActive);
 
 /**
+ * @route   PATCH /api/employees/:id/reset-password
+ * @desc    Reset employee password to default (Manager only)
+ * @access  Private (Manager only)
+ */
+router.patch('/:id/reset-password', authenticateJWT, requireManager, employeeController.resetEmployeePassword);
+
+/**
  * @route   DELETE /api/employees/:id
  * @desc    Delete employee (hard delete)
  * @access  Private (Manager only)
