@@ -39,7 +39,8 @@ interface ManagerDashboardDesktopProps {
   onRemoveHoliday: (holidayId: string) => void;
   onBulkAssignmentChange: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => void;
   onExtraAssignmentChange: (day: string, shiftId: string, employeeId: string | null) => void;
-  onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
+  onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => Promise<void>;
+  onAvailabilityToggle: (employeeId: string, day: string, shiftId: string) => Promise<void>;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
   onLockToggle: (day: string, shiftId: string, locked: boolean) => void;
   onFreezeToggle: (day: string, shiftId: string, frozen: boolean) => void;
@@ -84,6 +85,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
   onBulkAssignmentChange,
   onExtraAssignmentChange,
   onAvailabilityChange,
+  onAvailabilityToggle,
   onCommentChange,
   onLockToggle,
   onFreezeToggle,
@@ -267,6 +269,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                   holidays={holidays}
                   weekStart={currentWeekStart}
                   onAvailabilityChange={onAvailabilityChange}
+                  onAvailabilityToggle={onAvailabilityToggle}
                   onCommentChange={onCommentChange}
                   shiftAnalysis={shiftAnalysis}
                   selectedEmployee={selectedEmployee}
@@ -294,6 +297,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                 holidays={holidays}
                 weekStart={currentWeekStart}
                 onAvailabilityChange={onAvailabilityChange}
+                onAvailabilityToggle={onAvailabilityToggle}
                 onCommentChange={onCommentChange}
                 shiftAnalysis={shiftAnalysis}
                 selectedEmployee={selectedEmployee}

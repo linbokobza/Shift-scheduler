@@ -8,7 +8,8 @@ interface AvailabilityTabMobileProps {
   vacationDays: VacationDay[];
   holidays: Holiday[];
   weekStart: Date;
-  onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => void;
+  onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => Promise<void>;
+  onAvailabilityToggle: (employeeId: string, day: string, shiftId: string) => Promise<void>;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
   selectedEmployee: string | null;
   onSelectedEmployeeChange: (employeeId: string | null) => void;
@@ -23,6 +24,7 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
   holidays,
   weekStart,
   onAvailabilityChange,
+  onAvailabilityToggle,
   onCommentChange,
   selectedEmployee,
   onSelectedEmployeeChange,
@@ -38,6 +40,7 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
         holidays={holidays}
         weekStart={weekStart}
         onAvailabilityChange={onAvailabilityChange}
+        onAvailabilityToggle={onAvailabilityToggle}
         onCommentChange={onCommentChange}
         selectedEmployee={selectedEmployee}
         onSelectedEmployeeChange={onSelectedEmployeeChange}

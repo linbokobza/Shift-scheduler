@@ -689,6 +689,7 @@ const ManagerDashboard = () => {
                     holidays={holidays}
                     weekStart={currentWeekStart}
                     onAvailabilityChange={handleAvailabilityChange}
+                    onAvailabilityToggle={async (empId, day, shiftId) => { await handleAvailabilityChange(empId, day, shiftId, 'unavailable'); }}
                     onCommentChange={handleCommentChange}
                   />
                 </div>
