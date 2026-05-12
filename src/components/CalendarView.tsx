@@ -155,24 +155,21 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     );
   }
 
+  const numWeeks = Math.ceil(days.length / 7);
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-white rounded-none sm:rounded-lg shadow-xl w-full h-full sm:h-auto sm:max-h-[95vh] max-w-7xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-2">
+      <div className="bg-white rounded-none sm:rounded-lg shadow-xl w-full h-[100dvh] sm:h-[calc(100dvh-16px)] max-w-7xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-blue-50 border-b border-blue-200 p-2 sm:p-4 flex-shrink-0">
+        <div className="bg-blue-50 border-b border-blue-200 px-3 py-1.5 sm:px-4 sm:py-2 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm sm:text-lg font-semibold text-blue-900 flex items-center">
-                <Calendar className="w-5 h-5 ml-2" />
-                לוח שנה - משמרות, חופשות וחגים
-              </h3>
-              <p className="text-xs sm:text-sm text-blue-700 mt-1 hidden sm:block">
-                צפייה במשמרות, חופשות וחגים במבט חודשי
-              </p>
-            </div>
+            <h3 className="text-sm sm:text-base font-semibold text-blue-900 flex items-center">
+              <Calendar className="w-4 h-4 ml-1.5" />
+              לוח שנה
+            </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors text-xl sm:text-2xl p-1"
+              className="text-gray-400 hover:text-gray-600 transition-colors text-xl p-1"
             >
               ×
             </button>
@@ -180,42 +177,45 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
 
         {/* Calendar Navigation */}
-        <div className="bg-gray-50 border-b p-2 sm:p-4 flex-shrink-0">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center space-x-1 sm:space-x-2">
+        <div className="bg-gray-50 border-b px-3 py-1.5 sm:px-4 sm:py-2 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
               <button
                 onClick={goToPreviousMonth}
-                className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-all"
+                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-all"
               >
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <button
                 onClick={goToNextMonth}
-                className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-all"
+                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-all"
               >
                 <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <h2 className="text-base sm:text-xl font-semibold text-gray-900 order-first sm:order-none w-full sm:w-auto text-center">
+            <h2 className="text-sm sm:text-lg font-semibold text-gray-900">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
 
             <button
               onClick={goToCurrentMonth}
-              className="text-xs sm:text-sm bg-blue-600 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+              className="text-xs sm:text-sm bg-blue-600 text-white px-2 sm:px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
             >
               החודש הנוכחי
             </button>
           </div>
         </div>
 
-        {/* Calendar Grid */}
-        <div className="flex-1 overflow-y-auto p-1 sm:p-4">
-          <div className="grid grid-cols-7 gap-px sm:gap-1 min-w-0">
+        {/* Calendar Grid — fills all remaining space, no scroll */}
+        <div className="flex-1 overflow-hidden p-1 sm:p-2 flex flex-col">
+          <div
+            className="grid grid-cols-7 gap-px sm:gap-1 flex-1"
+            style={{ gridTemplateRows: `auto repeat(${numWeeks}, 1fr)` }}
+          >
             {/* Day headers */}
             {dayNames.map((day, index) => (
-              <div key={index} className="p-0.5 sm:p-2 text-center font-medium text-gray-700 bg-gray-100 rounded text-[10px] sm:text-sm">
+              <div key={index} className="p-0.5 sm:p-1 text-center font-medium text-gray-700 bg-gray-100 rounded text-[10px] sm:text-xs">
                 {day}
               </div>
             ))}
@@ -230,85 +230,84 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               return (
                 <div
                   key={index}
-                  className={`p-0.5 sm:p-2 min-h-[70px] sm:min-h-[110px] border rounded relative overflow-hidden ${
+                  className={`p-0.5 sm:p-1 border rounded relative overflow-hidden flex flex-col ${
                     isToday
                       ? 'bg-blue-100 border-blue-300'
                       : isCurrentMonth
-                      ? 'bg-white border-gray-200 hover:bg-gray-50'
-                      : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                      ? 'bg-white border-gray-200'
+                      : 'bg-gray-50 border-gray-200'
                   }`}
                 >
                   {/* Day number */}
-                  <div className={`text-xs sm:text-sm font-medium mb-0.5 ${
-                    isToday ? 'text-blue-900' : isCurrentMonth ? 'text-gray-900' : 'text-gray-500'
+                  <div className={`text-[10px] sm:text-xs font-medium leading-tight ${
+                    isToday ? 'text-blue-900' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
                   }`}>
                     {day.getDate()}
                   </div>
 
-                  {/* Holiday */}
-                  {holiday && (
-                    <div className="mb-0.5">
-                      <div className="flex items-center text-[9px] sm:text-xs bg-purple-100 text-purple-800 px-1 py-0.5 rounded leading-tight">
+                  {/* Content */}
+                  <div className="flex-1 overflow-hidden space-y-px mt-0.5">
+                    {/* Holiday badge */}
+                    {holiday && (
+                      <div className="flex items-center text-[11px] sm:text-xs bg-purple-100 text-purple-800 px-1 py-0.5 rounded leading-tight">
                         <Star className="w-2 h-2 ml-0.5 flex-shrink-0" />
                         <span className="truncate">{holiday.name}</span>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Shifts */}
-                  {(() => {
-                    const shifts = getShiftsForDate(day, publishedSchedules, employees);
-                    if (!shifts) return null;
+                    {/* Shifts */}
+                    {(() => {
+                      const shifts = getShiftsForDate(day, publishedSchedules, employees, holidays);
+                      if (!shifts) return null;
 
-                    return (
-                      <div className="mt-0.5 space-y-px">
-                        {SHIFT_DISPLAY_ORDER.map((shiftType) => {
-                          const employeeName = shifts[shiftType];
-                          if (!employeeName) return null;
+                      return (
+                        <>
+                          {SHIFT_DISPLAY_ORDER.map((shiftType) => {
+                            const employeeName = shifts[shiftType];
+                            if (!employeeName) return null;
 
-                          const employeeColor = getEmployeeColor(employeeName);
+                            const isHolidayLabel = shifts.holidayName != null && employeeName === shifts.holidayName;
+                            if (isHolidayLabel && holiday) return null;
 
-                          // Get first name only to save space
-                          const firstName = employeeName.split(' ')[0];
+                            const employeeColor = isHolidayLabel
+                              ? 'bg-purple-100 text-purple-800 border-purple-200'
+                              : getEmployeeColor(employeeName);
 
-                          return (
-                            <div
-                              key={shiftType}
-                              className={`text-[9px] sm:text-xs px-1 py-0.5 rounded border ${employeeColor} truncate leading-tight`}
-                            >
-                              {firstName}
-                            </div>
-                          );
-                        })}
+                            const displayName = isHolidayLabel ? employeeName : employeeName.split(' ')[0];
+
+                            return (
+                              <div
+                                key={shiftType}
+                                className={`text-[11px] sm:text-xs px-1 py-0.5 rounded border ${employeeColor} truncate leading-tight`}
+                              >
+                                {displayName}
+                              </div>
+                            );
+                          })}
+                        </>
+                      );
+                    })()}
+
+                    {/* Vacations */}
+                    {vacations.slice(0, 2).map((vacation) => (
+                      <div
+                        key={vacation.id}
+                        className={`flex items-center text-[11px] sm:text-xs px-1 py-0.5 rounded leading-tight ${
+                          vacation.type === 'vacation'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        <User className="w-2 h-2 ml-0.5 flex-shrink-0" />
+                        <span className="truncate">
+                          {getEmployeeName(vacation.employeeId).split(' ')[0]}
+                        </span>
                       </div>
-                    );
-                  })()}
-
-                  {/* Vacations */}
-                  {vacations.length > 0 && (
-                    <div className="space-y-0.5 mt-0.5">
-                      {vacations.slice(0, 2).map((vacation) => (
-                        <div
-                          key={vacation.id}
-                          className={`flex items-center text-[9px] sm:text-xs px-1 py-0.5 rounded leading-tight ${
-                            vacation.type === 'vacation'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          <User className="w-2 h-2 ml-0.5 flex-shrink-0" />
-                          <span className="truncate">
-                            {getEmployeeName(vacation.employeeId).split(' ')[0]}
-                          </span>
-                        </div>
-                      ))}
-                      {vacations.length > 2 && (
-                        <div className="text-[10px] text-gray-500 text-center">
-                          +{vacations.length - 2}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    ))}
+                    {vacations.length > 2 && (
+                      <div className="text-[10px] text-gray-500 text-center">+{vacations.length - 2}</div>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -316,27 +315,22 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
 
         {/* Legend */}
-        <div className="bg-gray-50 border-t p-3 sm:p-4 flex-shrink-0">
-          <h4 className="font-medium text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">מקרא</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-xs sm:text-sm">
-            <div className="flex items-center">
-              <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 border border-blue-200 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
+        <div className="bg-gray-50 border-t px-3 py-1.5 sm:px-4 sm:py-2 flex-shrink-0">
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] sm:text-xs">
+            <div className="flex items-center gap-1">
+              <div className="w-2.5 h-2.5 bg-blue-100 border border-blue-200 rounded flex-shrink-0"></div>
               <span className="text-gray-700">חופשה</span>
             </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 sm:w-4 sm:h-4 bg-red-100 border border-red-200 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
+            <div className="flex items-center gap-1">
+              <div className="w-2.5 h-2.5 bg-red-100 border border-red-200 rounded flex-shrink-0"></div>
               <span className="text-gray-700">מחלה / 119</span>
             </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 sm:w-4 sm:h-4 bg-purple-100 border border-purple-200 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
+            <div className="flex items-center gap-1">
+              <div className="w-2.5 h-2.5 bg-purple-100 border border-purple-200 rounded flex-shrink-0"></div>
               <span className="text-gray-700">חג</span>
             </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 sm:w-4 sm:h-4 bg-gray-100 border border-gray-300 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
-              <span className="text-gray-700">ללא שיבוץ</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 border border-blue-300 rounded ml-1 sm:ml-2 flex-shrink-0"></div>
+            <div className="flex items-center gap-1">
+              <div className="w-2.5 h-2.5 bg-blue-100 border border-blue-300 rounded flex-shrink-0"></div>
               <span className="text-gray-700">היום</span>
             </div>
           </div>
