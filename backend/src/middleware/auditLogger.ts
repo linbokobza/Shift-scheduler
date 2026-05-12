@@ -27,7 +27,6 @@ export const createAuditLog = async (
       entityType: options.entityType,
       entityId: options.entityId,
       changes: options.changes,
-      ipAddress: req.ip || req.socket.remoteAddress,
       userAgent: req.headers['user-agent'],
       timestamp: new Date(),
     });

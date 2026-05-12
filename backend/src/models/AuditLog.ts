@@ -37,7 +37,6 @@ export interface IAuditLog extends Document {
   entityType: EntityType;
   entityId?: mongoose.Types.ObjectId;
   changes?: Record<string, any>;
-  ipAddress?: string;
   userAgent?: string;
   timestamp: Date;
 }
@@ -63,9 +62,6 @@ const auditLogSchema = new Schema<IAuditLog>(
     },
     changes: {
       type: Schema.Types.Mixed,
-    },
-    ipAddress: {
-      type: String,
     },
     userAgent: {
       type: String,

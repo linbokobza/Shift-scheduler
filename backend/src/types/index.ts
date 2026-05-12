@@ -88,7 +88,6 @@ export interface AuditLogDTO {
   entityType: string;
   entityId?: string;
   changes?: Record<string, any>;
-  ipAddress?: string;
   timestamp: string;
 }
 
