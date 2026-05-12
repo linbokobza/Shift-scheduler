@@ -48,7 +48,9 @@
       "Bash(timeout /t 5)",
       "Bash(Select-String -Pattern \"error|frozen|119\" -CaseSensitive:$false)",
       "Bash(grep:*)",
-      "Bash(npx ts-node-dev:*)"
+      "Bash(npx ts-node-dev:*)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\User\\\\Desktop\\\\Lin\\\\project\" -Directory)",
+      "Bash(Select-Object Name)"
     ],
     "deny": [],
     "ask": []

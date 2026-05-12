@@ -31,7 +31,6 @@ export const getAuditLogs = async (req: Request, res: Response): Promise<void> =
       entityType: log.entityType,
       entityId: log.entityId?.toString(),
       changes: log.changes,
-      ipAddress: log.ipAddress,
       timestamp: log.timestamp.toISOString(),
     })),
   });
@@ -58,7 +57,6 @@ export const getAuditLogsByEntity = async (req: Request, res: Response): Promise
       entityType: log.entityType,
       entityId: log.entityId?.toString(),
       changes: log.changes,
-      ipAddress: log.ipAddress,
       timestamp: log.timestamp.toISOString(),
     })),
   });
