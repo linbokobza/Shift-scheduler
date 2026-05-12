@@ -1,10 +1,11 @@
-import { Schedule, User } from '../types';
+import { Schedule, User, Holiday } from '../types';
 import { formatDate, parseLocalDate } from './dateUtils';
 
 export interface DayShifts {
-  morning: string | null;  // employee name or null
+  morning: string | null;  // employee name, holiday name, or null
   evening: string | null;
   night: string | null;
+  holidayName?: string;    // set when the day has a holiday
 }
 
 export const SHIFT_DISPLAY_ORDER = ['morning', 'evening', 'night'] as const;
@@ -34,7 +35,8 @@ const normalizeDate = (date: Date): Date => {
 export const getShiftsForDate = (
   date: Date,
   schedules: Schedule[],
-  employees: User[]
+  employees: User[],
+  holidays: Holiday[] = []
 ): DayShifts | null => {
   const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
 
@@ -63,7 +65,7 @@ export const getShiftsForDate = (
 
   // Helper function to resolve employee ID to name
   const getEmployeeName = (employeeId: string | null): string | null => {
-    if (!employeeId) return 'ללא שיבוץ';
+    if (!employeeId) return null;
     if (employeeId === '119-emergency-service') return '119';
     const employee = employees.find((e) => e.id === employeeId);
     return employee?.name || null;
@@ -75,9 +77,23 @@ export const getShiftsForDate = (
 
   if (isSaturday) return null;
 
+  // Find holiday for this date
+  const year = normalizedDate.getFullYear();
+  const month = String(normalizedDate.getMonth() + 1).padStart(2, '0');
+  const day = String(normalizedDate.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
+  const holiday = holidays.find((h) => h.date === dateString);
+
+  const isEveningBlocked = isFriday || (holiday?.type === 'no-work' || holiday?.type === 'morning-only');
+  const isNightBlocked = isFriday || (holiday?.type === 'no-work' || holiday?.type === 'morning-only');
+  const isMorningBlocked = holiday?.type === 'no-work';
+
+  const holidayLabel = holiday?.name ?? null;
+
   return {
-    morning: getEmployeeName(dayAssignments['morning']),
-    evening: isFriday ? null : getEmployeeName(dayAssignments['evening']),
-    night: isFriday ? null : getEmployeeName(dayAssignments['night']),
+    morning: isMorningBlocked ? holidayLabel : getEmployeeName(dayAssignments['morning']),
+    evening: isEveningBlocked ? (isFriday ? null : holidayLabel) : getEmployeeName(dayAssignments['evening']),
+    night: isNightBlocked ? (isFriday ? null : holidayLabel) : getEmployeeName(dayAssignments['night']),
+    holidayName: holiday?.name,
   };
 };
