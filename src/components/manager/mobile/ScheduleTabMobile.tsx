@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Send, ChevronLeft, ChevronRight, LayoutGrid, Table2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Calendar, Send, ChevronLeft, ChevronRight, LayoutGrid, Table2, Camera } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Schedule, User, Availability, Holiday } from '../../../types';
 import { SHIFTS, DAYS } from '../../../data/mockData';
-import { getWeekDates, formatDateHebrew } from '../../../utils/dateUtils';
+import { getWeekDates, formatDateHebrew, formatDate } from '../../../utils/dateUtils';
 import { useSwipe } from '../../../hooks/useSwipe';
 import ScheduleView from '../../ScheduleView';
 
@@ -54,12 +54,91 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
   const setCurrentDayIndex = onCurrentDayIndexChange ?? setLocalCurrentDayIndex;
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    // Load saved preference from localStorage
     const saved = localStorage.getItem(STORAGE_KEY);
-    return (saved === 'cards' || saved === 'table') ? saved : 'cards';
+    return (saved === 'cards' || saved === 'table') ? saved : 'table';
   });
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const scheduleRef = useRef<HTMLDivElement>(null);
   const weekDates = getWeekDates(weekStart);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+
+    // Switch to table view temporarily if in cards mode so the ref is populated
+    const wasCards = viewMode === 'cards';
+    if (wasCards) setViewMode('table');
+
+    // Wait a tick for the DOM to render the table
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    if (!scheduleRef.current) {
+      if (wasCards) setViewMode('cards');
+      setIsExporting(false);
+      return;
+    }
+
+    try {
+      const { toPng } = await import('html-to-image');
+
+      // Collect all elements that restrict width/overflow and expand them
+      const allEls = scheduleRef.current.querySelectorAll<HTMLElement>('*');
+      type SavedStyle = { el: HTMLElement; overflow: string; overflowX: string; width: string; maxWidth: string; minWidth: string };
+      const saved: SavedStyle[] = [];
+
+      allEls.forEach(el => {
+        const cs = getComputedStyle(el);
+        const needsFix =
+          cs.overflow === 'hidden' || cs.overflow === 'auto' || cs.overflow === 'scroll' ||
+          cs.overflowX === 'hidden' || cs.overflowX === 'auto' || cs.overflowX === 'scroll';
+        if (needsFix) {
+          saved.push({ el, overflow: el.style.overflow, overflowX: el.style.overflowX, width: el.style.width, maxWidth: el.style.maxWidth, minWidth: el.style.minWidth });
+          el.style.overflow = 'visible';
+          el.style.overflowX = 'visible';
+          el.style.width = 'max-content';
+          el.style.maxWidth = 'none';
+          el.style.minWidth = 'max-content';
+        }
+      });
+
+      // Also fix the root capture element itself
+      const rootOrig = { overflow: scheduleRef.current.style.overflow, width: scheduleRef.current.style.width, maxWidth: scheduleRef.current.style.maxWidth };
+      scheduleRef.current.style.overflow = 'visible';
+      scheduleRef.current.style.width = 'max-content';
+      scheduleRef.current.style.maxWidth = 'none';
+
+      const dataUrl = await toPng(scheduleRef.current, {
+        pixelRatio: 3,
+        backgroundColor: '#ffffff',
+        width: scheduleRef.current.scrollWidth,
+        height: scheduleRef.current.scrollHeight,
+      });
+
+      // Restore everything
+      scheduleRef.current.style.overflow = rootOrig.overflow;
+      scheduleRef.current.style.width = rootOrig.width;
+      scheduleRef.current.style.maxWidth = rootOrig.maxWidth;
+      saved.forEach(({ el, overflow, overflowX, width, maxWidth, minWidth }) => {
+        el.style.overflow = overflow;
+        el.style.overflowX = overflowX;
+        el.style.width = width;
+        el.style.maxWidth = maxWidth;
+        el.style.minWidth = minWidth;
+      });
+
+      const link = document.createElement('a');
+      link.download = `schedule-${formatDate(weekStart)}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch {
+      alert('שגיאה בייצוא. אנא נסה שוב.');
+    } finally {
+      if (wasCards) setViewMode('cards');
+      setIsExporting(false);
+    }
+  };
 
   // Save view mode preference to localStorage whenever it changes
   useEffect(() => {
@@ -132,7 +211,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
         <button
           onClick={onPublishSchedule}
           disabled={isPublishing || !schedule || schedule.isPublished || hasPendingChanges}
-          className="flex-1 bg-green-600 text-white px-3 py-2.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-sm font-medium"
+          className="flex-1 bg-blue-600 text-white px-3 py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-sm font-medium"
         >
           {isPublishing ? (
             <>
@@ -148,9 +227,27 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
         </button>
 
         <button
+          onClick={handleExport}
+          disabled={isExporting}
+          className="flex-1 bg-green-600 text-white px-3 py-2.5 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 text-sm font-medium"
+        >
+          {isExporting ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span>מייצא...</span>
+            </>
+          ) : (
+            <>
+              <Camera className="w-4 h-4" />
+              <span>שמור כתמונה</span>
+            </>
+          )}
+        </button>
+
+        <button
           onClick={onGenerateSchedule}
           disabled={isGenerating}
-          className="flex-1 bg-blue-600 text-white px-3 py-2.5 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 text-sm font-medium"
+          className="flex-1 bg-gray-600 text-white px-3 py-2.5 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5 text-sm font-medium"
         >
           {isGenerating ? (
             <>
@@ -160,7 +257,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
           ) : (
             <>
               <Calendar className="w-4 h-4" />
-              <span>{schedule ? 'צור סידור חדש' : 'צור סידור'}</span>
+              <span>{schedule ? 'צור חדש' : 'צור סידור'}</span>
             </>
           )}
         </button>
@@ -276,7 +373,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
 
       {/* Table View */}
       {viewMode === 'table' && (
-        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div ref={scheduleRef} className="bg-white rounded-lg shadow-sm border overflow-hidden">
           <ScheduleView
             schedule={schedule}
             employees={employees}
