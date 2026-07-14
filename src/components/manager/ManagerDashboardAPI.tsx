@@ -295,6 +295,48 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   const getCurrentAvailabilities = (): Availability[] =>
     queryClient.getQueryData<Availability[]>(availabilityKeys.all) ?? availabilities;
 
+  const handleSaveChanges = async (employeeId: string, overrides: Record<string, AvailabilityStatus>) => {
+    try {
+      const existing = getCurrentAvailabilities().find(
+        a => a.employeeId === employeeId && a.weekStart === weekStartString
+      );
+
+      if (!existing) {
+        // Build full shifts with all defaults, then apply overrides
+        const shifts = buildDefaultShifts();
+        for (const [key, status] of Object.entries(overrides)) {
+          const [day, shiftId] = key.split(':');
+          if (!shifts[day]) shifts[day] = {};
+          shifts[day][shiftId] = { ...shifts[day][shiftId], status };
+        }
+        await createAvailabilityMutation.mutateAsync({
+          employeeId,
+          weekStart: weekStartString,
+          shifts: shifts as any,
+        });
+        return;
+      }
+
+      // Merge overrides into existing shifts
+      const updatedShifts = { ...existing.shifts };
+      for (const [key, status] of Object.entries(overrides)) {
+        const [day, shiftId] = key.split(':');
+        if (!updatedShifts[day]) updatedShifts[day] = {};
+        updatedShifts[day] = { ...updatedShifts[day] };
+        updatedShifts[day][shiftId] = { ...updatedShifts[day][shiftId], status };
+      }
+
+      await updateAvailabilityMutation.mutateAsync({
+        id: existing.id,
+        shifts: updatedShifts,
+      });
+    } catch (error) {
+      console.error('Error saving availability changes:', error);
+      alert('שגיאה בשמירת השינויים');
+      throw error;
+    }
+  };
+
   const handleAvailabilityToggle = async (employeeId: string, day: string, shiftId: string) => {
     try {
       const existing = getCurrentAvailabilities().find(
@@ -512,6 +554,7 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     onExtraAssignmentChange: handleExtraAssignmentChange,
     onAvailabilityChange: handleAvailabilityChange,
     onAvailabilityToggle: handleAvailabilityToggle,
+    onSaveChanges: handleSaveChanges,
     onCommentChange: handleCommentChange,
     onLockToggle: handleLockToggle,
     onFreezeToggle: handleFreezeToggle,
