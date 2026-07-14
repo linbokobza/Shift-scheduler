@@ -460,14 +460,14 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
     }
   };
 
-  const handleExtraAssignmentChange = async (day: string, shiftId: string, employeeId: string | null) => {
+  const handleExtraAssignmentChange = async (day: string, shiftId: string, employeeIds: string[]) => {
     if (!currentSchedule) return;
 
     const updatedExtraAssignments = {
       ...currentSchedule.extraAssignments,
       [day]: {
         ...(currentSchedule.extraAssignments?.[day] || {}),
-        [shiftId]: employeeId
+        [shiftId]: employeeIds
       }
     };
 
@@ -477,7 +477,7 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
       queryClient.invalidateQueries({ queryKey: ['schedules', 'week', weekStartString] });
     } catch (error) {
       console.error('Error updating extra assignment:', error);
-      alert('שגיאה בשמירת העובד הנוסף');
+      alert('שגיאה בשמירת העובדים הנוספים');
     }
   };
 

@@ -47,7 +47,7 @@ export interface Schedule {
   };
   extraAssignments?: {
     [day: string]: {
-      [shiftId: string]: string | null; // extra employeeId added manually by manager
+      [shiftId: string]: string[]; // extra employeeIds added manually by manager
     };
   };
   lockedAssignments?: {

@@ -122,6 +122,10 @@ export class ScheduleService {
       map.forEach((value, key) => {
         if (value instanceof Map) {
           result[key] = this.convertMapToObject(value);
+        } else if (Array.isArray(value)) {
+          result[key] = value.map((v: any) =>
+            v && typeof v === 'object' && v._bsontype === 'ObjectId' ? v.toString() : v
+          );
         } else if (value && typeof value === 'object' && value._bsontype === 'ObjectId') {
           result[key] = value.toString();
         } else {
@@ -147,6 +151,27 @@ export class ScheduleService {
       }
     });
     return map;
+  }
+
+  /**
+   * Convert extra assignments object (string[][] per shift) to Map with proper ObjectId types
+   */
+  static convertExtraAssignmentsToMap(extraAssignments: { [day: string]: { [shiftId: string]: string[] } }): Map<string, any> {
+    const outerMap = new Map();
+    Object.entries(extraAssignments || {}).forEach(([day, shifts]) => {
+      const dayMap = new Map();
+      Object.entries(shifts || {}).forEach(([shiftId, employeeIds]) => {
+        const ids = (employeeIds || []).map((empId: string) => {
+          if (empId && mongoose.Types.ObjectId.isValid(empId) && empId.length === 24) {
+            return new mongoose.Types.ObjectId(empId);
+          }
+          return empId;
+        });
+        dayMap.set(shiftId, ids);
+      });
+      outerMap.set(day, dayMap);
+    });
+    return outerMap;
   }
 
   /**
@@ -181,7 +206,8 @@ export class ScheduleService {
     lockedAssignments: any,
     createdBy: mongoose.Types.ObjectId,
     optimizationScore?: number,
-    frozenAssignments?: any
+    frozenAssignments?: any,
+    extraAssignments?: any
   ): Promise<ISchedule> {
     // Delete any existing schedules for this week
     await Schedule.deleteMany({ weekStart });
@@ -191,11 +217,13 @@ export class ScheduleService {
 
     const lockedMap = lockedAssignments ? this.convertObjectToMap(lockedAssignments) : undefined;
     const frozenMap = frozenAssignments ? this.convertObjectToMap(frozenAssignments) : undefined;
+    const extraMap = extraAssignments ? this.convertExtraAssignmentsToMap(extraAssignments) : undefined;
 
     // Create new schedule
     const schedule = await Schedule.create({
       weekStart,
       assignments: assignmentsMap as any,
+      extraAssignments: extraMap as any,
       lockedAssignments: lockedMap as any,
       frozenAssignments: frozenMap as any,
       isPublished: false,

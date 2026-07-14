@@ -76,11 +76,12 @@ export const generateSchedule = async (req: AuthRequest, res: Response): Promise
 
   // Check if there's an existing schedule with frozen assignments
   const existingSchedule = await Schedule.findOne({ weekStart: weekStartDate });
-  let existingScheduleData: { assignments?: any; frozenAssignments?: any } | undefined;
+  let existingScheduleData: { assignments?: any; extraAssignments?: any; frozenAssignments?: any } | undefined;
 
   if (existingSchedule) {
     existingScheduleData = {
       assignments: existingSchedule.assignments ? ScheduleService.convertMapToObject(existingSchedule.assignments) : undefined,
+      extraAssignments: existingSchedule.extraAssignments ? ScheduleService.convertMapToObject(existingSchedule.extraAssignments) : undefined,
       frozenAssignments: existingSchedule.frozenAssignments ? ScheduleService.convertMapToObject(existingSchedule.frozenAssignments) : undefined
     };
     console.log('[Controller] Found existing schedule with frozenAssignments:', existingScheduleData.frozenAssignments);
@@ -106,14 +107,15 @@ export const generateSchedule = async (req: AuthRequest, res: Response): Promise
     return;
   }
 
-  // Save schedule - preserve frozenAssignments from existing schedule
+  // Save schedule - preserve frozenAssignments and extra assignments for frozen shifts
   const schedule = await ScheduleService.saveSchedule(
     weekStartDate,
     result.assignments,
     {},
     req.user._id,
     0,
-    result.frozenAssignments || existingScheduleData?.frozenAssignments
+    result.frozenAssignments || existingScheduleData?.frozenAssignments,
+    result.frozenExtraAssignments
   );
 
   // Audit log
@@ -147,7 +149,7 @@ export const updateSchedule = async (req: AuthRequest, res: Response): Promise<v
   }
 
   if (extraAssignments !== undefined) {
-    schedule.extraAssignments = ScheduleService.convertAssignmentsToMap(extraAssignments) as any;
+    schedule.extraAssignments = ScheduleService.convertExtraAssignmentsToMap(extraAssignments) as any;
   }
 
   if (lockedAssignments) {

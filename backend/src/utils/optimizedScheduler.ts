@@ -58,6 +58,11 @@ const SHIFTS = [
 
 interface ExistingScheduleData {
   assignments?: ShiftAssignment;
+  extraAssignments?: {
+    [day: string]: {
+      [shiftId: string]: string[];
+    };
+  };
   frozenAssignments?: {
     [day: string]: {
       [shiftId: string]: boolean;
@@ -76,7 +81,7 @@ export async function generateOptimizedSchedule(
   holidays: HolidayData[],
   weekStart: string,
   existingSchedule?: ExistingScheduleData
-): Promise<{ assignments: ShiftAssignment; warnings: string[]; frozenAssignments?: ExistingScheduleData['frozenAssignments'] } | null> {
+): Promise<{ assignments: ShiftAssignment; warnings: string[]; frozenAssignments?: ExistingScheduleData['frozenAssignments']; frozenExtraAssignments?: ExistingScheduleData['extraAssignments'] } | null> {
 
   const warnings: string[] = [];
   const frozenAssignments = existingSchedule?.frozenAssignments;
@@ -146,6 +151,8 @@ export async function generateOptimizedSchedule(
   // מיפוי משמרות מוקפאות - אלו יישארו קבועות
   const frozenShifts = new Map<string, string | null>(); // key: "day_shiftId", value: employeeId or null for "frozen empty"
   const frozenForOrTools: { [day: string]: { [shiftId: string]: string | null } } = {};
+  // Extra assignments for frozen shifts - preserved across regenerations
+  const frozenExtraAssignments: ExistingScheduleData['extraAssignments'] = {};
 
   if (frozenAssignments && existingSchedule?.assignments) {
     Object.keys(frozenAssignments).forEach(dayStr => {
@@ -164,6 +171,16 @@ export async function generateOptimizedSchedule(
               frozenForOrTools[dayStr] = {};
             }
             frozenForOrTools[dayStr][shiftId] = employeeId;
+
+            // Preserve extra assignments (array) for this frozen shift
+            const extraEmployeeIds = existingSchedule.extraAssignments?.[dayStr]?.[shiftId];
+            if (extraEmployeeIds !== undefined) {
+              if (!frozenExtraAssignments![dayStr]) {
+                frozenExtraAssignments![dayStr] = {};
+              }
+              frozenExtraAssignments![dayStr][shiftId] = extraEmployeeIds;
+              console.log(`[Scheduler] Preserving ${extraEmployeeIds.length} extra assignment(s) for frozen shift: day ${dayStr}, shift ${shiftId}`);
+            }
 
             if (employeeId) {
               console.log(`[Scheduler] Frozen shift: day ${dayStr}, shift ${shiftId}, employee ${employeeId}`);
@@ -272,7 +289,8 @@ export async function generateOptimizedSchedule(
       return {
         assignments: convertedAssignments,
         warnings,
-        frozenAssignments
+        frozenAssignments,
+        frozenExtraAssignments: Object.keys(frozenExtraAssignments!).length > 0 ? frozenExtraAssignments : undefined
       };
     } else {
       console.warn('[Scheduler] OR-Tools failed:', ortoolsResult.result.message);
@@ -304,7 +322,8 @@ export async function generateOptimizedSchedule(
   return {
     assignments: result.assignments,
     warnings,
-    frozenAssignments
+    frozenAssignments,
+    frozenExtraAssignments: Object.keys(frozenExtraAssignments!).length > 0 ? frozenExtraAssignments : undefined
   };
 }
 

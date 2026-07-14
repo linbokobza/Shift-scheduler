@@ -5,9 +5,9 @@ import { User } from '../../types';
 interface ShiftReplacementModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (employeeId: string | null, extraEmployeeId?: string | null) => void;
+  onSave: (employeeId: string | null, extraEmployeeIds?: string[]) => void;
   currentEmployeeId: string | null;
-  currentExtraEmployeeId?: string | null;
+  currentExtraEmployeeIds?: string[];
   allEmployees: User[];
   availableEmployeeIds: string[];
   submittedEmployeeIds: string[];
@@ -33,7 +33,7 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
   onClose,
   onSave,
   currentEmployeeId,
-  currentExtraEmployeeId = null,
+  currentExtraEmployeeIds = [],
   allEmployees,
   availableEmployeeIds,
   submittedEmployeeIds,
@@ -43,7 +43,7 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
   onFreezeToggle
 }) => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(currentEmployeeId);
-  const [selectedExtraEmployeeId, setSelectedExtraEmployeeId] = useState<string | null>(currentExtraEmployeeId);
+  const [selectedExtraEmployeeIds, setSelectedExtraEmployeeIds] = useState<string[]>(currentExtraEmployeeIds);
   const [isFrozenLocal, setIsFrozenLocal] = useState<boolean>(isFrozen);
 
   // Reset selection and freeze state when modal opens
@@ -51,10 +51,10 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
     if (isOpen) {
       console.log('🧊 Modal opened - isFrozen prop:', isFrozen, 'currentEmployeeId:', currentEmployeeId);
       setSelectedEmployeeId(currentEmployeeId);
-      setSelectedExtraEmployeeId(currentExtraEmployeeId);
+      setSelectedExtraEmployeeIds(currentExtraEmployeeIds);
       setIsFrozenLocal(isFrozen);
     }
-  }, [isOpen, currentEmployeeId, currentExtraEmployeeId, isFrozen]);
+  }, [isOpen, currentEmployeeId, currentExtraEmployeeIds, isFrozen]);
 
   // Click outside to close
   useEffect(() => {
@@ -112,10 +112,16 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
   });
 
   const handleSave = () => {
-    onSave(selectedEmployeeId, selectedExtraEmployeeId);
+    onSave(selectedEmployeeId, selectedExtraEmployeeIds);
     if (onFreezeToggle) {
       onFreezeToggle(isFrozenLocal);
     }
+  };
+
+  const toggleExtraEmployee = (empId: string) => {
+    setSelectedExtraEmployeeIds(prev =>
+      prev.includes(empId) ? prev.filter(id => id !== empId) : [...prev, empId]
+    );
   };
 
   // עובדים זמינים להוספה כעובד נוסף (רק זמינים, לא העובד הראשי)
@@ -254,19 +260,24 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
           </div>
         </div>
 
-        {/* Extra Employee Section */}
+        {/* Extra Employees Section */}
         <div className="border-t px-4 py-3">
-          <div className="text-xs font-semibold text-gray-600 mb-2">עובד נוסף למשמרת</div>
+          <div className="text-xs font-semibold text-gray-600 mb-2">
+            עובדים נוספים למשמרת
+            {selectedExtraEmployeeIds.length > 0 && (
+              <span className="mr-1 text-green-600">({selectedExtraEmployeeIds.length} נבחרו)</span>
+            )}
+          </div>
           {availableForExtra.length === 0 ? (
             <p className="text-xs text-gray-400">אין עובדים זמינים נוספים</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {availableForExtra.map(emp => {
-                const isSelected = selectedExtraEmployeeId === emp.id;
+                const isSelected = selectedExtraEmployeeIds.includes(emp.id);
                 return (
                   <button
                     key={emp.id}
-                    onClick={() => setSelectedExtraEmployeeId(isSelected ? null : emp.id)}
+                    onClick={() => toggleExtraEmployee(emp.id)}
                     className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs border transition-all ${
                       isSelected
                         ? 'bg-green-100 border-green-500 text-green-800 font-semibold'
@@ -281,12 +292,12 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
                   </button>
                 );
               })}
-              {selectedExtraEmployeeId && (
+              {selectedExtraEmployeeIds.length > 0 && (
                 <button
-                  onClick={() => setSelectedExtraEmployeeId(null)}
+                  onClick={() => setSelectedExtraEmployeeIds([])}
                   className="flex items-center gap-1 px-2 py-1 rounded-full text-xs border border-red-300 text-red-600 hover:bg-red-50 transition-all"
                 >
-                  הסר
+                  הסר הכל
                 </button>
               )}
             </div>
