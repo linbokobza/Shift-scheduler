@@ -62,7 +62,7 @@ const AvailabilitySummary: React.FC<AvailabilitySummaryProps> = ({
     if (schedule.extraAssignments) {
       Object.keys(schedule.extraAssignments).forEach(day => {
         Object.keys(schedule.extraAssignments![day]).forEach(shiftId => {
-          if (schedule.extraAssignments![day][shiftId] === employeeId) {
+          if ((schedule.extraAssignments![day][shiftId] || []).includes(employeeId)) {
             assignedShifts++;
             if (shiftId === 'morning') morningShifts++;
             else if (shiftId === 'evening') eveningShifts++;

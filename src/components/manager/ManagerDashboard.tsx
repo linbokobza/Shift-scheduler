@@ -255,14 +255,14 @@ const ManagerDashboard = () => {
     await handleGenerateSchedule();
   };
 
-  const handleExtraAssignmentChange = async (day: string, shiftId: string, employeeId: string | null) => {
+  const handleExtraAssignmentChange = async (day: string, shiftId: string, employeeIds: string[]) => {
     if (!currentSchedule) return;
 
     const updatedExtraAssignments = {
       ...currentSchedule.extraAssignments,
       [day]: {
         ...(currentSchedule.extraAssignments?.[day] || {}),
-        [shiftId]: employeeId
+        [shiftId]: employeeIds
       }
     };
 
@@ -282,7 +282,7 @@ const ManagerDashboard = () => {
     try {
       await scheduleAPI.update(currentSchedule.id, { extraAssignments: updatedExtraAssignments });
     } catch (error) {
-      console.error('Failed to save extra assignment to backend:', error);
+      console.error('Failed to save extra assignments to backend:', error);
     }
   };
 

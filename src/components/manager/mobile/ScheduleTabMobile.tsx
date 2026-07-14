@@ -21,7 +21,7 @@ interface ScheduleTabMobileProps {
   isPublishing: boolean;
   onAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
   onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => void;
-  onExtraAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
+  onExtraAssignmentChange?: (day: string, shiftId: string, employeeIds: string[]) => void;
   onLockToggle?: (day: string, shiftId: string, locked: boolean) => void;
   onFreezeToggle?: (day: string, shiftId: string, frozen: boolean) => void;
   currentDayIndex?: number;

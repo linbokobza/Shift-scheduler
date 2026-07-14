@@ -37,7 +37,7 @@ interface ScheduleViewProps {
   weekStart: Date;
   onAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
   onBulkAssignmentChange?: (changes: Array<{ day: string; shiftId: string; employeeId: string | null }>) => Promise<void>;
-  onExtraAssignmentChange?: (day: string, shiftId: string, employeeId: string | null) => void;
+  onExtraAssignmentChange?: (day: string, shiftId: string, employeeIds: string[]) => void;
   onLockToggle?: (day: string, shiftId: string, locked: boolean) => void;
   onFreezeToggle?: (day: string, shiftId: string, frozen: boolean) => void;
   onPendingChanges?: (hasPendingChanges: boolean) => void;
@@ -304,14 +304,14 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
     setOpenDropdown(null);
   };
 
-  // Handler לשמירה מהמודל (עובד ראשי + עובד נוסף)
-  const handleReplacementSave = (employeeId: string | null, extraEmployeeId?: string | null) => {
+  // Handler לשמירה מהמודל (עובד ראשי + עובדים נוספים)
+  const handleReplacementSave = (employeeId: string | null, extraEmployeeIds?: string[]) => {
     if (!replacementModal) return;
 
     handleEmployeeSelect(replacementModal.day, replacementModal.shiftId, employeeId);
 
-    if (extraEmployeeId !== undefined && onExtraAssignmentChange) {
-      onExtraAssignmentChange(replacementModal.day, replacementModal.shiftId, extraEmployeeId);
+    if (extraEmployeeIds !== undefined && onExtraAssignmentChange) {
+      onExtraAssignmentChange(replacementModal.day, replacementModal.shiftId, extraEmployeeIds);
     }
 
     setReplacementModal(null);
@@ -410,11 +410,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                 {weekDates.map((date, dayIndex) => {
                   const dayStr = dayIndex.toString();
                   const currentAssignment = getCurrentAssignment(dayStr, shift.id);
-                  const extraAssignment = schedule?.extraAssignments?.[dayStr]?.[shift.id] || null;
+                  const extraAssignments = schedule?.extraAssignments?.[dayStr]?.[shift.id] || [];
                   const employeeName = getEmployeeName(currentAssignment);
-                  const extraEmployeeName = getEmployeeName(extraAssignment);
+                  const extraEmployeeNames = extraAssignments.map(id => getEmployeeName(id));
                   const employeeColor = getEmployeeColor(currentAssignment);
-                  const extraEmployeeColor = getEmployeeColor(extraAssignment);
+                  const extraEmployeeColor = extraAssignments.length > 0 ? getEmployeeColor(extraAssignments[0]) : '';
                   const employeeColorNoBorder = getEmployeeColorWithoutBorder(currentAssignment);
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
@@ -437,9 +437,9 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       dayIndex={dayIndex}
                       shiftId={shift.id}
                       currentAssignment={currentAssignment}
-                      extraAssignment={extraAssignment}
+                      extraAssignments={extraAssignments}
                       employeeName={employeeName}
-                      extraEmployeeName={extraEmployeeName}
+                      extraEmployeeNames={extraEmployeeNames}
                       employeeColor={employeeColor}
                       extraEmployeeColor={extraEmployeeColor}
                       employeeColorNoBorder={employeeColorNoBorder}
@@ -503,11 +503,11 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                 {DAYS.map((_, dayIndex) => {
                   const dayStr = dayIndex.toString();
                   const currentAssignment = getCurrentAssignment(dayStr, shift.id);
-                  const extraAssignment = schedule?.extraAssignments?.[dayStr]?.[shift.id] || null;
+                  const extraAssignments = schedule?.extraAssignments?.[dayStr]?.[shift.id] || [];
                   const employeeName = getEmployeeName(currentAssignment);
-                  const extraEmployeeName = getEmployeeName(extraAssignment);
+                  const extraEmployeeNames = extraAssignments.map(id => getEmployeeName(id));
                   const employeeColor = getEmployeeColor(currentAssignment);
-                  const extraEmployeeColor = getEmployeeColor(extraAssignment);
+                  const extraEmployeeColor = extraAssignments.length > 0 ? getEmployeeColor(extraAssignments[0]) : '';
                   const employeeColorNoBorder = getEmployeeColorWithoutBorder(currentAssignment);
                   const holiday = getHolidayForDay(dayIndex);
                   const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
@@ -531,9 +531,9 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       dayIndex={dayIndex}
                       shiftId={shift.id}
                       currentAssignment={currentAssignment}
-                      extraAssignment={extraAssignment}
+                      extraAssignments={extraAssignments}
                       employeeName={employeeName}
-                      extraEmployeeName={extraEmployeeName}
+                      extraEmployeeNames={extraEmployeeNames}
                       employeeColor={employeeColor}
                       extraEmployeeColor={extraEmployeeColor}
                       employeeColorNoBorder={employeeColorNoBorder}
@@ -571,7 +571,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
           onClose={() => setReplacementModal(null)}
           onSave={handleReplacementSave}
           currentEmployeeId={getCurrentAssignment(replacementModal.day, replacementModal.shiftId)}
-          currentExtraEmployeeId={schedule?.extraAssignments?.[replacementModal.day]?.[replacementModal.shiftId] || null}
+          currentExtraEmployeeIds={schedule?.extraAssignments?.[replacementModal.day]?.[replacementModal.shiftId] || []}
           allEmployees={activeEmployees}
           availableEmployeeIds={getAvailableEmployeesForShift(
             parseInt(replacementModal.day),
@@ -608,9 +608,9 @@ interface ShiftCellProps {
   dayIndex: number;
   shiftId: string;
   currentAssignment: string | null;
-  extraAssignment: string | null;
+  extraAssignments: string[];
   employeeName: string;
-  extraEmployeeName: string;
+  extraEmployeeNames: string[];
   employeeColor: string;
   extraEmployeeColor: string;
   employeeColorNoBorder: string;
@@ -638,9 +638,9 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
   dayStr,
   shiftId,
   currentAssignment,
-  extraAssignment,
+  extraAssignments,
   employeeName,
-  extraEmployeeName,
+  extraEmployeeNames,
   employeeColor,
   employeeColorNoBorder,
   holiday,
@@ -704,8 +704,8 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
                 : isHolidayBlocked
                   ? ` ${holiday?.name || 'חג'}`
                   : currentAssignment
-                    ? extraAssignment
-                      ? `${employeeName} + ${extraEmployeeName}`
+                    ? extraEmployeeNames.length > 0
+                      ? `${employeeName} + ${extraEmployeeNames.join(' + ')}`
                       : employeeName
                     : '-'
               }
