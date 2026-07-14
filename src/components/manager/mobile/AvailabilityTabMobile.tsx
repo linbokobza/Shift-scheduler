@@ -10,6 +10,7 @@ interface AvailabilityTabMobileProps {
   weekStart: Date;
   onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => Promise<void>;
   onAvailabilityToggle: (employeeId: string, day: string, shiftId: string) => Promise<void>;
+  onSaveChanges: (employeeId: string, overrides: Record<string, AvailabilityStatus>) => Promise<void>;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
   selectedEmployee: string | null;
   onSelectedEmployeeChange: (employeeId: string | null) => void;
@@ -25,6 +26,7 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
   weekStart,
   onAvailabilityChange,
   onAvailabilityToggle,
+  onSaveChanges,
   onCommentChange,
   selectedEmployee,
   onSelectedEmployeeChange,
@@ -41,6 +43,7 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
         weekStart={weekStart}
         onAvailabilityChange={onAvailabilityChange}
         onAvailabilityToggle={onAvailabilityToggle}
+        onSaveChanges={onSaveChanges}
         onCommentChange={onCommentChange}
         selectedEmployee={selectedEmployee}
         onSelectedEmployeeChange={onSelectedEmployeeChange}

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Eye, Edit3, Save, MessageSquare } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Eye, Edit3, Save, MessageSquare, X } from 'lucide-react';
 import { User, Availability, VacationDay, AvailabilityStatus, Holiday } from '../../types';
 import { SHIFTS, DAYS } from '../../data/mockData';
 import { formatDateHebrew, getWeekDates, formatDate } from '../../utils/dateUtils';
@@ -14,6 +14,7 @@ interface AvailabilityViewerProps {
   weekStart: Date;
   onAvailabilityChange: (employeeId: string, day: string, shiftId: string, status: AvailabilityStatus) => Promise<void>;
   onAvailabilityToggle: (employeeId: string, day: string, shiftId: string) => Promise<void>;
+  onSaveChanges: (employeeId: string, overrides: Record<string, AvailabilityStatus>) => Promise<void>;
   onCommentChange: (employeeId: string, day: string, shiftId: string, comment: string) => void;
   selectedEmployee: string | null;
   onSelectedEmployeeChange: (employeeId: string | null) => void;
@@ -30,6 +31,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   weekStart,
   onAvailabilityChange,
   onAvailabilityToggle,
+  onSaveChanges,
   onCommentChange,
   selectedEmployee,
   onSelectedEmployeeChange,
@@ -38,15 +40,25 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   shiftAnalysis
 }) => {
   const [selectedCell, setSelectedCell] = useState<{ day: string; shift: string; comment: string } | null>(null);
-  const isSaving = useRef(false);
+  // Pending local changes: key = `${day}:${shiftId}`, value = new status.
+  // Accumulated on every click; sent to DB only on "שמור שינויים".
+  const [pendingChanges, setPendingChanges] = useState<Record<string, AvailabilityStatus>>({});
+  const pendingRef = useRef(pendingChanges);
+  pendingRef.current = pendingChanges;
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Use the submission week from the props
+  const hasPendingChanges = Object.keys(pendingChanges).length > 0;
+
+  // Discard pending changes when employee or week changes, or when leaving edit mode without saving.
+  useEffect(() => {
+    setPendingChanges({});
+  }, [selectedEmployee, weekStart]);
+
   const submissionWeekStart = weekStart;
   const weekStartString = formatDate(submissionWeekStart);
   const weekDates = getWeekDates(submissionWeekStart);
   const activeEmployees = employees.filter(emp => emp.role === 'employee' && emp.isActive);
 
-  // Subscribe directly to the live cache so optimistic updates trigger re-render
   const { data: liveAvailabilities } = useAvailabilities();
 
   const getEmployeeAvailability = (employeeId: string) => {
@@ -114,15 +126,13 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   const isHolidayShiftBlocked = (dayIndex: number, shiftId: string) => {
     const holiday = getHolidayForDay(dayIndex);
     if (!holiday) return false;
-    
     if (holiday.type === 'no-work') return true;
     if (holiday.type === 'morning-only' && (shiftId === 'evening' || shiftId === 'night')) return true;
-    
     return false;
   };
 
-  const handleCellClick = async (day: string, shiftId: string) => {
-    if (!editMode || !selectedEmployee || isSaving.current) return;
+  const handleCellClick = (day: string, shiftId: string) => {
+    if (!editMode || !selectedEmployee) return;
 
     const dayIndex = parseInt(day);
     if (isVacationDay(selectedEmployee, dayIndex) || isHolidayShiftBlocked(dayIndex, shiftId)) return;
@@ -130,12 +140,42 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
     const isRestrictedTime = (dayIndex === 5 && (shiftId === 'evening' || shiftId === 'night')) || dayIndex === 6;
     if (isRestrictedTime) return;
 
-    isSaving.current = true;
-    try {
-      await onAvailabilityToggle(selectedEmployee, day, shiftId);
-    } finally {
-      isSaving.current = false;
+    const key = `${day}:${shiftId}`;
+
+    // Determine displayed status: pending change takes priority over server data
+    const serverStatus = getEmployeeAvailability(selectedEmployee)?.shifts[day]?.[shiftId]?.status ?? 'available';
+    const currentStatus = pendingRef.current[key] ?? serverStatus;
+    const nextStatus: AvailabilityStatus = currentStatus === 'unavailable' ? 'available' : 'unavailable';
+
+    // If the new status equals server status, the cell is back to its original — remove from pending
+    if (nextStatus === serverStatus) {
+      setPendingChanges(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    } else {
+      setPendingChanges(prev => ({ ...prev, [key]: nextStatus }));
     }
+  };
+
+  const handleSave = async () => {
+    if (!selectedEmployee || !hasPendingChanges || isSaving) return;
+    setIsSaving(true);
+    try {
+      await onSaveChanges(selectedEmployee, pendingRef.current);
+      setPendingChanges({});
+      onEditModeChange(false);
+    } catch {
+      // error is shown by the parent handler
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDiscard = () => {
+    setPendingChanges({});
+    onEditModeChange(false);
   };
 
   const handleCommentClick = (day: string, shiftId: string, comment: string, e?: React.MouseEvent) => {
@@ -163,27 +203,33 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
               צפייה באילוצי עובדים
             </h3>
           </div>
-          <div className="flex items-center space-x-2">
-            {selectedEmployee && (
+          <div className="flex items-center gap-2">
+            {selectedEmployee && editMode && (
+              <>
+                <button
+                  onClick={handleDiscard}
+                  className="flex items-center px-3 py-2 rounded-lg transition-colors text-sm bg-gray-200 text-gray-700 hover:bg-gray-300"
+                >
+                  <X className="w-4 h-4 ml-1" />
+                  ביטול
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={!hasPendingChanges || isSaving}
+                  className="flex items-center px-3 py-2 rounded-lg transition-colors text-sm bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save className="w-4 h-4 ml-1" />
+                  {isSaving ? 'שומר...' : `שמור שינויים${hasPendingChanges ? ` (${Object.keys(pendingChanges).length})` : ''}`}
+                </button>
+              </>
+            )}
+            {selectedEmployee && !editMode && (
               <button
-                onClick={() => onEditModeChange(!editMode)}
-                className={`flex items-center px-3 py-2 rounded-lg transition-colors text-sm ml-2 ${
-                  editMode
-                    ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
+                onClick={() => onEditModeChange(true)}
+                className="flex items-center px-3 py-2 rounded-lg transition-colors text-sm bg-blue-600 text-white hover:bg-blue-700"
               >
-                {editMode ? (
-                  <>
-                    <Save className="w-4 h-4 ml-1" />
-                    שמור שינויים
-                  </>
-                ) : (
-                  <>
-                    <Edit3 className="w-4 h-4 ml-1" />
-                    עריכה
-                  </>
-                )}
+                <Edit3 className="w-4 h-4 ml-1" />
+                עריכה
               </button>
             )}
           </div>
@@ -255,6 +301,8 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                       const isHolidayBlocked = isHolidayShiftBlocked(dayIndex, shift.id);
                       const isRestrictedTime = (dayIndex === 5 && (shift.id === 'evening' || shift.id === 'night')) || dayIndex === 6;
                       const hasComment = cellData?.comment && cellData.comment.length > 0;
+                      const pendingKey = `${dayStr}:${shift.id}`;
+                      const displayStatus = pendingChanges[pendingKey] ?? cellData?.status ?? 'available';
 
                       return (
                         <td key={dayIndex} className="px-1 lg:px-2 py-2 lg:py-4 border-b">
@@ -268,14 +316,14 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                                 ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed'
                                 : isVacation
                                 ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed'
-                                : `${hasComment ? getStatusColorWithoutBorder(cellData?.status ?? 'available') : getStatusColor(cellData?.status ?? 'available')} hover:opacity-80 shadow-sm ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border lg:border-2 lg:border-gray-200' : ''}`
+                                : `${hasComment ? getStatusColorWithoutBorder(displayStatus) : getStatusColor(displayStatus)} hover:opacity-80 shadow-sm ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border lg:border-2 lg:border-gray-200' : ''}`
                               }
                             `}
-                            onClick={async () => {
+                            onClick={() => {
                               if (!editMode && hasComment && !isHolidayBlocked) {
                                 handleCommentClick(dayStr, shift.id, cellData?.comment || '', undefined);
                               } else {
-                                await handleCellClick(dayStr, shift.id);
+                                handleCellClick(dayStr, shift.id);
                               }
                             }}
                           >
@@ -287,7 +335,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                                     ? `חג: ${holiday?.name}`
                                   : isVacation
                                     ? 'חופשה/מחלה'
-                                    : getStatusText(cellData?.status || 'available')
+                                    : getStatusText(displayStatus)
                                 }
                               </div>
                             </div>
