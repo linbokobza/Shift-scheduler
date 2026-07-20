@@ -24,11 +24,16 @@ export const authenticateJWT = async (
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
     // Verify token
-    const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
-    const decoded = jwt.verify(token, jwtSecret) as { userId: string };
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      logger.error('JWT_SECRET is not set');
+      res.status(500).json({ error: 'Server configuration error' });
+      return;
+    }
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string; iat?: number };
 
-    // Find user
-    const user = await User.findById(decoded.userId);
+    // Find user (include passwordChangedAt for token invalidation check)
+    const user = await User.findById(decoded.userId).select('+passwordChangedAt');
 
     if (!user) {
       res.status(401).json({ error: 'Invalid token - user not found' });
@@ -38,6 +43,15 @@ export const authenticateJWT = async (
     if (!user.isActive) {
       res.status(403).json({ error: 'User account is inactive' });
       return;
+    }
+
+    // Reject tokens issued before the last password change (SEC-017)
+    if (user.passwordChangedAt && decoded.iat) {
+      const changedAt = Math.floor(user.passwordChangedAt.getTime() / 1000);
+      if (decoded.iat < changedAt) {
+        res.status(401).json({ error: 'Token invalidated - please log in again' });
+        return;
+      }
     }
 
     // Attach user to request

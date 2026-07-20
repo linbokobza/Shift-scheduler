@@ -6,11 +6,12 @@ services:
     image: mongo:7.0
     container_name: shift-scheduler-mongodb
     restart: unless-stopped
-    ports:
-      - "27017:27017"
+    # Do NOT expose MongoDB port to the host in production
+    # ports:
+    #   - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: adminpassword
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?MONGO_ROOT_PASSWORD must be set}
       MONGO_INITDB_DATABASE: shift-scheduler
     volumes:
       - mongodb_data:/data/db
@@ -29,10 +30,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: 5001
-      MONGODB_URI: mongodb://admin:adminpassword@mongodb:27017/shift-scheduler?authSource=admin
-      JWT_SECRET: production-secret-change-this-in-real-deployment
+      MONGODB_URI: ${MONGODB_URI:?MONGODB_URI must be set}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
       JWT_EXPIRES_IN: 7d
-      CORS_ORIGIN: http://localhost:5176
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5176}
       LOG_LEVEL: info
     depends_on:
       - mongodb

@@ -86,16 +86,26 @@ describe('LoginForm', () => {
       expect(screen.getByText(/שכחתי סיסמה/i)).toBeInTheDocument();
     });
 
-    it('should render quick login section', () => {
+    it('should render quick login section label when users are loaded', async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ users: [{ name: 'Test', email: 'test@test.com', role: 'employee' }] }),
+      }) as any;
+
       renderLoginForm();
 
-      expect(screen.getByText(/התחברות מהירה/i)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText(/בחירה מהירה/i)).toBeInTheDocument();
+      });
+
+      vi.restoreAllMocks();
     });
 
-    it('should render application title', () => {
+    it('should render application logo', () => {
       renderLoginForm();
 
-      expect(screen.getByText(/מערכת ניהול משמרות/i)).toBeInTheDocument();
+      const logos = screen.getAllByAltText(/ShiftLock/i);
+      expect(logos.length).toBeGreaterThan(0);
     });
   });
 

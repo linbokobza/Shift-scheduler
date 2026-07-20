@@ -8,6 +8,7 @@ export interface IUser extends Document {
   password: string;
   role: 'employee' | 'manager';
   isActive: boolean;
+  passwordChangedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -50,19 +51,27 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: true,
     },
+    passwordChangedAt: {
+      type: Date,
+      select: false,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Hash password before saving
+// Hash password and record change timestamp before saving
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    // Only set on updates, not initial creation
+    if (!this.isNew) {
+      this.passwordChangedAt = new Date();
+    }
     next();
   } catch (error: any) {
     next(error);

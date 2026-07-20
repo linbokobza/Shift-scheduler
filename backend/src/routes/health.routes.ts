@@ -9,18 +9,27 @@ const router = Router();
  * @access  Public
  */
 router.get('/', async (_req: Request, res: Response) => {
-  const health = {
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development',
-    database: {
-      status: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-      name: mongoose.connection.name || 'unknown',
-    },
-  };
+  const isProduction = process.env.NODE_ENV === 'production';
+  const dbConnected = mongoose.connection.readyState === 1;
 
-  const httpStatus = health.database.status === 'connected' ? 200 : 503;
+  const health = isProduction
+    ? {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        database: dbConnected ? 'ok' : 'error',
+      }
+    : {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+        database: {
+          status: dbConnected ? 'connected' : 'disconnected',
+          name: mongoose.connection.name || 'unknown',
+        },
+      };
+
+  const httpStatus = dbConnected ? 200 : 503;
   res.status(httpStatus).json(health);
 });
 

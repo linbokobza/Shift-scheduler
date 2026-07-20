@@ -104,6 +104,20 @@ export const updateEmployee = async (req: AuthRequest, res: Response): Promise<v
     throw new AppError('Employee not found', 404);
   }
 
+  // Validate types and allowed values before updating
+  if (name !== undefined && typeof name !== 'string') {
+    throw new AppError('Invalid name', 400);
+  }
+  if (email !== undefined && typeof email !== 'string') {
+    throw new AppError('Invalid email', 400);
+  }
+  if (role !== undefined && !['employee', 'manager'].includes(role)) {
+    throw new AppError('Invalid role', 400);
+  }
+  if (isActive !== undefined && typeof isActive !== 'boolean') {
+    throw new AppError('Invalid isActive value', 400);
+  }
+
   // Store old values for audit log
   const oldValues = {
     name: employee.name,
@@ -114,7 +128,7 @@ export const updateEmployee = async (req: AuthRequest, res: Response): Promise<v
 
   // Update fields
   if (name !== undefined) employee.name = name;
-  if (email !== undefined) employee.email = email;
+  if (email !== undefined) employee.email = email.toLowerCase();
   if (role !== undefined) employee.role = role;
   if (isActive !== undefined) employee.isActive = isActive;
 
@@ -192,7 +206,9 @@ export const resetEmployeePassword = async (req: AuthRequest, res: Response): Pr
     throw new AppError('Employee not found', 404);
   }
 
-  const defaultPassword = 'Aa123456';
+  // Generate a secure random default password
+  const { randomBytes } = await import('crypto');
+  const defaultPassword = 'Aa1' + randomBytes(6).toString('base64url').slice(0, 9);
   employee.password = defaultPassword;
   await employee.save();
 
@@ -203,7 +219,7 @@ export const resetEmployeePassword = async (req: AuthRequest, res: Response): Pr
     changes: { action: 'password_reset' },
   });
 
-  res.status(200).json({ message: 'Password reset successfully' });
+  res.status(200).json({ message: 'Password reset successfully', temporaryPassword: defaultPassword });
 };
 
 export const deleteEmployee = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -215,6 +231,11 @@ export const deleteEmployee = async (req: AuthRequest, res: Response): Promise<v
   const employee = await User.findById(id);
   if (!employee) {
     throw new AppError('Employee not found', 404);
+  }
+
+  // Guard: prevent deleting manager accounts
+  if (employee.role === 'manager') {
+    throw new AppError('Cannot delete manager accounts', 400);
   }
 
   // 2. Check for future schedule assignments

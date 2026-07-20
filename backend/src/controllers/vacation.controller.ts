@@ -1,14 +1,21 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { Vacation } from '../models';
 import { AppError, AuthRequest } from '../middleware';
 import { createAuditLog } from '../middleware/auditLogger';
 import { formatDate, parseLocalDate } from '../services/dateUtils.service';
 
-export const getAllVacations = async (req: Request, res: Response): Promise<void> => {
+export const getAllVacations = async (req: AuthRequest, res: Response): Promise<void> => {
   const { employeeId, startDate, endDate } = req.query;
 
   const query: any = {};
-  if (employeeId) query.employeeId = employeeId;
+
+  // Employees can only view their own vacations
+  if (req.user?.role === 'employee') {
+    query.employeeId = req.user._id;
+  } else if (employeeId && typeof employeeId === 'string') {
+    query.employeeId = employeeId;
+  }
+
   if (startDate || endDate) {
     query.date = {};
     if (startDate) query.date.$gte = parseLocalDate(startDate as string);

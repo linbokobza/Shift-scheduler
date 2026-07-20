@@ -6,10 +6,10 @@ export const getAuditLogs = async (req: Request, res: Response): Promise<void> =
 
   const query: any = {};
 
-  if (entityType) query.entityType = entityType;
-  if (entityId) query.entityId = entityId;
-  if (userId) query.userId = userId;
-  if (action) query.action = action;
+  if (entityType && typeof entityType === 'string') query.entityType = entityType;
+  if (entityId && typeof entityId === 'string') query.entityId = entityId;
+  if (userId && typeof userId === 'string') query.userId = userId;
+  if (action && typeof action === 'string') query.action = action;
 
   if (startDate || endDate) {
     query.timestamp = {};
@@ -17,10 +17,13 @@ export const getAuditLogs = async (req: Request, res: Response): Promise<void> =
     if (endDate) query.timestamp.$lte = new Date(endDate as string);
   }
 
+  // Cap the limit to prevent resource exhaustion
+  const parsedLimit = Math.min(Math.max(parseInt(limit as string) || 50, 1), 200);
+
   const logs = await AuditLog.find(query)
     .populate('userId', 'name email')
     .sort({ timestamp: -1 })
-    .limit(parseInt(limit as string));
+    .limit(parsedLimit);
 
   res.status(200).json({
     logs: logs.map(log => ({
@@ -40,13 +43,16 @@ export const getAuditLogsByEntity = async (req: Request, res: Response): Promise
   const { entityType, entityId } = req.params;
   const { limit = 50 } = req.query;
 
+  // Cap the limit to prevent resource exhaustion
+  const parsedLimit = Math.min(Math.max(parseInt(limit as string) || 50, 1), 200);
+
   const logs = await AuditLog.find({
     entityType,
     entityId,
   })
     .populate('userId', 'name email')
     .sort({ timestamp: -1 })
-    .limit(parseInt(limit as string));
+    .limit(parsedLimit);
 
   res.status(200).json({
     logs: logs.map(log => ({

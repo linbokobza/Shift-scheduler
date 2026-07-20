@@ -23,6 +23,14 @@ const queryClient = new QueryClient({
 
 const AppContent = () => {
   const { user, isLoading } = useAuth();
+  const [loginKey, setLoginKey] = useState(0);
+  const prevUserRef = React.useRef(user);
+  React.useEffect(() => {
+    if (prevUserRef.current !== null && user === null) {
+      setLoginKey(k => k + 1);
+    }
+    prevUserRef.current = user;
+  }, [user]);
 
   // Only show global loading spinner during initial auth check (when we have a token to validate)
   // Don't show it during login attempts - let LoginForm handle its own loading state
@@ -47,7 +55,7 @@ const AppContent = () => {
       {/* Protected routes */}
       {!user ? (
         <>
-          <Route path="/" element={<LoginForm />} />
+          <Route path="/" element={<LoginForm key={loginKey} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </>
       ) : (
