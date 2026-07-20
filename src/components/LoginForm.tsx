@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { LogIn, Loader2, User, Shield, Eye, EyeOff } from 'lucide-react';
+import { LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { axiosInstance } from '../api/axios.config';
 import ForgotPasswordModal from './ForgotPasswordModal';
+
+interface QuickUser {
+  name: string;
+  email: string;
+  role: string;
+}
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -10,20 +15,25 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [quickUsers, setQuickUsers] = useState<QuickUser[]>([]);
   const { login, isLoading } = useAuth();
-  const [quickLoginUsers, setQuickLoginUsers] = useState<{ id: string; name: string; email: string; role: string }[]>([]);
 
   useEffect(() => {
-    axiosInstance.get('/auth/quick-login-users')
-      .then(res => {
-        setQuickLoginUsers(res.data.users.map((u: any) => ({
-          id: u._id,
-          name: u.name,
-          email: u.email,
-          role: u.role === 'manager' ? 'מנהל' : 'עובד',
-        })));
-      })
-      .catch(() => {});
+    let cancelled = false;
+    const load = async (attempt = 0) => {
+      try {
+        const r = await fetch('/api/auth/quick-login-users');
+        if (!r.ok) return;
+        const data = await r.json();
+        if (!cancelled && data?.users) setQuickUsers(data.users);
+      } catch {
+        if (!cancelled && attempt < 5) {
+          setTimeout(() => load(attempt + 1), 1500 * (attempt + 1));
+        }
+      }
+    };
+    const initial = setTimeout(load, 2000);
+    return () => { cancelled = true; clearTimeout(initial); };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,20 +44,6 @@ const LoginForm = () => {
     if (!success) {
       setError('אימייל או סיסמה שגויים');
     }
-  };
-
-  const handleQuickLogin = async (userEmail: string) => {
-    const quickPassword = 'Password1';
-    setError('');
-    setEmail(userEmail);
-    setPassword(quickPassword);
-
-    setTimeout(async () => {
-      const success = await login(userEmail, quickPassword);
-      if (!success) {
-        setError('אימייל או סיסמה שגויים');
-      }
-    }, 100);
   };
 
   return (
@@ -101,6 +97,24 @@ const LoginForm = () => {
             </div>
           </div>
 
+          {quickUsers.length > 0 && (
+            <div>
+              <p className="text-xs text-gray-400 mb-2 text-right">בחירה מהירה:</p>
+              <div className="flex flex-wrap gap-2 justify-end">
+                {quickUsers.map(u => (
+                  <button
+                    key={u.email}
+                    type="button"
+                    onClick={() => setEmail(u.email)}
+                    className="text-xs px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:bg-blue-50 hover:border-blue-300 text-gray-600 hover:text-blue-700 transition-all"
+                  >
+                    {u.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
               {error}
@@ -133,45 +147,6 @@ const LoginForm = () => {
           </button>
         </form>
 
-        <div className="mt-8 border-t pt-6">
-          <p className="text-sm text-gray-600 mb-4 text-center font-medium">התחברות מהירה:</p>
-          <div className="space-y-2 max-h-48 lg:max-h-64 overflow-y-auto">
-            {quickLoginUsers.map((user) => (
-              <button
-                key={user.id}
-                onClick={() => handleQuickLogin(user.email)}
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 rounded-lg p-3 transition-all border border-gray-200 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed text-right"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${user.role === 'מנהל' ? 'bg-purple-100' : 'bg-blue-100'}`}>
-                      {user.role === 'מנהל' ? (
-                        <Shield className="w-4 h-4 text-purple-600" />
-                      ) : (
-                        <User className="w-4 h-4 text-blue-600" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-gray-900">{user.name}</div>
-                      <div className="text-xs text-gray-500">{user.email}</div>
-                    </div>
-                  </div>
-                  <div className={`text-xs px-3 py-1 rounded-full font-medium ${
-                    user.role === 'מנהל'
-                      ? 'bg-purple-100 text-purple-700'
-                      : 'bg-blue-100 text-blue-700'
-                  }`}>
-                    {user.role}
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 mt-3 text-center">
-            לחץ על פרטי משתמש למילוי אוטומטי של השדות
-          </p>
-        </div>
       </div>
 
       {showForgotPassword && (

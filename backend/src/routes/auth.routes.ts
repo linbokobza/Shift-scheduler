@@ -7,7 +7,7 @@ const router = Router();
 /**
  * @route   GET /api/auth/quick-login-users
  * @desc    Get active users for quick login buttons
- * @access  Public
+ * @access  Private - requires authentication (prevents email enumeration)
  */
 router.get('/quick-login-users', authController.getQuickLoginUsers);
 

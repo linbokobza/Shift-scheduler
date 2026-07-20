@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 import 'express-async-errors';
 
@@ -22,6 +23,14 @@ import publicRoutes from './routes/public.routes';
 
 // Load environment variables
 dotenv.config();
+
+// Fail fast if required secrets are missing
+const REQUIRED_ENV_VARS = ['JWT_SECRET', 'MONGODB_URI'];
+const missingVars = REQUIRED_ENV_VARS.filter(v => !process.env[v]);
+if (missingVars.length > 0) {
+  console.error(`[FATAL] Missing required environment variables: ${missingVars.join(', ')}`);
+  process.exit(1);
+}
 
 const app: Application = express();
 const PORT = process.env.PORT || 5001;
@@ -59,8 +68,9 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Limit request body size to prevent resource exhaustion
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Skip ngrok browser warning for all responses
 app.use((_req, res, next) => {
@@ -70,15 +80,26 @@ app.use((_req, res, next) => {
 
 // HTTPS enforcement in production
 if (process.env.NODE_ENV === 'production') {
-  app.use((req, _res, next) => {
+  app.use((req, res, next) => {
     if (req.header('x-forwarded-proto') !== 'https') {
-      logger.warn(`Non-HTTPS request detected: ${req.method} ${req.url}`);
-      // Optionally redirect to HTTPS
-      // res.redirect(`https://${req.header('host')}${req.url}`);
+      // Redirect non-HTTPS requests to HTTPS
+      return res.redirect(301, `https://${req.header('host')}${req.url}`);
     }
     next();
   });
 }
+
+// Rate limiting on auth endpoints (brute-force protection — SEC-011)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
 
 // CSRF Token middleware - attach token to all responses
 app.use(csrfTokenMiddleware);

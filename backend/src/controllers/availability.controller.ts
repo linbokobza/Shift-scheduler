@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { Availability, User } from '../models';
 import { AppError, AuthRequest } from '../middleware';
 import { createAuditLog } from '../middleware/auditLogger';
@@ -20,12 +20,17 @@ function convertShiftsMapToObject(shifts: any): any {
   return shifts;
 }
 
-export const getAllAvailabilities = async (req: Request, res: Response): Promise<void> => {
+export const getAllAvailabilities = async (req: AuthRequest, res: Response): Promise<void> => {
   const { weekStart } = req.query;
 
   const query: any = {};
   if (weekStart) {
     query.weekStart = new Date(weekStart as string);
+  }
+
+  // Employees can only see their own availability
+  if (req.user?.role === 'employee') {
+    query.employeeId = req.user._id;
   }
 
   const availabilities = await Availability.find(query)
@@ -64,9 +69,14 @@ export const getAllAvailabilities = async (req: Request, res: Response): Promise
   });
 };
 
-export const getAvailabilityByEmployee = async (req: Request, res: Response): Promise<void> => {
+export const getAvailabilityByEmployee = async (req: AuthRequest, res: Response): Promise<void> => {
   const { employeeId } = req.params;
   const { weekStart } = req.query;
+
+  // Authorization: employees can only view their own availability
+  if (req.user?.role === 'employee' && req.user._id.toString() !== employeeId) {
+    throw new AppError('You can only view your own availability', 403);
+  }
 
   console.log('🔍 getAvailabilityByEmployee called:', { employeeId, weekStart });
 

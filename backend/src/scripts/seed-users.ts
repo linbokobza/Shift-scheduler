@@ -5,39 +5,41 @@ import { logger } from '../utils/logger';
 
 dotenv.config();
 
+// NOTE: These are SEED passwords for development only.
+// Change immediately after first login in any non-local environment.
 const users = [
   {
     name: 'אלון מנהל',
     email: 'manager@company.com',
-    password: 'password',
+    password: 'Manager1Dev',
     role: 'manager',
     isActive: true,
   },
   {
     name: 'דניאל כהן',
     email: 'daniel@company.com',
-    password: 'password',
+    password: 'Daniel1Dev',
     role: 'employee',
     isActive: true,
   },
   {
     name: 'שרה לוי',
     email: 'sarah@company.com',
-    password: 'password',
+    password: 'Sarah1Dev!',
     role: 'employee',
     isActive: true,
   },
   {
     name: 'מיכאל דוד',
     email: 'michael@company.com',
-    password: 'password',
+    password: 'Michael1Dev',
     role: 'employee',
     isActive: true,
   },
   {
     name: 'רחל אברהם',
     email: 'rachel@company.com',
-    password: 'password',
+    password: 'Rachel1Dev!',
     role: 'employee',
     isActive: false,
   },

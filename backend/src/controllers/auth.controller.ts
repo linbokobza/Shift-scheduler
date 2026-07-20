@@ -13,15 +13,28 @@ export const getQuickLoginUsers = async (_req: Request, res: Response): Promise<
 };
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
 
   // Validation
   if (!name || !email || !password) {
     throw new AppError('Name, email, and password are required', 400);
   }
 
+  if (typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+    throw new AppError('Invalid input types', 400);
+  }
+
+  // Password strength validation
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    throw new AppError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit', 400);
+  }
+
+  // Role is always 'employee' — manager role cannot be self-assigned via public registration
+  const assignedRole = 'employee';
+
   // Check if user already exists
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ email: email.toLowerCase() });
   if (existingUser) {
     throw new AppError('User with this email already exists', 409);
   }
@@ -29,16 +42,19 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   // Create user
   const user = await User.create({
     name,
-    email,
+    email: email.toLowerCase(),
     password,
-    role: role || 'employee',
+    role: assignedRole,
     isActive: true,
   });
 
   logger.info(`New user registered: ${user.email} (${user.role})`);
 
   // Generate JWT
-  const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new AppError('Server configuration error', 500);
+  }
   const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
   const token = jwt.sign({ userId: user._id }, jwtSecret, {
@@ -66,19 +82,20 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     throw new AppError('Email and password are required', 400);
   }
 
-  // Find user with password field
-  logger.info(`Login attempt: email="${email}", password length=${password?.length}`);
-  const user = await User.findOne({ email }).select('+password');
-  if (!user) {
-    logger.info(`Login failed: no user found for email="${email}"`);
+  // Validate email is a string to prevent NoSQL injection
+  if (typeof email !== 'string' || typeof password !== 'string') {
     throw new AppError('Invalid credentials', 401);
   }
 
-  logger.info(`User found: ${user.email}, has password: ${!!user.password}`);
+  // Find user with password field
+  logger.debug(`Login attempt for email: ${email}`);
+  const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+  if (!user) {
+    throw new AppError('Invalid credentials', 401);
+  }
 
   // Check password
   const isPasswordValid = await user.comparePassword(password);
-  logger.info(`Password valid: ${isPasswordValid}`);
   if (!isPasswordValid) {
     throw new AppError('Invalid credentials', 401);
   }
@@ -89,7 +106,10 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 
   // Generate JWT
-  const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new AppError('Server configuration error', 500);
+  }
   const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
   const token = jwt.sign({ userId: user._id }, jwtSecret, {
@@ -201,12 +221,12 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
   const { email } = req.body;
 
   // Validation
-  if (!email) {
+  if (!email || typeof email !== 'string') {
     throw new AppError('Email is required', 400);
   }
 
   // Find user
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: email.toLowerCase() });
   if (!user) {
     // Don't reveal if email exists (security)
     res.status(200).json({
@@ -216,7 +236,10 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
   }
 
   // Generate reset token (valid for 15 minutes)
-  const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new AppError('Server configuration error', 500);
+  }
   const resetToken = jwt.sign({ userId: user._id, type: 'reset' }, jwtSecret, {
     expiresIn: '15m',
   } as SignOptions);
@@ -228,15 +251,10 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
   // Send password reset email
   const emailSent = await sendPasswordResetEmail(user.email, resetLink);
 
-  // In development mode, also return the link for testing if email is not configured
+  // In development mode, log the link to the server console if email is not configured
+  // Never expose the token in the API response (even in development)
   if (process.env.NODE_ENV === 'development' && !emailSent) {
-    res.status(200).json({
-      message: 'Reset link has been sent to email',
-      // Only for development when email is not configured
-      resetToken,
-      resetLink,
-    });
-    return;
+    logger.info(`[DEV] Password reset link for ${user.email}: ${resetLink}`);
   }
 
   res.status(200).json({
@@ -259,7 +277,10 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 
   try {
     // Verify reset token
-    const jwtSecret = process.env.JWT_SECRET || 'dev-secret-key';
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new AppError('Server configuration error', 500);
+    }
     const decoded = jwt.verify(token, jwtSecret) as { userId: string; type: string };
 
     if (decoded.type !== 'reset') {
