@@ -43,17 +43,24 @@ export const isSubmissionDeadlinePassed = (weekStart: Date): boolean => {
   const deadline = new Date(twoWeeksBefore);
   deadline.setDate(deadline.getDate() + 2); // Tuesday of 2 weeks before
   deadline.setHours(12, 0, 0, 0);
-  
-  return new Date() > deadline;
+
+  return new Date() >= deadline;
 };
 
 export const getSubmissionWeek = (): Date => {
-  // Get the week that is 2 weeks from now
+  // The submission week is normally 2 weeks from the current week, but as soon
+  // as its deadline (Tuesday 12:00, 12 days before it starts) passes, the next
+  // week becomes the open submission week instead.
   const today = new Date();
   const twoWeeksFromNow = new Date(today);
   twoWeeksFromNow.setDate(today.getDate() + 14);
-  
-  return getWeekStart(twoWeeksFromNow);
+
+  let submissionWeek = getWeekStart(twoWeeksFromNow);
+  while (isSubmissionDeadlinePassed(submissionWeek)) {
+    submissionWeek = getNextWeek(submissionWeek);
+  }
+
+  return submissionWeek;
 };
 
 export const getNextWeek = (currentWeekStart: Date): Date => {
