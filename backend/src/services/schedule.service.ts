@@ -1,5 +1,5 @@
 import { Schedule, Availability, Vacation, Holiday, User, ISchedule } from '../models';
-import { formatDate } from './dateUtils.service';
+import { formatDate, parseLocalDate } from './dateUtils.service';
 import mongoose from 'mongoose';
 
 interface ShiftAssignment {
@@ -58,12 +58,21 @@ export class ScheduleService {
     // Fetch availabilities for this week
     const availabilities = await Availability.find({ weekStart });
 
-    // Fetch vacations for this week (6 days: Sunday-Friday)
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 5); // 6 days: day 0 (Sunday) to day 5 (Friday)
+    // Fetch vacations for this week (6 days: Sunday-Friday).
+    // Vacation.date is always stored via parseLocalDate (local midnight), which can
+    // differ from `weekStart` (built with a plain `new Date(...)` upstream, i.e. UTC
+    // midnight). Re-derive local-midnight bounds from the date string so the range
+    // actually matches how vacation records are stored - otherwise a vacation dated
+    // the first day of the week can fall just before the `$gte` bound and get dropped.
+    const localWeekStart = parseLocalDate(weekStartStr);
+    const localWeekEnd = new Date(localWeekStart);
+    localWeekEnd.setDate(localWeekEnd.getDate() + 5); // 6 days: day 0 (Sunday) to day 5 (Friday)
     const vacations = await Vacation.find({
-      date: { $gte: weekStart, $lte: weekEnd },
+      date: { $gte: localWeekStart, $lte: localWeekEnd },
     });
+
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 5);
 
     // Fetch holidays for this week (use string comparison since Holiday.date is a String)
     const weekEndStr = formatDate(weekEnd);
