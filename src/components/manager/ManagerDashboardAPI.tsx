@@ -64,7 +64,30 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   const activeEmployees = employees.filter(emp => emp.role === 'employee' && emp.isActive);
 
   // Filter availabilities for current week only (for stats display)
-  const currentWeekAvailabilities = availabilities.filter(a => a.weekStart === weekStartString);
+  const submittedCurrentWeekAvailabilities = availabilities.filter(a => a.weekStart === weekStartString);
+
+  // Employees who never touched their constraints should always show as
+  // submitted-with-everything-available for the viewed week - not as "did not
+  // submit" - regardless of the deadline, as long as they haven't submitted
+  // something different themselves.
+  const submittedEmployeeIds = new Set(submittedCurrentWeekAvailabilities.map(a => a.employeeId));
+  const defaultShifts: Availability['shifts'] = {};
+  for (let day = 0; day < 7; day++) {
+    defaultShifts[day.toString()] = {
+      morning: { status: 'available' },
+      evening: { status: 'available' },
+      night: { status: 'available' },
+    };
+  }
+  const defaultCurrentWeekAvailabilities: Availability[] = activeEmployees
+    .filter(emp => !submittedEmployeeIds.has(emp.id))
+    .map(emp => ({
+      employeeId: emp.id,
+      weekStart: weekStartString,
+      shifts: defaultShifts,
+    }));
+
+  const currentWeekAvailabilities = [...submittedCurrentWeekAvailabilities, ...defaultCurrentWeekAvailabilities];
 
   // Analyze shift availability
   const { analysis: shiftAnalysis } = useShiftAvailability(

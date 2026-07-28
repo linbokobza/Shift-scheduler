@@ -4,6 +4,34 @@ import { AppError, AuthRequest } from '../middleware';
 import { createAuditLog } from '../middleware/auditLogger';
 import { formatDate } from '../services/dateUtils.service';
 
+const SHIFT_IDS = ['morning', 'evening', 'night'];
+
+// Employees who never touched their constraints keep the "available" default.
+// As long as they haven't submitted anything different, they should always
+// show as submitted-with-everything-available - for any week, past or future,
+// deadline or not - rather than "did not submit".
+function buildDefaultAvailableShiftsObject(): Record<string, Record<string, { status: string }>> {
+  const shifts: Record<string, Record<string, { status: string }>> = {};
+  for (let day = 0; day < 7; day++) {
+    const dayShifts: Record<string, { status: string }> = {};
+    SHIFT_IDS.forEach(shiftId => { dayShifts[shiftId] = { status: 'available' }; });
+    shifts[day.toString()] = dayShifts;
+  }
+  return shifts;
+}
+
+function buildDefaultAvailabilityEntry(employee: { _id: any; name: string; email: string }, weekStart: Date) {
+  return {
+    id: `default_${employee._id.toString()}_${weekStart.getTime()}`,
+    employeeId: employee._id.toString(),
+    employeeName: employee.name,
+    weekStart: formatDate(weekStart),
+    shifts: buildDefaultAvailableShiftsObject(),
+    submittedAt: null,
+    isDefault: true,
+  };
+}
+
 // Helper function to convert nested Map to plain object
 function convertShiftsMapToObject(shifts: any): any {
   if (shifts instanceof Map) {
@@ -37,36 +65,51 @@ export const getAllAvailabilities = async (req: AuthRequest, res: Response): Pro
     .populate('employeeId', 'name email')
     .sort({ weekStart: -1, employeeId: 1 });
 
-  res.status(200).json({
-    availabilities: availabilities
-      .filter(av => av.employeeId != null)
-      .map(av => {
-        const populatedEmployee = av.employeeId as any;
-        // Convert Map to plain object if needed
-        let shiftsObj: any;
-        if (av.shifts instanceof Map) {
-          shiftsObj = {};
-          (av.shifts as any).forEach((dayShifts: any, day: string) => {
-            if (dayShifts instanceof Map) {
-              shiftsObj[day] = Object.fromEntries(dayShifts);
-            } else {
-              shiftsObj[day] = dayShifts;
-            }
-          });
-        } else {
-          shiftsObj = av.shifts;
-        }
+  const realEntries = availabilities
+    .filter(av => av.employeeId != null)
+    .map(av => {
+      const populatedEmployee = av.employeeId as any;
+      // Convert Map to plain object if needed
+      let shiftsObj: any;
+      if (av.shifts instanceof Map) {
+        shiftsObj = {};
+        (av.shifts as any).forEach((dayShifts: any, day: string) => {
+          if (dayShifts instanceof Map) {
+            shiftsObj[day] = Object.fromEntries(dayShifts);
+          } else {
+            shiftsObj[day] = dayShifts;
+          }
+        });
+      } else {
+        shiftsObj = av.shifts;
+      }
 
-        return {
-          id: av._id.toString(),
-          employeeId: populatedEmployee._id ? populatedEmployee._id.toString() : av.employeeId.toString(),
-          employeeName: populatedEmployee.name,
-          weekStart: formatDate(av.weekStart),
-          shifts: shiftsObj,
-          submittedAt: av.submittedAt.toISOString(),
-        };
-      }),
-  });
+      return {
+        id: av._id.toString(),
+        employeeId: populatedEmployee._id ? populatedEmployee._id.toString() : av.employeeId.toString(),
+        employeeName: populatedEmployee.name,
+        weekStart: formatDate(av.weekStart),
+        shifts: shiftsObj,
+        submittedAt: av.submittedAt.toISOString(),
+      };
+    });
+
+  // Managers viewing a specific week: employees who never touched their
+  // constraints should always show as submitted-with-everything-available,
+  // for any week (past or future, before or after any deadline) - not as
+  // "did not submit" - as long as they haven't actually submitted something else.
+  if (req.user?.role === 'manager' && weekStart) {
+    const submittedEmployeeIds = new Set(realEntries.map(a => a.employeeId));
+    const activeEmployees = await User.find({ role: 'employee', isActive: true }).select('_id name email');
+    const defaultEntries = activeEmployees
+      .filter(emp => !submittedEmployeeIds.has(emp._id.toString()))
+      .map(emp => buildDefaultAvailabilityEntry(emp, query.weekStart));
+
+    res.status(200).json({ availabilities: [...realEntries, ...defaultEntries] });
+    return;
+  }
+
+  res.status(200).json({ availabilities: realEntries });
 };
 
 export const getAvailabilityByEmployee = async (req: AuthRequest, res: Response): Promise<void> => {

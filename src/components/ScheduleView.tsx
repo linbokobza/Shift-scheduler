@@ -107,7 +107,9 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
       const empAvailability = availabilities.find(
         a => a.employeeId === emp.id && a.weekStart === weekStartString
       );
-      if (!empAvailability) return false;
+      // No submission yet: default to available, same as an employee who
+      // explicitly submitted everything as available.
+      if (!empAvailability) return true;
       const shiftStatus = empAvailability.shifts[dayStr]?.[shiftId]?.status;
       return shiftStatus === 'available';
     });
