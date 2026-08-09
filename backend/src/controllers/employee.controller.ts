@@ -56,6 +56,7 @@ export const createEmployee = async (req: AuthRequest, res: Response): Promise<v
       email: employee.email,
       role: employee.role,
       isActive: employee.isActive,
+      colorIndex: employee.colorIndex,
     },
   });
 };
@@ -70,6 +71,7 @@ export const getAllEmployees = async (_req: Request, res: Response): Promise<voi
       email: emp.email,
       role: emp.role,
       isActive: emp.isActive,
+      colorIndex: emp.colorIndex,
     })),
   });
 };
@@ -90,6 +92,7 @@ export const getEmployee = async (req: Request, res: Response): Promise<void> =>
       email: employee.email,
       role: employee.role,
       isActive: employee.isActive,
+      colorIndex: employee.colorIndex,
     },
   });
 };
@@ -158,6 +161,7 @@ export const updateEmployee = async (req: AuthRequest, res: Response): Promise<v
       email: employee.email,
       role: employee.role,
       isActive: employee.isActive,
+      colorIndex: employee.colorIndex,
     },
   });
 };
@@ -193,6 +197,7 @@ export const toggleEmployeeActive = async (req: AuthRequest, res: Response): Pro
       email: employee.email,
       role: employee.role,
       isActive: employee.isActive,
+      colorIndex: employee.colorIndex,
     },
   });
 };

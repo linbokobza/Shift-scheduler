@@ -70,6 +70,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       email: user.email,
       role: user.role,
       isActive: user.isActive,
+      colorIndex: user.colorIndex,
     },
   });
 };
@@ -133,6 +134,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       email: user.email,
       role: user.role,
       isActive: user.isActive,
+      colorIndex: user.colorIndex,
     },
   });
 };
@@ -149,6 +151,7 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
       email: req.user.email,
       role: req.user.role,
       isActive: req.user.isActive,
+      colorIndex: req.user.colorIndex,
     },
   });
 };

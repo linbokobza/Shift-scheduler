@@ -8,6 +8,7 @@ export interface IUser extends Document {
   password: string;
   role: 'employee' | 'manager';
   isActive: boolean;
+  colorIndex: number;
   passwordChangedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -51,6 +52,13 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: true,
     },
+    // Assigned once at creation time and never changed afterwards, so each
+    // employee's color in the UI stays fixed regardless of how many other
+    // employees are added, removed, or toggled active/inactive.
+    colorIndex: {
+      type: Number,
+      required: true,
+    },
     passwordChangedAt: {
       type: Date,
       select: false,
@@ -60,6 +68,25 @@ const userSchema = new Schema<IUser>(
     timestamps: true,
   }
 );
+
+// Assign a permanent, never-reused colorIndex to new users via an atomic counter,
+// so concurrent signups can't race each other into picking the same index.
+const Counter = mongoose.models.Counter || mongoose.model(
+  'Counter',
+  new Schema({ _id: String, seq: { type: Number, default: 0 } })
+);
+
+userSchema.pre('validate', async function (next) {
+  if (this.isNew && this.colorIndex === undefined) {
+    const counter = await Counter.findByIdAndUpdate(
+      'userColorIndex',
+      { $inc: { seq: 1 } },
+      { upsert: true, new: true }
+    );
+    this.colorIndex = counter.seq - 1;
+  }
+  next();
+});
 
 // Hash password and record change timestamp before saving
 userSchema.pre('save', async function (next) {

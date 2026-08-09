@@ -5,11 +5,12 @@ import { ScheduleService } from '../services/schedule.service';
 import { formatDate } from '../services/dateUtils.service';
 
 const fetchEmployees = async () => {
-  // Only expose id and name on the public endpoint - no email addresses
-  const employees = await User.find({ isActive: true, role: 'employee' }).select('name');
+  // Only expose id, name, and colorIndex on the public endpoint - no email addresses
+  const employees = await User.find({ isActive: true, role: 'employee' }).select('name colorIndex');
   return employees.map(emp => ({
     id: emp._id.toString(),
     name: emp.name,
+    colorIndex: emp.colorIndex,
   }));
 };
 
