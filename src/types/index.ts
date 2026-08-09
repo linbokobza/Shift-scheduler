@@ -4,6 +4,7 @@ export interface User {
   email: string;
   role: 'employee' | 'manager';
   isActive: boolean;
+  colorIndex: number;
 }
 
 export interface Shift {

@@ -26,6 +26,7 @@ export interface UserDTO {
   email: string;
   role: 'employee' | 'manager';
   isActive: boolean;
+  colorIndex: number;
 }
 
 export interface AvailabilityDTO {

@@ -4,18 +4,7 @@ import { VacationDay, Holiday, User as UserType } from '../types';
 import { formatDateHebrew } from '../utils/dateUtils';
 import { getShiftsForDate, SHIFT_DISPLAY_ORDER, SHIFT_NAMES_HEBREW } from '../utils/calendarUtils';
 import { usePublishedSchedulesForMonth } from '../hooks/useSchedules';
-
-// Color palette for employees
-const EMPLOYEE_COLORS = [
-  'bg-blue-100 text-blue-800 border-blue-200',
-  'bg-green-100 text-green-800 border-green-200',
-  'bg-purple-100 text-purple-800 border-purple-200',
-  'bg-orange-100 text-orange-800 border-orange-200',
-  'bg-pink-100 text-pink-800 border-pink-200',
-  'bg-indigo-100 text-indigo-800 border-indigo-200',
-  'bg-teal-100 text-teal-800 border-teal-200',
-  'bg-red-100 text-red-800 border-red-200',
-];
+import { getEmployeeColorClasses } from '../utils/employeeColors';
 
 interface CalendarViewProps {
   employees: UserType[];
@@ -31,7 +20,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   onClose
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const activeEmployees = employees.filter(emp => emp.isActive);
 
   const { data: publishedSchedules = [], isLoading: schedulesLoading } =
     usePublishedSchedulesForMonth(
@@ -98,9 +86,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     const employee = employees.find(emp => emp.name === employeeName);
     if (!employee) return 'bg-gray-100 text-gray-800 border-gray-200';
 
-    const employeeIndex = activeEmployees.findIndex(emp => emp.id === employee.id);
-    if (employeeIndex === -1) return 'bg-gray-100 text-gray-800 border-gray-200';
-    return EMPLOYEE_COLORS[employeeIndex % EMPLOYEE_COLORS.length];
+    return getEmployeeColorClasses(employee.colorIndex);
   };
 
   const getVacationsForDate = (date: Date) => {

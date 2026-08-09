@@ -5,29 +5,7 @@ import { SHIFTS, DAYS } from '../data/mockData';
 import { formatDateHebrew, getWeekDates, formatDate } from '../utils/dateUtils';
 import ShiftDropdown from './ShiftDropdown';
 import ShiftReplacementModal from './manager/ShiftReplacementModal';
-
-// Color palette for employees
-const EMPLOYEE_COLORS = [
-  'bg-blue-100 text-blue-800 border-blue-200',
-  'bg-green-100 text-green-800 border-green-200',
-  'bg-purple-100 text-purple-800 border-purple-200',
-  'bg-orange-100 text-orange-800 border-orange-200',
-  'bg-pink-100 text-pink-800 border-pink-200',
-  'bg-indigo-100 text-indigo-800 border-indigo-200',
-  'bg-teal-100 text-teal-800 border-teal-200',
-  'bg-red-100 text-red-800 border-red-200',
-];
-
-const EMPLOYEE_COLORS_NO_BORDER = [
-  'bg-blue-100 text-blue-800',
-  'bg-green-100 text-green-800',
-  'bg-purple-100 text-purple-800',
-  'bg-orange-100 text-orange-800',
-  'bg-pink-100 text-pink-800',
-  'bg-indigo-100 text-indigo-800',
-  'bg-teal-100 text-teal-800',
-  'bg-red-100 text-red-800',
-];
+import { getEmployeeColorClasses, getEmployeeColorClassesNoBorder } from '../utils/employeeColors';
 
 interface ScheduleViewProps {
   schedule: Schedule | null;
@@ -146,9 +124,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
     const employee = employees.find(emp => emp.id === employeeId);
     if (!employee) return 'bg-gray-100 text-gray-800 border-gray-200';
 
-    const employeeIndex = activeEmployees.findIndex(emp => emp.id === employeeId);
-    if (employeeIndex === -1) return 'bg-gray-100 text-gray-800 border-gray-200';
-    return EMPLOYEE_COLORS[employeeIndex % EMPLOYEE_COLORS.length];
+    return getEmployeeColorClasses(employee.colorIndex);
   };
 
   const getEmployeeColorWithoutBorder = (employeeId: string | null): string => {
@@ -158,9 +134,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
     const employee = employees.find(emp => emp.id === employeeId);
     if (!employee) return 'bg-gray-100 text-gray-800';
 
-    const employeeIndex = activeEmployees.findIndex(emp => emp.id === employeeId);
-    if (employeeIndex === -1) return 'bg-gray-100 text-gray-800';
-    return EMPLOYEE_COLORS_NO_BORDER[employeeIndex % EMPLOYEE_COLORS_NO_BORDER.length];
+    return getEmployeeColorClassesNoBorder(employee.colorIndex);
   };
 
   const getHolidayForDay = (dayIndex: number) => {
@@ -727,7 +701,6 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
         {isDropdownOpen && !readonly && !isRestrictedTime && !isHolidayBlocked && !isLocked && (
           <ShiftDropdown
             availableEmployees={availableEmployees}
-            allEmployees={employees}
             currentEmployeeId={currentAssignment}
             onSelect={(employeeId) => onEmployeeSelect(dayStr, shiftId, employeeId)}
             onClose={onDropdownClose}
