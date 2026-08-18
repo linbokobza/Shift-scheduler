@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Update Shift Scheduler
+Comment=Pull latest changes and rebuild the Shift Scheduler app
+Exec=gnome-terminal -- bash -c "cd /var/www/Shift-scheduler/Shift-scheduler && ./update.sh; echo ''; echo 'Press any key to close...'; read -n 1"
+Icon=system-software-update
+Terminal=true
+Categories=Development;Utility;
+Path=/var/www/Shift-scheduler/Shift-scheduler
