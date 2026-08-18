@@ -21,6 +21,7 @@ interface ScheduleViewProps {
   onPendingChanges?: (hasPendingChanges: boolean) => void;
   readonly?: boolean;
   showLockControls?: boolean;
+  hideFreezeBadge?: boolean;
 }
 
 const ScheduleView: React.FC<ScheduleViewProps> = ({
@@ -36,7 +37,8 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   onFreezeToggle,
   onPendingChanges,
   readonly = false,
-  showLockControls = false
+  showLockControls = false,
+  hideFreezeBadge = false
 }) => {
   console.log('🧊 ScheduleView render - frozenAssignments:', schedule?.frozenAssignments);
   const weekDates = getWeekDates(weekStart);
@@ -427,6 +429,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       isDropdownOpen={isDropdownOpen}
                       isLocked={isLocked || false}
                       isFrozen={isFrozen || false}
+                      hideFreezeBadge={hideFreezeBadge}
                       readonly={readonly}
                       showLockControls={showLockControls}
                       employees={employees}
@@ -521,6 +524,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       isDropdownOpen={isDropdownOpen}
                       isLocked={isLocked || false}
                       isFrozen={isFrozen || false}
+                      hideFreezeBadge={hideFreezeBadge}
                       readonly={readonly}
                       showLockControls={showLockControls}
                       employees={employees}
@@ -598,6 +602,7 @@ interface ShiftCellProps {
   isDropdownOpen: boolean;
   isLocked: boolean;
   isFrozen: boolean;
+  hideFreezeBadge?: boolean;
   readonly: boolean;
   showLockControls: boolean;
   employees: User[];
@@ -626,6 +631,7 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
   isDropdownOpen,
   isLocked,
   isFrozen,
+  hideFreezeBadge = false,
   readonly,
   employees,
   employeeComment,
@@ -688,7 +694,7 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
             </div>
 
             {/* Freeze Badge */}
-            {isFrozen && !readonly && (
+            {isFrozen && !readonly && !hideFreezeBadge && (
               <div className={`${currentAssignment ? 'bg-yellow-400 text-yellow-900' : 'bg-gray-400 text-gray-900'} text-[8px] lg:text-[9px] px-1 py-0.5 rounded font-bold mt-0.5 inline-flex items-center gap-0.5 shadow-sm`}>
                 <Snowflake className="w-2 h-2" />
                 <span>{currentAssignment ? 'קפוא' : 'ריק קפוא'}</span>

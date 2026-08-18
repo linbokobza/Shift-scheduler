@@ -387,6 +387,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
             onFreezeToggle={onFreezeToggle}
             onPendingChanges={setHasPendingChanges}
             showLockControls={true}
+            hideFreezeBadge={isExporting}
           />
         </div>
       )}
