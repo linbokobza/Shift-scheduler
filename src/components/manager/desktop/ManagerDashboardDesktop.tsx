@@ -114,6 +114,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
     setIsExporting(true);
     try {
       await waitForNextPaint();
+      await new Promise(resolve => setTimeout(resolve, 150));
       const { toPng } = await import('html-to-image');
       const overflowEls = scheduleRef.current.querySelectorAll<HTMLElement>('[class*="overflow"]');
       const origStyles: { el: HTMLElement; overflow: string; maxWidth: string; minWidth: string }[] = [];
@@ -298,6 +299,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                       onPendingChanges={setHasPendingChanges}
                       showLockControls={true}
                       hideFreezeBadge={isExporting}
+                      exportMode={isExporting}
                     />
                   </div>
                 </>
