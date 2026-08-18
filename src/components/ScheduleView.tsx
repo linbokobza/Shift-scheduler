@@ -21,6 +21,8 @@ interface ScheduleViewProps {
   onPendingChanges?: (hasPendingChanges: boolean) => void;
   readonly?: boolean;
   showLockControls?: boolean;
+  hideFreezeBadge?: boolean;
+  exportMode?: boolean;
 }
 
 const ScheduleView: React.FC<ScheduleViewProps> = ({
@@ -36,7 +38,9 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   onFreezeToggle,
   onPendingChanges,
   readonly = false,
-  showLockControls = false
+  showLockControls = false,
+  hideFreezeBadge = false,
+  exportMode = false
 }) => {
   console.log('🧊 ScheduleView render - frozenAssignments:', schedule?.frozenAssignments);
   const weekDates = getWeekDates(weekStart);
@@ -427,6 +431,8 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       isDropdownOpen={isDropdownOpen}
                       isLocked={isLocked || false}
                       isFrozen={isFrozen || false}
+                      hideFreezeBadge={hideFreezeBadge}
+                      exportMode={exportMode}
                       readonly={readonly}
                       showLockControls={showLockControls}
                       employees={employees}
@@ -458,7 +464,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
               {DAYS.map((day, index) => (
                 <th key={index} className="px-4 py-3 text-center text-sm font-medium text-gray-700 border-b min-w-32">
                   <div>{day}</div>
-                  <div className="text-xs text-gray-500 font-normal">
+                  <div className={`font-normal ${exportMode ? 'text-sm text-gray-600' : 'text-xs text-gray-500'}`}>
                     {formatDateHebrew(weekDates[index])}
                   </div>
                 </th>
@@ -472,7 +478,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                   <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${shift.color}`}>
                     {shift.name}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className={`mt-1 ${exportMode ? 'text-sm text-gray-600' : 'text-xs text-gray-500'}`}>
                     {shift.startTime} - {shift.endTime}
                   </div>
                 </td>
@@ -521,6 +527,8 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
                       isDropdownOpen={isDropdownOpen}
                       isLocked={isLocked || false}
                       isFrozen={isFrozen || false}
+                      hideFreezeBadge={hideFreezeBadge}
+                      exportMode={exportMode}
                       readonly={readonly}
                       showLockControls={showLockControls}
                       employees={employees}
@@ -598,6 +606,8 @@ interface ShiftCellProps {
   isDropdownOpen: boolean;
   isLocked: boolean;
   isFrozen: boolean;
+  hideFreezeBadge?: boolean;
+  exportMode?: boolean;
   readonly: boolean;
   showLockControls: boolean;
   employees: User[];
@@ -626,6 +636,8 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
   isDropdownOpen,
   isLocked,
   isFrozen,
+  hideFreezeBadge = false,
+  exportMode = false,
   readonly,
   employees,
   employeeComment,
@@ -658,7 +670,8 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
       <div className="relative" ref={cellRef}>
         <div
           className={`
-            min-h-[48px] lg:h-16 rounded flex flex-col items-center justify-center transition-all cursor-pointer text-[10px] lg:text-xs
+            ${exportMode ? 'min-h-[52px] lg:h-[68px]' : 'min-h-[48px] lg:h-16'} rounded flex flex-col items-center justify-center cursor-pointer ${exportMode ? '' : 'transition-all'}
+            ${exportMode ? 'text-xs lg:text-sm' : 'text-[10px] lg:text-xs'}
             ${isRestrictedTime
               ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed border lg:border-2'
               : isHolidayBlocked
@@ -688,7 +701,7 @@ const ShiftCell: React.FC<ShiftCellProps> = ({
             </div>
 
             {/* Freeze Badge */}
-            {isFrozen && !readonly && (
+            {isFrozen && !readonly && !hideFreezeBadge && (
               <div className={`${currentAssignment ? 'bg-yellow-400 text-yellow-900' : 'bg-gray-400 text-gray-900'} text-[8px] lg:text-[9px] px-1 py-0.5 rounded font-bold mt-0.5 inline-flex items-center gap-0.5 shadow-sm`}>
                 <Snowflake className="w-2 h-2" />
                 <span>{currentAssignment ? 'קפוא' : 'ריק קפוא'}</span>
