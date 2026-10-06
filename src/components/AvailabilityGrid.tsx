@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { MessageSquare, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AvailabilityStatus, Holiday } from '../types';
 import { SHIFTS, DAYS } from '../data/mockData';
@@ -38,7 +38,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       case 'unavailable':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
-        return 'bg-gray-100 text-gray-500 border-gray-200';
+        return 'bg-slate-100 text-slate-500 border-slate-200';
     }
   };
 
@@ -49,7 +49,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       case 'unavailable':
         return 'bg-red-100 text-red-800';
       default:
-        return 'bg-gray-100 text-gray-500';
+        return 'bg-slate-100 text-slate-500';
     }
   };
 
@@ -133,7 +133,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       {showCardsView && forceViewMode !== 'table' && (
         <div className={forceViewMode === 'cards' ? 'p-4' : 'lg:hidden p-4'}>
         {/* Day Navigator */}
-        <div className="flex justify-between items-center mb-4 bg-gray-50 p-2 lg:p-3 rounded-lg">
+        <div className="flex justify-between items-center mb-4 bg-slate-50 p-2 lg:p-3 rounded-lg">
           <button
             onClick={() => setCurrentDayIndex(prev => Math.max(0, prev - 1))}
             disabled={currentDayIndex === 0}
@@ -144,7 +144,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
 
           <div className="text-center">
             <div className="font-bold text-lg">{DAYS[currentDayIndex]}</div>
-            <div className="text-sm text-gray-500">{formatDateHebrew(weekDates[currentDayIndex])}</div>
+            <div className="text-sm text-slate-500">{formatDateHebrew(weekDates[currentDayIndex])}</div>
           </div>
 
           <button
@@ -173,14 +173,14 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                 className={`
                   relative p-2 rounded-lg border-2 min-h-[80px] cursor-pointer transition-all
                   ${isWeekend
-                    ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
+                    ? 'bg-slate-200 text-slate-500 border-slate-300 cursor-not-allowed'
                     : isHolidayBlocked
                     ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed'
                     : isVacation
                     ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed'
                     : cellData
                       ? getStatusColor(cellData.status)
-                      : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300'
+                      : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'
                   }
                   ${readonly || isWeekend || isHolidayBlocked ? 'cursor-default' : ''}
                 `}
@@ -190,7 +190,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                   <span className={`px-2 py-0.5 rounded-full text-xs sm:text-sm font-medium ${shift.color}`}>
                     {shift.name}
                   </span>
-                  <span className="text-[10px] sm:text-xs text-gray-500">
+                  <span className="text-[10px] sm:text-xs text-slate-500">
                     {shift.startTime} - {shift.endTime}
                   </span>
                 </div>
@@ -221,7 +221,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                 {!readonly && !isVacation && !hasComment && !isWeekend && !isHolidayBlocked && (
                   <button
                     onClick={(e) => handleCommentClick(dayStr, shift.id, e)}
-                    className="absolute bottom-1 left-1 text-gray-400 hover:text-blue-600 transition-all z-10 p-1"
+                    className="absolute bottom-1 left-1 text-slate-400 hover:text-blue-600 transition-all z-10 p-1"
                   >
                     <MessageSquare className="w-4 h-4" />
                   </button>
@@ -232,7 +232,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
         </div>
 
         {/* Progress indicator */}
-        <div className="text-center text-sm text-gray-500 mt-4">
+        <div className="text-center text-sm text-slate-500 mt-4">
           יום {currentDayIndex + 1} מתוך 6
         </div>
         </div>
@@ -242,15 +242,15 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
       {showTableView && forceViewMode !== 'cards' && (
         <div className={forceViewMode === 'table' ? 'overflow-x-auto' : 'hidden lg:block overflow-x-auto'}>
         <table className="w-full text-xs">
-          <thead className="bg-gray-50">
+          <thead className="bg-slate-50">
             <tr>
-              <th className="px-2 py-2 text-right font-medium text-gray-700 border-b">
+              <th className="px-2 py-2 text-right font-medium text-slate-700 border-b">
                 משמרת
               </th>
               {DAYS.map((day, index) => (
-                <th key={index} className="px-2 py-2 text-center font-medium text-gray-700 border-b min-w-[80px]">
+                <th key={index} className="px-2 py-2 text-center font-medium text-slate-700 border-b min-w-[80px]">
                   <div className="text-xs">{day}</div>
-                  <div className="text-[10px] text-gray-500 font-normal">
+                  <div className="text-[10px] text-slate-500 font-normal">
                     {formatDateHebrew(weekDates[index])}
                   </div>
                 </th>
@@ -259,7 +259,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
           </thead>
           <tbody>
             {SHIFTS.map((shift) => (
-              <tr key={shift.id} className="hover:bg-gray-50">
+              <tr key={shift.id} className="hover:bg-slate-50">
                 <td className="px-2 py-2 border-b">
                   <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${shift.color}`}>
                     {shift.name}
@@ -281,14 +281,14 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                           className={`
                             min-h-[48px] lg:h-16 rounded flex items-center justify-center transition-all cursor-pointer text-[10px] lg:text-xs
                             ${isWeekend
-                              ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed border lg:border-2'
+                              ? 'bg-slate-200 text-slate-500 border-slate-300 cursor-not-allowed border lg:border-2'
                               : isHolidayBlocked
                               ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed border lg:border-2'
                               : isVacation
                               ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed border lg:border-2'
                               : cellData
-                                ? `${getStatusColorWithoutBorder(cellData.status)} hover:opacity-80 shadow-sm ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border lg:border-2 lg:border-gray-200' : 'border lg:border-2'}`
-                                : 'bg-gray-50 text-gray-400 border-gray-200 hover:border-gray-300 hover:bg-gray-100 border lg:border-2'
+                                ? `${getStatusColorWithoutBorder(cellData.status)} hover:opacity-80 shadow-sm ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border lg:border-2 lg:border-slate-200' : 'border lg:border-2'}`
+                                : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300 hover:bg-slate-100 border lg:border-2'
                             }
                             ${readonly || isWeekend || isHolidayBlocked ? 'cursor-not-allowed' : ''}
                           `}
@@ -317,7 +317,7 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                             className={`hidden lg:block absolute bottom-1 right-1 transition-colors z-10 p-1 ${
                               hasComment
                                 ? 'text-blue-600 hover:text-blue-800'
-                                : 'text-gray-400 hover:text-gray-600'
+                                : 'text-slate-400 hover:text-slate-600'
                             }`}
                           >
                             <MessageSquare className={`w-3 h-3 ${hasComment ? 'fill-current' : ''}`} />
@@ -345,13 +345,13 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder="הכניסו הערה..."
-                className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full h-24 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 dir="rtl"
               />
               <div className="flex justify-end space-x-3 mt-4">
                 <button
                   onClick={() => setSelectedCell(null)}
-                  className="px-4 py-2 min-h-[44px] text-gray-600 hover:text-gray-800 transition-colors ml-3"
+                  className="px-4 py-2 min-h-[44px] text-slate-600 hover:text-slate-800 transition-colors ml-3"
                 >
                   ביטול
                 </button>
@@ -385,13 +385,13 @@ const AvailabilityGrid: React.FC<AvailabilityGridProps> = ({
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder="הכניסו הערה..."
-                className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full h-24 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 dir="rtl"
               />
               <div className="flex justify-end space-x-3 mt-4">
                 <button
                   onClick={() => setSelectedCell(null)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors ml-3"
+                  className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors ml-3"
                 >
                   ביטול
                 </button>

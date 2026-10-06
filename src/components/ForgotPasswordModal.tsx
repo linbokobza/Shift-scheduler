@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { authAPI } from '../api/auth.api';
 
@@ -49,14 +49,14 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onBa
         <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
           <div className="text-center">
             <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">בקשה נשלחה בהצלחה</h3>
-            <p className="text-gray-600 text-sm mb-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">בקשה נשלחה בהצלחה</h3>
+            <p className="text-slate-600 text-sm mb-6">
               אם כתובת האימייל קיימת במערכת, תקבלו הודעת דוא"ל עם קישור לאיפוס הסיסמה.
             </p>
 
             {resetToken && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
-                <p className="text-xs text-gray-600 mb-2">
+                <p className="text-xs text-slate-600 mb-2">
                   (מצב פיתוח - קישור בדוא"ל):
                 </p>
                 <a
@@ -67,10 +67,10 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onBa
                 >
                   {resetLink}
                 </a>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-slate-500 mt-2">
                   או העתיקו את הטוקן:
                 </p>
-                <code className="text-xs bg-gray-100 p-2 block mt-1 break-all rounded">
+                <code className="text-xs bg-slate-100 p-2 block mt-1 break-all rounded">
                   {resetToken}
                 </code>
               </div>
@@ -79,7 +79,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onBa
             <div className="flex space-x-3">
               <button
                 onClick={onBackToLogin}
-                className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center"
+                className="flex-1 bg-slate-100 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center"
               >
                 <ArrowLeft className="w-4 h-4 ml-2" />
                 חזרה להתחברות
@@ -96,16 +96,16 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onBa
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
         <div className="flex items-center mb-6">
           <Mail className="w-6 h-6 text-blue-600 ml-2" />
-          <h3 className="text-lg font-semibold text-gray-900">איפוס סיסמה</h3>
+          <h3 className="text-lg font-semibold text-slate-900">איפוס סיסמה</h3>
         </div>
 
-        <p className="text-gray-600 text-sm mb-6">
+        <p className="text-slate-600 text-sm mb-6">
           הכניסו את כתובת האימייל המשוייכת לחשבון שלכם, ואנחנו נשלח לכם קישור לאיפוס הסיסמה.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="forgot-email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="forgot-email" className="block text-sm font-medium text-slate-700 mb-2">
               כתובת אימייל
             </label>
             <input
@@ -113,7 +113,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onBa
               id="forgot-email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="your@email.com"
               required
               disabled={isLoading}
@@ -131,7 +131,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose, onBa
             <button
               type="button"
               onClick={onBackToLogin}
-              className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center justify-center"
+              className="flex-1 bg-slate-100 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50 flex items-center justify-center"
               disabled={isLoading}
             >
               <ArrowLeft className="w-4 h-4 ml-2" />

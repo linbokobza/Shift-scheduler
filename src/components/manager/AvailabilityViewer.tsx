@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { Eye, Edit3, Save, MessageSquare, X } from 'lucide-react';
 import { User, Availability, VacationDay, AvailabilityStatus, Holiday } from '../../types';
 import { SHIFTS, DAYS } from '../../data/mockData';
@@ -84,7 +84,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
       case 'unavailable':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
-        return 'bg-gray-100 text-gray-500 border-gray-200';
+        return 'bg-slate-100 text-slate-500 border-slate-200';
     }
   };
 
@@ -95,7 +95,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
       case 'unavailable':
         return 'bg-red-100 text-red-800';
       default:
-        return 'bg-gray-100 text-gray-500';
+        return 'bg-slate-100 text-slate-500';
     }
   };
 
@@ -186,9 +186,9 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
   if (activeEmployees.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-        <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">אין עובדים פעילים</h3>
-        <p className="text-gray-600">הוסף עובדים פעילים כדי לראות את האילוצים שלהם</p>
+        <Eye className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-slate-900 mb-2">אין עובדים פעילים</h3>
+        <p className="text-slate-600">הוסף עובדים פעילים כדי לראות את האילוצים שלהם</p>
       </div>
     );
   }
@@ -208,7 +208,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
               <>
                 <button
                   onClick={handleDiscard}
-                  className="flex items-center px-3 py-2 rounded-lg transition-colors text-sm bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  className="flex items-center px-3 py-2 rounded-lg transition-colors text-sm bg-slate-200 text-slate-700 hover:bg-slate-300"
                 >
                   <X className="w-4 h-4 ml-1" />
                   ביטול
@@ -239,7 +239,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
       <div className="p-4">
         {/* Employee Selection */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-700 mb-2">
             בחר עובד לצפייה:
           </label>
           <select
@@ -249,7 +249,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
               onSelectedEmployeeChange(empId);
               onEditModeChange(false);
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent max-w-md"
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent max-w-md"
           >
             <option value="">-- בחר עובד --</option>
             {activeEmployees.map((employee) => (
@@ -258,7 +258,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
               </option>
             ))}
           </select>
-          <div className="text-sm text-gray-500 mt-2">
+          <div className="text-sm text-slate-500 mt-2">
             צפייה באילוצים לשבוע ההגשה: {formatDateHebrew(submissionWeekStart)} - {formatDateHebrew(new Date(submissionWeekStart.getTime() + 6 * 24 * 60 * 60 * 1000))} (מתחלף כל שלישי)
           </div>
         </div>
@@ -267,16 +267,16 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
           <>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead className="bg-gray-50">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-2 py-2 text-right font-medium text-gray-700 border-b">
+                  <th className="px-2 py-2 text-right font-medium text-slate-700 border-b">
                     משמרת
                   </th>
                   {DAYS.map((day, index) => (
-                    <th key={index} className="px-2 py-2 text-center font-medium text-gray-700 border-b min-w-[80px]">
+                    <th key={index} className="px-2 py-2 text-center font-medium text-slate-700 border-b min-w-[80px]">
                       <div className="text-center">
                         <div className="text-xs">{day}</div>
-                        <div className="text-[10px] text-gray-500 font-normal">
+                        <div className="text-[10px] text-slate-500 font-normal">
                           {formatDateHebrew(weekDates[index])}
                         </div>
                       </div>
@@ -286,7 +286,7 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
               </thead>
               <tbody>
                 {SHIFTS.map((shift) => (
-                    <tr key={shift.id} className="hover:bg-gray-50">
+                    <tr key={shift.id} className="hover:bg-slate-50">
                       <td className="px-2 py-2 border-b">
                         <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${shift.color}`}>
                           {shift.name}
@@ -311,12 +311,12 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
                               relative min-h-[48px] lg:h-16 rounded border lg:border-2 flex items-center justify-center transition-all text-[10px] lg:text-xs
                               ${editMode ? 'cursor-pointer' : 'cursor-default'}
                               ${isRestrictedTime
-                                ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
+                                ? 'bg-slate-200 text-slate-500 border-slate-300 cursor-not-allowed'
                                 : isHolidayBlocked
                                 ? 'bg-indigo-200 text-indigo-800 border-indigo-300 cursor-not-allowed'
                                 : isVacation
                                 ? 'bg-blue-100 text-blue-800 border-blue-200 cursor-not-allowed'
-                                : `${hasComment ? getStatusColorWithoutBorder(displayStatus) : getStatusColor(displayStatus)} hover:opacity-80 shadow-sm ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border lg:border-2 lg:border-gray-200' : ''}`
+                                : `${hasComment ? getStatusColorWithoutBorder(displayStatus) : getStatusColor(displayStatus)} hover:opacity-80 shadow-sm ${hasComment ? 'border-2 border-blue-600 shadow-md lg:border lg:border-2 lg:border-slate-200' : ''}`
                               }
                             `}
                             onClick={() => {
@@ -373,8 +373,8 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
         )}
 
         {!selectedEmployee && (
-          <div className="text-center py-8 text-gray-500">
-            <Eye className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+          <div className="text-center py-8 text-slate-500">
+            <Eye className="w-12 h-12 mx-auto mb-2 text-slate-300" />
             <p>בחר עובד כדי לראות את האילוצים שלו</p>
           </div>
         )}
@@ -385,13 +385,13 @@ const AvailabilityViewer: React.FC<AvailabilityViewerProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedCell(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold mb-4">הערה</h3>
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg min-h-[96px] whitespace-pre-wrap" dir="rtl">
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg min-h-[96px] whitespace-pre-wrap" dir="rtl">
               {selectedCell.comment || 'אין הערה'}
             </div>
             <div className="flex justify-end mt-4">
               <button
                 onClick={() => setSelectedCell(null)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
               >
                 סגור
               </button>

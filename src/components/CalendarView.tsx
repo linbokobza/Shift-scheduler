@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, User, Star } from 'lucide-react';
 import { VacationDay, Holiday, User as UserType } from '../types';
 import { formatDateHebrew } from '../utils/dateUtils';
@@ -82,9 +82,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
   const getEmployeeColor = (employeeName: string): string => {
     if (employeeName === '119') return 'bg-red-100 text-red-800 border-red-200';
-    if (employeeName === 'ללא שיבוץ') return 'bg-gray-100 text-gray-600 border-gray-300';
+    if (employeeName === 'ללא שיבוץ') return 'bg-slate-100 text-slate-600 border-slate-300';
     const employee = employees.find(emp => emp.name === employeeName);
-    if (!employee) return 'bg-gray-100 text-gray-800 border-gray-200';
+    if (!employee) return 'bg-slate-100 text-slate-800 border-slate-200';
 
     return getEmployeeColorClasses(employee.colorIndex);
   };
@@ -134,7 +134,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         <div className="bg-white rounded-lg p-8">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">טוען נתונים...</p>
+            <p className="text-slate-600">טוען נתונים...</p>
           </div>
         </div>
       </div>
@@ -155,7 +155,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors text-xl p-1"
+              className="text-slate-400 hover:text-slate-600 transition-colors text-xl p-1"
             >
               ×
             </button>
@@ -163,24 +163,24 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
 
         {/* Calendar Navigation */}
-        <div className="bg-gray-50 border-b px-3 py-1.5 sm:px-4 sm:py-2 flex-shrink-0">
+        <div className="bg-slate-50 border-b px-3 py-1.5 sm:px-4 sm:py-2 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
               <button
                 onClick={goToPreviousMonth}
-                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-all"
+                className="p-1 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-all"
               >
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <button
                 onClick={goToNextMonth}
-                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-all"
+                className="p-1 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded-lg transition-all"
               >
                 <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <h2 className="text-sm sm:text-lg font-semibold text-gray-900">
+            <h2 className="text-sm sm:text-lg font-semibold text-slate-900">
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </h2>
 
@@ -201,7 +201,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           >
             {/* Day headers */}
             {dayNames.map((day, index) => (
-              <div key={index} className="p-0.5 sm:p-1 text-center font-medium text-gray-700 bg-gray-100 rounded text-[10px] sm:text-xs">
+              <div key={index} className="p-0.5 sm:p-1 text-center font-medium text-slate-700 bg-slate-100 rounded text-[10px] sm:text-xs">
                 {day}
               </div>
             ))}
@@ -220,13 +220,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                     isToday
                       ? 'bg-blue-100 border-blue-300'
                       : isCurrentMonth
-                      ? 'bg-white border-gray-200'
-                      : 'bg-gray-50 border-gray-200'
+                      ? 'bg-white border-slate-200'
+                      : 'bg-slate-50 border-slate-200'
                   }`}
                 >
                   {/* Day number */}
                   <div className={`text-[10px] sm:text-xs font-medium leading-tight ${
-                    isToday ? 'text-blue-900' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+                    isToday ? 'text-blue-900' : isCurrentMonth ? 'text-slate-900' : 'text-slate-400'
                   }`}>
                     {day.getDate()}
                   </div>
@@ -291,7 +291,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                       </div>
                     ))}
                     {vacations.length > 2 && (
-                      <div className="text-[10px] text-gray-500 text-center">+{vacations.length - 2}</div>
+                      <div className="text-[10px] text-slate-500 text-center">+{vacations.length - 2}</div>
                     )}
                   </div>
                 </div>
@@ -301,23 +301,23 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
 
         {/* Legend */}
-        <div className="bg-gray-50 border-t px-3 py-1.5 sm:px-4 sm:py-2 flex-shrink-0">
+        <div className="bg-slate-50 border-t px-3 py-1.5 sm:px-4 sm:py-2 flex-shrink-0">
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] sm:text-xs">
             <div className="flex items-center gap-1">
               <div className="w-2.5 h-2.5 bg-blue-100 border border-blue-200 rounded flex-shrink-0"></div>
-              <span className="text-gray-700">חופשה</span>
+              <span className="text-slate-700">חופשה</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-2.5 h-2.5 bg-red-100 border border-red-200 rounded flex-shrink-0"></div>
-              <span className="text-gray-700">מחלה / 119</span>
+              <span className="text-slate-700">מחלה / 119</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-2.5 h-2.5 bg-purple-100 border border-purple-200 rounded flex-shrink-0"></div>
-              <span className="text-gray-700">חג</span>
+              <span className="text-slate-700">חג</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-2.5 h-2.5 bg-blue-100 border border-blue-300 rounded flex-shrink-0"></div>
-              <span className="text-gray-700">היום</span>
+              <span className="text-slate-700">היום</span>
             </div>
           </div>
         </div>

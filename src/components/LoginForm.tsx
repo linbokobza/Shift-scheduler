@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import ForgotPasswordModal from './ForgotPasswordModal';
@@ -52,12 +52,12 @@ const LoginForm = () => {
         <div className="text-center mb-8">
           <img src="/logo.png" alt="ShiftLock" className="w-16 h-16 mx-auto mb-4" />
           <img src="/name.png" alt="ShiftLock" className="h-8 mx-auto mb-2" />
-          <p className="text-gray-600">היכנסו עם הפרטים שלכם</p>
+          <p className="text-slate-600">היכנסו עם הפרטים שלכם</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
               אימייל
             </label>
             <input
@@ -65,7 +65,7 @@ const LoginForm = () => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="your@email.com"
               required
               disabled={isLoading}
@@ -73,7 +73,7 @@ const LoginForm = () => {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
               סיסמה
             </label>
             <div className="relative">
@@ -82,7 +82,7 @@ const LoginForm = () => {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
@@ -90,7 +90,7 @@ const LoginForm = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -99,14 +99,14 @@ const LoginForm = () => {
 
           {quickUsers.length > 0 && (
             <div>
-              <p className="text-xs text-gray-400 mb-2 text-right">בחירה מהירה:</p>
+              <p className="text-xs text-slate-400 mb-2 text-right">בחירה מהירה:</p>
               <div className="flex flex-wrap gap-2 justify-end">
                 {quickUsers.map(u => (
                   <button
                     key={u.email}
                     type="button"
                     onClick={() => setEmail(u.email)}
-                    className="text-xs px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:bg-blue-50 hover:border-blue-300 text-gray-600 hover:text-blue-700 transition-all"
+                    className="text-xs px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 text-slate-600 hover:text-blue-700 transition-all"
                   >
                     {u.name}
                   </button>

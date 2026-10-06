@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { User, Availability, Schedule } from '../types';
 import { Calendar, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { SHIFTS, DAYS } from '../data/mockData';
@@ -99,30 +99,30 @@ const AvailabilitySummary: React.FC<AvailabilitySummaryProps> = ({
       <div className="overflow-x-auto -mx-4 lg:mx-0 scrollbar-thin">
         <div className="min-w-[800px]">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-slate-50">
             <tr>
-              <th className="px-2 lg:px-4 py-2 lg:py-3 text-right text-xs lg:text-sm font-medium text-gray-700 border-b whitespace-nowrap">
+              <th className="px-2 lg:px-4 py-2 lg:py-3 text-right text-xs lg:text-sm font-medium text-slate-700 border-b whitespace-nowrap">
                 עובד
               </th>
-              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-gray-700 border-b whitespace-nowrap">
+              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-slate-700 border-b whitespace-nowrap">
                 הגיש זמינות
               </th>
-              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-gray-700 border-b whitespace-nowrap">
+              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-slate-700 border-b whitespace-nowrap">
                 משמרות זמינות
               </th>
-              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-gray-700 border-b whitespace-nowrap">
+              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-slate-700 border-b whitespace-nowrap">
                 משמרות שהוצבו
               </th>
-              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-gray-700 border-b whitespace-nowrap">
+              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-slate-700 border-b whitespace-nowrap">
                 בוקר
               </th>
-              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-gray-700 border-b whitespace-nowrap">
+              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-slate-700 border-b whitespace-nowrap">
                 ערב
               </th>
-              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-gray-700 border-b whitespace-nowrap">
+              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-slate-700 border-b whitespace-nowrap">
                 לילה
               </th>
-              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-gray-700 border-b whitespace-nowrap">
+              <th className="px-2 lg:px-4 py-2 lg:py-3 text-center text-xs lg:text-sm font-medium text-slate-700 border-b whitespace-nowrap">
                 סטטוס
               </th>
             </tr>
@@ -135,10 +135,10 @@ const AvailabilitySummary: React.FC<AvailabilitySummaryProps> = ({
               const hasMorning = stats.morningShifts > 0;
 
               return (
-                <tr key={emp.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 transition-colors`}>
+                <tr key={emp.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-slate-50'} hover:bg-blue-50 transition-colors`}>
                   <td className="px-2 lg:px-4 py-2 lg:py-3 border-b">
-                    <div className="font-medium text-gray-900">{emp.name}</div>
-                    <div className="text-xs text-gray-500">{emp.email}</div>
+                    <div className="font-medium text-slate-900">{emp.name}</div>
+                    <div className="text-xs text-slate-500">{emp.email}</div>
                   </td>
                   <td className="px-2 lg:px-4 py-2 lg:py-3 border-b text-center">
                     {hasSubmitted ? (
@@ -154,7 +154,7 @@ const AvailabilitySummary: React.FC<AvailabilitySummaryProps> = ({
                     )}
                   </td>
                   <td className="px-2 lg:px-4 py-2 lg:py-3 border-b text-center">
-                    <span className={`font-semibold ${stats.availableShifts < 3 ? 'text-red-600' : 'text-gray-900'}`}>
+                    <span className={`font-semibold ${stats.availableShifts < 3 ? 'text-red-600' : 'text-slate-900'}`}>
                       {stats.availableShifts}
                     </span>
                   </td>
@@ -165,21 +165,21 @@ const AvailabilitySummary: React.FC<AvailabilitySummaryProps> = ({
                   </td>
                   <td className="px-2 lg:px-4 py-2 lg:py-3 border-b text-center">
                     <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${
-                      stats.morningShifts > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-400'
+                      stats.morningShifts > 0 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-400'
                     }`}>
                       {stats.morningShifts}
                     </div>
                   </td>
                   <td className="px-2 lg:px-4 py-2 lg:py-3 border-b text-center">
                     <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${
-                      stats.eveningShifts > 0 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-400'
+                      stats.eveningShifts > 0 ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-400'
                     }`}>
                       {stats.eveningShifts}
                     </div>
                   </td>
                   <td className="px-2 lg:px-4 py-2 lg:py-3 border-b text-center">
                     <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${
-                      stats.nightShifts > 0 ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-400'
+                      stats.nightShifts > 0 ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-400'
                     }`}>
                       {stats.nightShifts}
                     </div>
@@ -209,26 +209,26 @@ const AvailabilitySummary: React.FC<AvailabilitySummaryProps> = ({
       </div>
 
       {/* סיכום כללי */}
-      <div className="bg-gray-50 border-t p-4">
+      <div className="bg-slate-50 border-t p-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
           <div className="bg-white rounded-lg p-3 border">
-            <div className="text-xs text-gray-600 mb-1">סך הכל עובדים</div>
-            <div className="text-xl lg:text-2xl font-bold text-gray-900">{activeEmployees.length}</div>
+            <div className="text-xs text-slate-600 mb-1">סך הכל עובדים</div>
+            <div className="text-xl lg:text-2xl font-bold text-slate-900">{activeEmployees.length}</div>
           </div>
           <div className="bg-white rounded-lg p-3 border">
-            <div className="text-xs text-gray-600 mb-1">הגישו זמינות</div>
+            <div className="text-xs text-slate-600 mb-1">הגישו זמינות</div>
             <div className="text-xl lg:text-2xl font-bold text-green-600">
               {activeEmployees.filter(emp => getEmployeeStats(emp.id).submittedShifts > 0).length}
             </div>
           </div>
           <div className="bg-white rounded-lg p-3 border">
-            <div className="text-xs text-gray-600 mb-1">עם 3+ משמרות</div>
+            <div className="text-xs text-slate-600 mb-1">עם 3+ משמרות</div>
             <div className="text-xl lg:text-2xl font-bold text-blue-600">
               {activeEmployees.filter(emp => getEmployeeStats(emp.id).assignedShifts >= 3).length}
             </div>
           </div>
           <div className="bg-white rounded-lg p-3 border">
-            <div className="text-xs text-gray-600 mb-1">עם משמרת בוקר</div>
+            <div className="text-xs text-slate-600 mb-1">עם משמרת בוקר</div>
             <div className="text-xl lg:text-2xl font-bold text-indigo-600">
               {activeEmployees.filter(emp => getEmployeeStats(emp.id).morningShifts > 0).length}
             </div>

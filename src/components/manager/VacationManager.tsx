@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Plus, Trash2, Calendar, User, CalendarDays, ChevronDown, ChevronUp } from 'lucide-react';
 import { VacationDay, User as UserType } from '../../types';
 import { formatDateStringHebrew, parseLocalDate } from '../../utils/dateUtils';
@@ -77,14 +77,14 @@ const VacationManager: React.FC<VacationManagerProps> = ({
       <div className="p-3 lg:p-4">
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
           <div>
-            <label htmlFor="employee-select" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="employee-select" className="block text-sm font-medium text-slate-700 mb-2">
               בחר עובד
             </label>
             <select
               id="employee-select"
               value={selectedEmployee}
               onChange={(e) => setSelectedEmployee(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             >
               <option value="">-- בחר עובד --</option>
@@ -98,7 +98,7 @@ const VacationManager: React.FC<VacationManagerProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="start-date" className="block text-sm font-medium text-slate-700 mb-2">
                 תאריך התחלה
               </label>
               <input
@@ -106,13 +106,13 @@ const VacationManager: React.FC<VacationManagerProps> = ({
                 id="start-date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="end-date" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="end-date" className="block text-sm font-medium text-slate-700 mb-2">
                 תאריך סיום
               </label>
               <input
@@ -120,21 +120,21 @@ const VacationManager: React.FC<VacationManagerProps> = ({
                 id="end-date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="vacation-type" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="vacation-type" className="block text-sm font-medium text-slate-700 mb-2">
               סוג
             </label>
             <select
               id="vacation-type"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value as 'vacation' | 'sick')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
               <option value="vacation">חופשה</option>
               <option value="sick">מחלה</option>
@@ -153,20 +153,20 @@ const VacationManager: React.FC<VacationManagerProps> = ({
         <div className="space-y-2">
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+            className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
           >
-            <span className="font-medium text-gray-900">חופשות ומחלות אחרונות</span>
+            <span className="font-medium text-slate-900">חופשות ומחלות אחרונות</span>
             {showHistory ? (
-              <ChevronUp className="w-5 h-5 text-gray-600" />
+              <ChevronUp className="w-5 h-5 text-slate-600" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-gray-600" />
+              <ChevronDown className="w-5 h-5 text-slate-600" />
             )}
           </button>
 
           {showHistory && (
             <div className="space-y-2 mt-2">
               {recentVacations.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-4">אין חופשות או מחלות</p>
+                <p className="text-slate-500 text-sm text-center py-4">אין חופשות או מחלות</p>
               ) : (
                 recentVacations.map((vacation) => (
                   <div

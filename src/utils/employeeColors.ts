@@ -1,4 +1,4 @@
-// Color palette for employees (with border)
+﻿// Color palette for employees (with border)
 export const EMPLOYEE_COLORS = [
   'bg-blue-100 text-blue-800 border-blue-200',
   'bg-green-100 text-green-800 border-green-200',
@@ -22,11 +22,11 @@ export const EMPLOYEE_COLORS_NO_BORDER = EMPLOYEE_COLORS.map(c =>
  * added, removed, or toggled active/inactive.
  */
 export const getEmployeeColorClasses = (colorIndex: number | undefined): string => {
-  if (colorIndex === undefined || colorIndex === null) return 'bg-gray-100 text-gray-800 border-gray-200';
+  if (colorIndex === undefined || colorIndex === null) return 'bg-slate-100 text-slate-800 border-slate-200';
   return EMPLOYEE_COLORS[colorIndex % EMPLOYEE_COLORS.length];
 };
 
 export const getEmployeeColorClassesNoBorder = (colorIndex: number | undefined): string => {
-  if (colorIndex === undefined || colorIndex === null) return 'bg-gray-100 text-gray-800';
+  if (colorIndex === undefined || colorIndex === null) return 'bg-slate-100 text-slate-800';
   return EMPLOYEE_COLORS_NO_BORDER[colorIndex % EMPLOYEE_COLORS_NO_BORDER.length];
 };

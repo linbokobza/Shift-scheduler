@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 
 export interface Tab {
   id: string;
@@ -39,7 +39,7 @@ export const TabBar: React.FC<TabBarProps> = ({
   }, [activeTab, scrollable]);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30 safe-area-pb">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 safe-area-pb">
       <div
         ref={scrollContainerRef}
         className={`flex ${scrollable ? 'overflow-x-auto scrollbar-hide' : 'justify-evenly'}`}
@@ -57,7 +57,7 @@ export const TabBar: React.FC<TabBarProps> = ({
                 ${scrollable ? 'flex-shrink-0 px-4' : 'flex-1'}
                 flex flex-col items-center py-2 min-h-[56px] min-w-[72px]
                 transition-colors duration-200
-                ${isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}
+                ${isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-700'}
               `}
               style={scrollable ? { scrollSnapAlign: 'center' } : undefined}
               aria-label={tab.label}

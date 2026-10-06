@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Plus, Trash2, Calendar, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { Holiday } from '../../types';
 import { formatDateStringHebrew } from '../../utils/dateUtils';
@@ -55,7 +55,7 @@ const HolidayManager: React.FC<HolidayManagerProps> = ({
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="holiday-date" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="holiday-date" className="block text-sm font-medium text-slate-700 mb-2">
                 תאריך החג
               </label>
               <input
@@ -63,13 +63,13 @@ const HolidayManager: React.FC<HolidayManagerProps> = ({
                 id="holiday-date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="holiday-name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="holiday-name" className="block text-sm font-medium text-slate-700 mb-2">
                 שם החג
               </label>
               <input
@@ -77,7 +77,7 @@ const HolidayManager: React.FC<HolidayManagerProps> = ({
                 id="holiday-name"
                 value={holidayName}
                 onChange={(e) => setHolidayName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="למשל: ראש השנה"
                 required
               />
@@ -85,14 +85,14 @@ const HolidayManager: React.FC<HolidayManagerProps> = ({
           </div>
 
           <div>
-            <label htmlFor="holiday-type" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="holiday-type" className="block text-sm font-medium text-slate-700 mb-2">
               סוג החג
             </label>
             <select
               id="holiday-type"
               value={holidayType}
               onChange={(e) => setHolidayType(e.target.value as 'no-work' | 'morning-only')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white appearance-none cursor-pointer"
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white appearance-none cursor-pointer"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E")`,
                 backgroundRepeat: 'no-repeat',
@@ -118,20 +118,20 @@ const HolidayManager: React.FC<HolidayManagerProps> = ({
         <div className="space-y-2">
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+            className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
           >
-            <span className="font-medium text-gray-900">חגים מוגדרים</span>
+            <span className="font-medium text-slate-900">חגים מוגדרים</span>
             {showHistory ? (
-              <ChevronUp className="w-5 h-5 text-gray-600" />
+              <ChevronUp className="w-5 h-5 text-slate-600" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-gray-600" />
+              <ChevronDown className="w-5 h-5 text-slate-600" />
             )}
           </button>
 
           {showHistory && (
             <div className="space-y-2 mt-2">
               {holidays.length === 0 ? (
-                <p className="text-gray-500 text-sm text-center py-4">אין חגים מוגדרים</p>
+                <p className="text-slate-500 text-sm text-center py-4">אין חגים מוגדרים</p>
               ) : (
                 holidays.map((holiday) => (
                   <div

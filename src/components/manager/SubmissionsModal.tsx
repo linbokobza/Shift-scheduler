@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { X, CheckCircle, XCircle, Clock, User } from 'lucide-react';
 import { User as UserType, Availability, Holiday } from '../../types';
 import { formatDate, formatDateHebrew } from '../../utils/dateUtils';
@@ -51,7 +51,7 @@ const SubmissionsModal: React.FC<SubmissionsModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-slate-400 hover:text-slate-600 transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -78,7 +78,7 @@ const SubmissionsModal: React.FC<SubmissionsModalProps> = ({
           {/* Submitted employees */}
           {submittedEmployees.length > 0 && (
             <div className="mb-6">
-              <h4 className="text-lg font-medium text-gray-900 mb-3 flex items-center">
+              <h4 className="text-lg font-medium text-slate-900 mb-3 flex items-center">
                 <CheckCircle className="w-5 h-5 text-green-600 ml-2" />
                 עובדים שהגישו ({submittedEmployees.length})
               </h4>
@@ -95,8 +95,8 @@ const SubmissionsModal: React.FC<SubmissionsModalProps> = ({
                           {employee.name.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div className="mr-3">
-                          <div className="font-medium text-gray-900">{employee.name}</div>
-                          <div className="text-sm text-gray-500">{employee.email}</div>
+                          <div className="font-medium text-slate-900">{employee.name}</div>
+                          <div className="text-sm text-slate-500">{employee.email}</div>
                         </div>
                       </div>
                       <div className="flex items-center text-green-600">
@@ -113,7 +113,7 @@ const SubmissionsModal: React.FC<SubmissionsModalProps> = ({
           {/* Not submitted employees */}
           {notSubmittedEmployees.length > 0 && (
             <div>
-              <h4 className="text-lg font-medium text-gray-900 mb-3 flex items-center">
+              <h4 className="text-lg font-medium text-slate-900 mb-3 flex items-center">
                 <XCircle className="w-5 h-5 text-red-600 ml-2" />
                 עובדים שלא הגישו ({notSubmittedEmployees.length})
               </h4>
@@ -128,8 +128,8 @@ const SubmissionsModal: React.FC<SubmissionsModalProps> = ({
                         {employee.name.split(' ').map(n => n[0]).join('')}
                       </div>
                       <div className="mr-3">
-                        <div className="font-medium text-gray-900">{employee.name}</div>
-                        <div className="text-sm text-gray-500">{employee.email}</div>
+                        <div className="font-medium text-slate-900">{employee.name}</div>
+                        <div className="text-sm text-slate-500">{employee.email}</div>
                       </div>
                     </div>
                     <div className="flex items-center text-red-600">
@@ -143,17 +143,17 @@ const SubmissionsModal: React.FC<SubmissionsModalProps> = ({
           )}
 
           {activeEmployees.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              <User className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <div className="text-center py-8 text-slate-500">
+              <User className="w-12 h-12 mx-auto mb-2 text-slate-300" />
               <p>אין עובדים פעילים במערכת</p>
             </div>
           )}
         </div>
 
-        <div className="bg-gray-50 border-t p-4 flex justify-end">
+        <div className="bg-slate-50 border-t p-4 flex justify-end">
           <button
             onClick={onClose}
-            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+            className="bg-slate-600 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors"
           >
             סגור
           </button>

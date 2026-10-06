@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { X, AlertTriangle, AlertCircle, User } from 'lucide-react';
 import { ValidationError } from '../../utils/scheduleValidation';
 
@@ -43,7 +43,7 @@ const ScheduleErrorsModal: React.FC<ScheduleErrorsModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-slate-400 hover:text-slate-600 transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -114,17 +114,17 @@ const ScheduleErrorsModal: React.FC<ScheduleErrorsModalProps> = ({
           )}
 
           {!hasErrors && !hasWarnings && (
-            <div className="text-center py-8 text-gray-500">
-              <AlertCircle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <div className="text-center py-8 text-slate-500">
+              <AlertCircle className="w-12 h-12 mx-auto mb-2 text-slate-300" />
               <p>אין שגיאות או אזהרות</p>
             </div>
           )}
         </div>
 
-        <div className="bg-gray-50 border-t p-4 flex justify-end">
+        <div className="bg-slate-50 border-t p-4 flex justify-end">
           <button
             onClick={onClose}
-            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+            className="bg-slate-600 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors"
           >
             סגור
           </button>

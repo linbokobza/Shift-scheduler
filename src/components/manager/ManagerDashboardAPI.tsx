@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { axiosInstance } from '../../api/axios.config';
 import { scheduleAPI } from '../../api/schedule.api';
@@ -540,10 +540,10 @@ const ManagerDashboardAPI: React.FC<ManagerDashboardAPIProps> = () => {
   // Loading state
   if (employeesLoading || availabilitiesLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">טוען נתונים...</p>
+          <p className="text-slate-600 text-lg">טוען נתונים...</p>
         </div>
       </div>
     );

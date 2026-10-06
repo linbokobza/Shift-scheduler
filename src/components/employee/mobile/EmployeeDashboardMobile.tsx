@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Clock, Eye, Save, Calendar, AlertCircle, CheckCircle, CalendarDays } from 'lucide-react';
 import { TabBar } from '../../ui/TabBar';
 import { FloatingActionButton } from '../../ui/FloatingActionButton';
@@ -80,15 +80,15 @@ export const EmployeeDashboardMobile: React.FC<EmployeeDashboardMobileProps> = (
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-slate-50">
       {/* Sticky Header */}
       <header className="sticky top-0 bg-white border-b z-20 shadow-sm">
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl font-bold text-gray-900">הגשת זמינות</h2>
+            <h2 className="text-xl font-bold text-slate-900">הגשת זמינות</h2>
             <button
               onClick={() => setShowCalendar(true)}
-              className="flex items-center bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+              className="flex items-center bg-slate-100 text-slate-700 px-3 py-2 rounded-lg hover:bg-slate-200 transition-colors text-sm border border-slate-200"
             >
               <CalendarDays className="w-4 h-4 ml-2" />
               לוח שנה
@@ -109,7 +109,7 @@ export const EmployeeDashboardMobile: React.FC<EmployeeDashboardMobileProps> = (
             <div className="mt-3 flex items-center justify-between text-sm">
               <div className="flex items-center">
                 <Clock className="w-4 h-4 text-blue-600 ml-1" />
-                <span className="text-gray-700">
+                <span className="text-slate-700">
                   מועד: {getDeadlineText()}
                 </span>
               </div>
@@ -130,7 +130,7 @@ export const EmployeeDashboardMobile: React.FC<EmployeeDashboardMobileProps> = (
 
           {/* Last saved indicator */}
           {activeTab === 'availability' && existingAvailability && (
-            <div className="mt-2 text-xs text-gray-500">
+            <div className="mt-2 text-xs text-slate-500">
               נשמר: {new Date(existingAvailability.submittedAt).toLocaleTimeString('he-IL')}
             </div>
           )}

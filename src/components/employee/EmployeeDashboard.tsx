@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Clock, AlertCircle, CheckCircle, Save, Calendar, Eye, ArrowLeft, CalendarDays } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { Availability, VacationDay, AvailabilityStatus, Schedule, User, Holiday } from '../../types';
@@ -197,8 +197,8 @@ const EmployeeDashboard = () => {
       <div className="mb-4 lg:mb-6 bg-white rounded-lg shadow-sm border p-3 lg:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex-1">
-            <h2 className="text-lg lg:text-2xl font-bold text-gray-900 mb-1 lg:mb-2">הגשת זמינות למשמרות</h2>
-            <p className="text-sm lg:text-base text-gray-600">
+            <h2 className="text-lg lg:text-2xl font-bold text-slate-900 mb-1 lg:mb-2">הגשת זמינות למשמרות</h2>
+            <p className="text-sm lg:text-base text-slate-600">
               בחרו את הזמינות שלכם לכל משמרת בשבוע. ניתן להוסיף הערות לכל משמרת.
             </p>
           </div>
@@ -222,7 +222,7 @@ const EmployeeDashboard = () => {
 
       {/* Toggle between availability and schedule view */}
       <div className="bg-white rounded-lg shadow-sm border mb-4 lg:mb-6">
-        <div className="p-3 lg:p-4 border-b border-gray-200">
+        <div className="p-3 lg:p-4 border-b border-slate-200">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex flex-col sm:flex-row gap-2">
             <button
@@ -230,7 +230,7 @@ const EmployeeDashboard = () => {
               className={`flex items-center justify-center px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg transition-all text-sm lg:text-base ${
                 !showSchedule
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
               <Clock className="w-4 h-4 ml-1" />
@@ -242,7 +242,7 @@ const EmployeeDashboard = () => {
               className={`flex items-center justify-center px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg transition-all text-sm lg:text-base ${
                 showSchedule
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
               <Eye className="w-4 h-4 ml-1" />
@@ -261,7 +261,7 @@ const EmployeeDashboard = () => {
         
         {/* Navigation buttons for submission week */}
         {!showSchedule && (
-          <div className="p-4 bg-gray-50 border-t">
+          <div className="p-4 bg-slate-50 border-t">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 {!isCurrentWeekSubmissionWeek() && (
@@ -281,7 +281,7 @@ const EmployeeDashboard = () => {
                 )}
               </div>
               
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-slate-600">
                 {isCurrentWeekSubmissionWeek() ? (
                   <span className="text-green-600 font-medium">שבוע הגשה נוכחי</span>
                 ) : (
@@ -309,7 +309,7 @@ const EmployeeDashboard = () => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center">
                 <Clock className="w-5 h-5 text-blue-600 ml-2" />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-slate-700">
                   מועד אחרון להגשה לשבוע זה: {getDeadlineText()}
                 </span>
               </div>
@@ -351,7 +351,7 @@ const EmployeeDashboard = () => {
           </div>
 
           {lastSaved && (
-            <div className="mt-2 text-xs text-gray-500">
+            <div className="mt-2 text-xs text-slate-500">
               נשמר לאחרונה: {lastSaved.toLocaleTimeString('he-IL')}
             </div>
           )}
@@ -408,23 +408,23 @@ const EmployeeDashboard = () => {
           
           {/* Legend */}
           <div className="bg-white rounded-lg shadow-sm border p-4 mt-6">
-            <h4 className="font-medium text-gray-900 mb-3">מקרא</h4>
+            <h4 className="font-medium text-slate-900 mb-3">מקרא</h4>
             <div className="space-y-2">
               <div className="flex items-center">
                 <div className="w-4 h-4 bg-green-100 border border-green-200 rounded ml-2"></div>
-                <span className="text-sm text-gray-700">זמין</span>
+                <span className="text-sm text-slate-700">זמין</span>
               </div>
               <div className="flex items-center">
                 <div className="w-4 h-4 bg-red-100 border border-red-200 rounded ml-2"></div>
-                <span className="text-sm text-gray-700">לא זמין</span>
+                <span className="text-sm text-slate-700">לא זמין</span>
               </div>
               <div className="flex items-center">
                 <div className="w-4 h-4 bg-blue-100 border border-blue-200 rounded ml-2"></div>
-                <span className="text-sm text-gray-700">חופשה/מחלה</span>
+                <span className="text-sm text-slate-700">חופשה/מחלה</span>
               </div>
               <div className="flex items-center">
                 <div className="w-4 h-4 bg-indigo-200 border border-indigo-300 rounded ml-2"></div>
-                <span className="text-sm text-gray-700">חג</span>
+                <span className="text-sm text-slate-700">חג</span>
               </div>
             </div>
           </div>

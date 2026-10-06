@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { User } from '../types';
 import { getEmployeeColorClasses } from '../utils/employeeColors';
@@ -52,7 +52,7 @@ const ShiftDropdown: React.FC<ShiftDropdownProps> = ({
       onClick={(e) => e.stopPropagation()}
     >
       {availableEmployees.length === 0 ? (
-        <div className="px-4 py-3 text-center text-gray-500 text-sm">
+        <div className="px-4 py-3 text-center text-slate-500 text-sm">
           אין עובדים זמינים למשמרת זו
         </div>
       ) : (
@@ -61,7 +61,7 @@ const ShiftDropdown: React.FC<ShiftDropdownProps> = ({
             <button
               key={employee.id}
               onClick={() => handleSelect(employee.id)}
-              className={`w-full text-right px-4 py-2 hover:bg-gray-50 flex items-center justify-between transition-colors ${
+              className={`w-full text-right px-4 py-2 hover:bg-slate-50 flex items-center justify-between transition-colors ${
                 currentEmployeeId === employee.id ? 'bg-blue-50' : ''
               }`}
             >
@@ -76,7 +76,7 @@ const ShiftDropdown: React.FC<ShiftDropdownProps> = ({
                   </div>
                 </div>
                 {employeeComments[employee.id] && (
-                  <div className="text-xs text-gray-600 mt-1 italic px-3" dir="rtl">
+                  <div className="text-xs text-slate-600 mt-1 italic px-3" dir="rtl">
                     💬 {employeeComments[employee.id]}
                   </div>
                 )}
@@ -89,15 +89,15 @@ const ShiftDropdown: React.FC<ShiftDropdownProps> = ({
         </div>
       )}
 
-      <hr className="border-gray-200" />
+      <hr className="border-slate-200" />
 
       <button
         onClick={() => handleSelect(null)}
-        className={`w-full text-right px-4 py-2 hover:bg-gray-50 flex items-center justify-between transition-colors ${
+        className={`w-full text-right px-4 py-2 hover:bg-slate-50 flex items-center justify-between transition-colors ${
           currentEmployeeId === null ? 'bg-blue-50' : ''
         }`}
       >
-        <span className="text-gray-500 text-sm">לא משובץ</span>
+        <span className="text-slate-500 text-sm">לא משובץ</span>
         {currentEmployeeId === null && <Check className="w-4 h-4 text-blue-600" />}
       </button>
     </div>

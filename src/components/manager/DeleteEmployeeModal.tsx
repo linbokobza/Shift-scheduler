@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { X, AlertTriangle, UserX, Calendar } from 'lucide-react';
 
 interface FutureSchedule {
@@ -48,7 +48,7 @@ const DeleteEmployeeModal: React.FC<DeleteEmployeeModalProps> = ({
             </h3>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-slate-400 hover:text-slate-600 transition-colors"
               disabled={isLoading}
             >
               <X className="w-6 h-6" />
@@ -57,7 +57,7 @@ const DeleteEmployeeModal: React.FC<DeleteEmployeeModalProps> = ({
         </div>
 
         <div className="p-6">
-          <p className="text-gray-800 mb-4">
+          <p className="text-slate-800 mb-4">
             האם אתה בטוח שברצונך למחוק את <strong>{employeeName}</strong>?
           </p>
 
@@ -95,13 +95,13 @@ const DeleteEmployeeModal: React.FC<DeleteEmployeeModalProps> = ({
             </div>
           )}
 
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-            <h4 className="font-medium text-gray-900 mb-2">מה ימחק:</h4>
-            <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-4">
+            <h4 className="font-medium text-slate-900 mb-2">מה ימחק:</h4>
+            <ul className="text-sm text-slate-700 space-y-1 list-disc list-inside">
               <li>פרטי העובד (שם, אימייל, וכו')</li>
             </ul>
-            <h4 className="font-medium text-gray-900 mb-2 mt-3">מה יישמר:</h4>
-            <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
+            <h4 className="font-medium text-slate-900 mb-2 mt-3">מה יישמר:</h4>
+            <ul className="text-sm text-slate-700 space-y-1 list-disc list-inside">
               <li>היסטוריית זמינויות</li>
               <li>היסטוריית חופשות</li>
               <li>רשומות ביקורת (Audit Logs)</li>
@@ -113,10 +113,10 @@ const DeleteEmployeeModal: React.FC<DeleteEmployeeModalProps> = ({
           </p>
         </div>
 
-        <div className="bg-gray-50 border-t p-4 flex justify-end gap-2">
+        <div className="bg-slate-50 border-t p-4 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors"
             disabled={isLoading}
           >
             ביטול
@@ -125,7 +125,7 @@ const DeleteEmployeeModal: React.FC<DeleteEmployeeModalProps> = ({
             <>
               <button
                 onClick={() => handleConfirmDelete(false)}
-                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="bg-slate-600 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors disabled:opacity-50"
                 disabled={isLoading}
               >
                 {isLoading ? 'מוחק...' : 'מחק בלי להסיר משמרות'}
