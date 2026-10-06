@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Availability, AvailabilityStatus } from '../../types';
 import { formatDate, isSubmissionDeadlinePassed, getSubmissionWeek, getWeekStart } from '../../utils/dateUtils';
@@ -191,10 +191,10 @@ const EmployeeDashboardAPI = () => {
   // Loading state
   if (employeesLoading || availabilityLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">טוען נתונים...</p>
+          <p className="text-slate-600 text-lg">טוען נתונים...</p>
         </div>
       </div>
     );

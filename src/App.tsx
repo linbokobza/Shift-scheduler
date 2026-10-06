@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
@@ -37,10 +37,10 @@ const AppContent = () => {
   const hasToken = localStorage.getItem('authToken');
   if (isLoading && hasToken) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">טוען...</p>
+          <p className="text-slate-600">טוען...</p>
         </div>
       </div>
     );
@@ -63,7 +63,7 @@ const AppContent = () => {
           <Route
             path="/"
             element={
-              <div className="min-h-screen bg-gray-50 overflow-x-hidden" dir="rtl">
+              <div className="min-h-screen bg-slate-50 overflow-x-hidden" dir="rtl">
                 <Header />
                 <main>
                   {user.role === 'manager' ? (

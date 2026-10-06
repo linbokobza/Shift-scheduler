@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { Calendar, CalendarDays, Send, Camera } from 'lucide-react';
 import WeekNavigator from '../../WeekNavigator';
 import ScheduleView from '../../ScheduleView';
@@ -144,7 +144,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-8 overflow-x-hidden" dir="rtl">
+    <div className="min-h-screen bg-slate-100 pb-8 overflow-x-hidden" dir="rtl">
       <div className="flex w-full">
         <Sidebar
           activeMenu={activeMenu}
@@ -170,16 +170,16 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
           <div className="mb-3 lg:mb-6 bg-white rounded-lg shadow-sm border p-3 lg:p-6">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
               <div>
-                <h1 className="text-lg lg:text-3xl font-bold text-gray-900 mb-0.5 lg:mb-2">
+                <h1 className="text-lg lg:text-3xl font-bold text-slate-900 mb-0.5 lg:mb-2">
                   לוח מנהל
                 </h1>
-                <p className="text-xs lg:text-base text-gray-600">
+                <p className="text-xs lg:text-base text-slate-600">
                   ניהול עובדים וסידור משמרות
                 </p>
               </div>
               <button
                 onClick={() => setShowCalendar(true)}
-                className="flex items-center bg-purple-600 text-white px-2 lg:px-4 py-1.5 lg:py-2 rounded-lg hover:bg-purple-700 transition-colors text-xs lg:text-base"
+                className="flex items-center bg-slate-100 text-slate-700 px-2 lg:px-4 py-1.5 lg:py-2 rounded-lg hover:bg-slate-200 transition-colors text-xs lg:text-base border border-slate-200"
               >
                 <CalendarDays className="w-4 h-4 lg:w-5 lg:h-5 ml-2" />
                 לוח שנה
@@ -200,15 +200,15 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-4 mb-4 lg:mb-6 w-full">
             <div className="bg-white rounded-lg shadow-sm border p-2 lg:p-4">
-              <div className="text-[10px] lg:text-sm text-gray-600 mb-1">עובדים פעילים</div>
+              <div className="text-[10px] lg:text-sm text-slate-600 mb-1">עובדים פעילים</div>
               <div className="text-lg lg:text-2xl font-bold text-blue-600">{activeEmployees.length}</div>
             </div>
             <div className="bg-white rounded-lg shadow-sm border p-2 lg:p-4">
-              <div className="text-[10px] lg:text-sm text-gray-600 mb-1">הגשות השבוע</div>
+              <div className="text-[10px] lg:text-sm text-slate-600 mb-1">הגשות השבוע</div>
               <div className="text-lg lg:text-2xl font-bold text-green-600">{currentWeekAvailabilities.length}</div>
             </div>
             <div className="bg-white rounded-lg shadow-sm border p-2 lg:p-4 col-span-2 lg:col-span-1">
-              <div className="text-[10px] lg:text-sm text-gray-600 mb-1">סידור</div>
+              <div className="text-[10px] lg:text-sm text-slate-600 mb-1">סידור</div>
               <div className="text-lg lg:text-2xl font-bold text-purple-600">
                 {currentSchedule ? 'קיים' : 'אין'}
               </div>
@@ -226,7 +226,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
           {/* Schedule Section */}
           <div className="bg-white rounded-lg shadow-sm border p-4 lg:p-6 w-full">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 mb-4">
-              <h2 className="text-base lg:text-xl font-semibold text-gray-900 flex items-center">
+              <h2 className="text-base lg:text-xl font-semibold text-slate-900 flex items-center">
                 <Calendar className="w-5 h-5 lg:w-6 lg:h-6 ml-2" />
                 סידור משמרות
               </h2>
@@ -248,7 +248,7 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
               {scheduleLoading ? (
                 <div className="text-center py-8">
                   <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-gray-600">טוען סידור...</p>
+                  <p className="text-slate-600">טוען סידור...</p>
                 </div>
               ) : currentSchedule ? (
                 <>
@@ -304,10 +304,10 @@ export const ManagerDashboardDesktop: React.FC<ManagerDashboardDesktopProps> = (
                   </div>
                 </>
               ) : (
-                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-600 text-lg mb-2">אין סידור לשבוע זה</p>
-                  <p className="text-gray-500 text-sm mb-4">לחץ על "צור סידור" ליצירת סידור חדש</p>
+                <div className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
+                  <Calendar className="w-16 h-16 mx-auto text-slate-300 mb-4" />
+                  <p className="text-slate-600 text-lg mb-2">אין סידור לשבוע זה</p>
+                  <p className="text-slate-500 text-sm mb-4">לחץ על "צור סידור" ליצירת סידור חדש</p>
                 </div>
               )}
             </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { LogOut, User, Key } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import PasswordManager from './PasswordManager';
@@ -11,7 +11,7 @@ const Header: React.FC<HeaderProps> = () => {
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white shadow-sm border-b border-slate-200">
         <div className="max-w-7xl mx-auto container-mobile">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -21,11 +21,13 @@ const Header: React.FC<HeaderProps> = () => {
 
             {/* Desktop User Info */}
             <div className="hidden lg:flex items-center space-x-4">
-              <div className="flex items-center text-gray-700">
-                <User className="w-5 h-5 ml-2" />
+              <div className="flex items-center text-slate-700">
+                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center ml-2 text-blue-600 text-xs font-semibold">
+                  <User className="w-4 h-4" />
+                </div>
                 <div className="text-right">
                   <div className="text-sm font-medium">{user?.name}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-slate-500">
                     {user?.role === 'manager' ? 'מנהל' : 'עובד'}
                   </div>
                 </div>
@@ -33,14 +35,14 @@ const Header: React.FC<HeaderProps> = () => {
 
               <button
                 onClick={() => setShowPasswordManager(true)}
-                className="flex items-center text-gray-500 hover:text-gray-700 transition-colors p-2 rounded-lg hover:bg-gray-100"
+                className="flex items-center text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100"
               >
                 <Key className="w-5 h-5" />
               </button>
 
               <button
                 onClick={logout}
-                className="flex items-center text-gray-500 hover:text-gray-700 transition-colors p-2 rounded-lg hover:bg-gray-100"
+                className="flex items-center text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100"
               >
                 <LogOut className="w-5 h-5" />
               </button>
@@ -50,14 +52,14 @@ const Header: React.FC<HeaderProps> = () => {
             <div className="lg:hidden flex items-center gap-2">
               <button
                 onClick={() => setShowPasswordManager(true)}
-                className="flex items-center text-gray-500 hover:text-gray-700 transition-colors p-2 rounded-lg hover:bg-gray-100"
+                className="flex items-center text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100"
               >
                 <Key className="w-5 h-5" />
               </button>
 
               <button
                 onClick={logout}
-                className="flex items-center text-gray-500 hover:text-gray-700 transition-colors p-2 rounded-lg hover:bg-gray-100"
+                className="flex items-center text-slate-500 hover:text-slate-700 transition-colors p-2 rounded-lg hover:bg-slate-100"
               >
                 <LogOut className="w-5 h-5" />
               </button>

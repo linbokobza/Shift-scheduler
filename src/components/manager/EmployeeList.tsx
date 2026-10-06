@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { User, ToggleLeft, ToggleRight, Plus, Trash2, UserPlus, Key, Check, X } from 'lucide-react';
 import { User as UserType } from '../../types';
 import PasswordManager from '../PasswordManager';
@@ -115,14 +115,14 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
 
       <div className="p-3 lg:p-4">
         {showAddForm && (
-          <form onSubmit={handleAddEmployee} className="bg-gray-50 rounded-lg p-4 mb-4 border">
-            <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+          <form onSubmit={handleAddEmployee} className="bg-slate-50 rounded-lg p-4 mb-4 border">
+            <h4 className="font-medium text-slate-900 mb-3 flex items-center">
               <UserPlus className="w-4 h-4 ml-1" />
               הוספת עובד חדש
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
               <div>
-                <label htmlFor="employee-name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="employee-name" className="block text-sm font-medium text-slate-700 mb-1">
                   שם מלא
                 </label>
                 <input
@@ -130,13 +130,13 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   id="employee-name"
                   value={newEmployeeName}
                   onChange={(e) => setNewEmployeeName(e.target.value)}
-                  className="w-full px-3 py-2 min-h-[44px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 min-h-[44px] border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="שם העובד"
                   required
                 />
               </div>
               <div>
-                <label htmlFor="employee-email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="employee-email" className="block text-sm font-medium text-slate-700 mb-1">
                   אימייל
                 </label>
                 <input
@@ -144,13 +144,13 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   id="employee-email"
                   value={newEmployeeEmail}
                   onChange={(e) => setNewEmployeeEmail(e.target.value)}
-                  className="w-full px-3 py-2 min-h-[44px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 min-h-[44px] border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="email@example.com"
                   required
                 />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">תפקיד</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">תפקיד</label>
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -158,7 +158,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                     className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
                       newEmployeeRole === 'employee'
                         ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-blue-400'
                     }`}
                   >
                     עובד
@@ -169,7 +169,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                     className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
                       newEmployeeRole === 'manager'
                         ? 'bg-purple-600 text-white border-purple-600'
-                        : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-purple-400'
                     }`}
                   >
                     מנהל
@@ -177,7 +177,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label htmlFor="employee-password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="employee-password" className="block text-sm font-medium text-slate-700 mb-1">
                   סיסמה
                 </label>
                 <input
@@ -186,7 +186,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   value={newEmployeePassword}
                   onChange={(e) => handlePasswordChange(e.target.value)}
                   className={`w-full px-3 py-2 min-h-[44px] border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    newEmployeePassword && passwordError ? 'border-red-500' : newEmployeePassword && !passwordError ? 'border-green-500' : 'border-gray-300'
+                    newEmployeePassword && passwordError ? 'border-red-500' : newEmployeePassword && !passwordError ? 'border-green-500' : 'border-slate-300'
                   }`}
                   placeholder="סיסמה לעובד"
                   required
@@ -196,26 +196,26 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                 {/* Live password requirements indicator */}
                 {newEmployeePassword && (
                   <div className="mt-2 grid grid-cols-2 gap-1 text-xs">
-                    <div className={`flex items-center ${newEmployeePassword.length >= 8 ? 'text-green-600' : 'text-gray-400'}`}>
+                    <div className={`flex items-center ${newEmployeePassword.length >= 8 ? 'text-green-600' : 'text-slate-400'}`}>
                       {newEmployeePassword.length >= 8 ? <Check className="w-3 h-3 ml-1" /> : <X className="w-3 h-3 ml-1" />}
                       לפחות 8 תווים
                     </div>
-                    <div className={`flex items-center ${/[A-Z]/.test(newEmployeePassword) ? 'text-green-600' : 'text-gray-400'}`}>
+                    <div className={`flex items-center ${/[A-Z]/.test(newEmployeePassword) ? 'text-green-600' : 'text-slate-400'}`}>
                       {/[A-Z]/.test(newEmployeePassword) ? <Check className="w-3 h-3 ml-1" /> : <X className="w-3 h-3 ml-1" />}
                       אות גדולה באנגלית
                     </div>
-                    <div className={`flex items-center ${/[a-z]/.test(newEmployeePassword) ? 'text-green-600' : 'text-gray-400'}`}>
+                    <div className={`flex items-center ${/[a-z]/.test(newEmployeePassword) ? 'text-green-600' : 'text-slate-400'}`}>
                       {/[a-z]/.test(newEmployeePassword) ? <Check className="w-3 h-3 ml-1" /> : <X className="w-3 h-3 ml-1" />}
                       אות קטנה באנגלית
                     </div>
-                    <div className={`flex items-center ${/\d/.test(newEmployeePassword) ? 'text-green-600' : 'text-gray-400'}`}>
+                    <div className={`flex items-center ${/\d/.test(newEmployeePassword) ? 'text-green-600' : 'text-slate-400'}`}>
                       {/\d/.test(newEmployeePassword) ? <Check className="w-3 h-3 ml-1" /> : <X className="w-3 h-3 ml-1" />}
                       ספרה אחת לפחות
                     </div>
                   </div>
                 )}
                 {!newEmployeePassword && (
-                  <p className="text-xs text-gray-500 mt-1">מינימום 8 תווים, אות גדולה, אות קטנה וספרה</p>
+                  <p className="text-xs text-slate-500 mt-1">מינימום 8 תווים, אות גדולה, אות קטנה וספרה</p>
                 )}
               </div>
             </div>
@@ -230,7 +230,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                   setNewEmployeeRole('employee');
                   setPasswordError('');
                 }}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors ml-2"
+                className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors ml-2"
                 disabled={isSubmitting}
               >
                 ביטול
@@ -269,8 +269,8 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                       {manager.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div className="mr-2 lg:mr-3 min-w-0">
-                      <div className="font-medium text-gray-900 text-sm lg:text-base truncate">{manager.name}</div>
-                      <div className="text-xs lg:text-sm text-gray-500 truncate">{manager.email}</div>
+                      <div className="font-medium text-slate-900 text-sm lg:text-base truncate">{manager.name}</div>
+                      <div className="text-xs lg:text-sm text-slate-500 truncate">{manager.email}</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-1 lg:space-x-2 flex-shrink-0">
@@ -291,7 +291,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                 </div>
               ))}
             </div>
-            <div className="border-t border-gray-200 mt-4 mb-2" />
+            <div className="border-t border-slate-200 mt-4 mb-2" />
           </div>
         )}
 
@@ -305,15 +305,15 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
           {employeeUsers.map((employee) => (
             <div
               key={employee.id}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group"
+              className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors group"
             >
               <div className="flex items-center min-w-0 flex-1">
                 <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs lg:text-sm flex-shrink-0">
                   {employee.name.split(' ').map(n => n[0]).join('')}
                 </div>
                 <div className="mr-2 lg:mr-3 min-w-0">
-                  <div className="font-medium text-gray-900 text-sm lg:text-base truncate">{employee.name}</div>
-                  <div className="text-xs lg:text-sm text-gray-500 truncate">{employee.email}</div>
+                  <div className="font-medium text-slate-900 text-sm lg:text-base truncate">{employee.name}</div>
+                  <div className="text-xs lg:text-sm text-slate-500 truncate">{employee.email}</div>
                 </div>
               </div>
 
@@ -323,7 +323,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
                 className={`flex items-center text-xs lg:text-sm font-medium transition-colors ${
                   employee.isActive
                     ? 'text-green-600 hover:text-green-700'
-                    : 'text-gray-400 hover:text-gray-500'
+                    : 'text-slate-400 hover:text-slate-500'
                 }`}
               >
                 {employee.isActive ? (
@@ -357,8 +357,8 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
           ))}
 
           {employeeUsers.length === 0 && managerUsers.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              <User className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <div className="text-center py-8 text-slate-500">
+              <User className="w-12 h-12 mx-auto mb-2 text-slate-300" />
               <p>אין עובדים במערכת</p>
               <p className="text-sm">לחץ על "הוסף עובד" כדי להתחיל</p>
             </div>

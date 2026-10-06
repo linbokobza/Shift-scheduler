@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, LayoutGrid, Table2 } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Schedule, User, Availability, Holiday } from '../../../types';
@@ -56,9 +56,9 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
   if (!schedule) {
     return (
       <div className="p-4">
-        <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <p className="text-gray-600 text-lg mb-2">אין סידור זמין</p>
-          <p className="text-gray-500 text-sm">הסידור טרם פורסם לשבוע זה</p>
+        <div className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300">
+          <p className="text-slate-600 text-lg mb-2">אין סידור זמין</p>
+          <p className="text-slate-500 text-sm">הסידור טרם פורסם לשבוע זה</p>
         </div>
       </div>
     );
@@ -75,7 +75,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
             viewMode === 'cards'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
           <LayoutGrid className="w-4 h-4" />
@@ -86,7 +86,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
             viewMode === 'table'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
           <Table2 className="w-4 h-4" />
@@ -98,7 +98,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
       {viewMode === 'cards' && (
         <div {...swipeHandlers}>
           {/* Day Navigator */}
-          <div className="flex justify-between items-center mb-4 bg-gray-50 p-3 rounded-lg">
+          <div className="flex justify-between items-center mb-4 bg-slate-50 p-3 rounded-lg">
         <button
           onClick={handlePrevDay}
           disabled={currentDayIndex === 0}
@@ -110,7 +110,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
 
         <div className="text-center">
           <div className="font-bold text-lg">{DAYS[currentDayIndex]}</div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-slate-500">
             {formatDateHebrew(weekDates[currentDayIndex])}
           </div>
         </div>
@@ -137,7 +137,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${shift.color}`}>
                   {shift.name}
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-slate-500">
                   {shift.startTime} - {shift.endTime}
                 </span>
               </div>
@@ -148,12 +148,12 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
                     <span className="text-green-700 font-medium text-base">
                       {assignedEmployee.name}
                     </span>
-                    <div className="text-xs text-gray-500 mt-1">משובץ</div>
+                    <div className="text-xs text-slate-500 mt-1">משובץ</div>
                   </div>
                 ) : (
                   <div>
-                    <span className="text-gray-400 text-base">לא משובץ</span>
-                    <div className="text-xs text-gray-500 mt-1">אין שיבוץ</div>
+                    <span className="text-slate-400 text-base">לא משובץ</span>
+                    <div className="text-xs text-slate-500 mt-1">אין שיבוץ</div>
                   </div>
                 )}
               </div>
@@ -163,7 +163,7 @@ export const ScheduleTabMobile: React.FC<ScheduleTabMobileProps> = ({
       </div>
 
           {/* Day Progress Indicator */}
-          <div className="text-center text-sm text-gray-500 mt-4">
+          <div className="text-center text-sm text-slate-500 mt-4">
             יום {currentDayIndex + 1} מתוך 7
           </div>
         </div>

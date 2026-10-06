@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDateHebrew } from '../utils/dateUtils';
 
@@ -52,17 +52,17 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
             <>
               <button
                 onClick={goToPreviousWeek}
-                className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all"
+                className="p-1 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all"
                 aria-label="שבוע קודם"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
-              <h2 className="text-xs font-semibold text-gray-900 px-2">
+              <h2 className="text-xs font-semibold text-slate-900 px-2">
                 שבוע {formatDateHebrew(currentWeekStart)} - {formatDateHebrew(weekEnd)}
               </h2>
               <button
                 onClick={goToNextWeek}
-                className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all"
+                className="p-1 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all"
                 aria-label="שבוע הבא"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -70,7 +70,7 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
             </>
           )}
           {!showNavigator && (
-            <h2 className="text-xs font-semibold text-gray-900">
+            <h2 className="text-xs font-semibold text-slate-900">
               שבוע {formatDateHebrew(currentWeekStart)} - {formatDateHebrew(weekEnd)}
             </h2>
           )}
@@ -120,21 +120,21 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
             <>
               <button
                 onClick={goToPreviousWeek}
-                className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all"
+                className="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all"
                 aria-label="שבוע קודם"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
               <button
                 onClick={goToNextWeek}
-                className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all"
+                className="p-1.5 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-all"
                 aria-label="שבוע הבא"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
             </>
           )}
-          <h2 className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+          <h2 className="text-sm font-semibold text-slate-900 whitespace-nowrap">
             שבוע {formatDateHebrew(currentWeekStart)} - {formatDateHebrew(weekEnd)}
           </h2>
         </div>

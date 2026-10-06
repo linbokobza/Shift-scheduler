@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
@@ -32,7 +32,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     return (
       <div
         ref={ref}
-        className={`bg-white rounded-lg shadow-sm border border-gray-200 ${paddingStyles[padding]} ${className}`}
+        className={`bg-white rounded-lg shadow-sm border border-slate-200 ${paddingStyles[padding]} ${className}`}
         {...props}
       >
         {/* Header (if title or actions provided) */}
@@ -40,10 +40,10 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
           <div className="flex items-center justify-between mb-3">
             <div>
               {title && (
-                <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+                <h3 className="text-base font-semibold text-slate-900">{title}</h3>
               )}
               {subtitle && (
-                <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+                <p className="text-sm text-slate-500 mt-1">{subtitle}</p>
               )}
             </div>
             {actions && <div>{actions}</div>}

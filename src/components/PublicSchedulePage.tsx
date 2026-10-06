@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Camera } from 'lucide-react';
 import ScheduleView from './ScheduleView';
 import WeekNavigator from './WeekNavigator';
@@ -115,10 +115,10 @@ const PublicSchedulePage: React.FC = () => {
   const displayWeekStart = weekStart;
 
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
+    <div className="min-h-screen bg-slate-50" dir="rtl">
       {/* Minimal header */}
       <header className="bg-white border-b shadow-sm px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-gray-800">סידור עבודה</h1>
+        <h1 className="text-lg font-bold text-slate-800">סידור עבודה</h1>
         <button
           onClick={handleExport}
           disabled={isExporting || isLoading || !data?.schedule}
@@ -140,7 +140,7 @@ const PublicSchedulePage: React.FC = () => {
           {isLoading && (
             <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
               <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-gray-600">טוען סידור...</p>
+              <p className="text-slate-600">טוען סידור...</p>
             </div>
           )}
 

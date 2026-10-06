@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { X, Check, User as UserIcon, Phone, Snowflake } from 'lucide-react';
 import { User } from '../../types';
 
@@ -95,9 +95,9 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
         };
       case 'not-submitted':
         return {
-          color: 'bg-gray-400',
+          color: 'bg-slate-400',
           text: 'לא הגיש',
-          textColor: 'text-gray-700'
+          textColor: 'text-slate-700'
         };
     }
   };
@@ -148,7 +148,7 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-slate-400 hover:text-slate-600 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -156,19 +156,19 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
         </div>
 
         {/* Freeze Checkbox Section - works for both assigned and empty shifts */}
-        <div className="px-4 pt-2 pb-3 border-b border-gray-200">
-          <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+        <div className="px-4 pt-2 pb-3 border-b border-slate-200">
+          <label className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-2 rounded transition-colors">
             <input
               type="checkbox"
               checked={isFrozenLocal}
               onChange={(e) => setIsFrozenLocal(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
             />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-slate-700">
               {currentEmployeeId ? 'להקפיא משמרת' : 'להקפיא כ"לא משובץ"'}
             </span>
             <Snowflake className="w-4 h-4 text-blue-500" />
-            <span className="text-xs text-gray-500 mr-auto">
+            <span className="text-xs text-slate-500 mr-auto">
               {currentEmployeeId
                 ? '(העובד ישאר במשמרת זו ולא ישובץ במשמרות אחרות השבוע)'
                 : '(המשמרת תישאר ריקה גם אחרי אופטימיזציה)'}
@@ -192,7 +192,7 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
                   className={`p-2 rounded-lg transition-all text-right ${
                     isSelected
                       ? 'border-2 border-blue-500 bg-blue-50'
-                      : 'border border-gray-200 bg-white hover:bg-gray-50'
+                      : 'border border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
                  <div className="flex items-center justify-between">
@@ -201,11 +201,11 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
                         {employee.name.split(' ').map(n => n[0]).join('')}
                       </div>
                       <div className="flex-1 overflow-hidden">
-                        <div className="font-medium text-sm text-gray-900 truncate">{employee.name}</div>
+                        <div className="font-medium text-sm text-slate-900 truncate">{employee.name}</div>
                         <div className="flex items-start gap-2">
                           <div className={`w-1.5 h-1.5 rounded-full ${indicator.color} flex-shrink-0 mt-1`} />
                           {employeeComments[employee.id] && (
-                            <span className="text-xs text-gray-600 italic break-words" dir="rtl" style={{wordBreak: 'break-word'}}>
+                            <span className="text-xs text-slate-600 italic break-words" dir="rtl" style={{wordBreak: 'break-word'}}>
                               💬 {employeeComments[employee.id]}
                             </span>
                           )}
@@ -244,15 +244,15 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
               className={`p-2 rounded-lg transition-all text-right ${
                 selectedEmployeeId === null
                   ? 'border-2 border-blue-500 bg-blue-50'
-                  : 'border border-gray-300 bg-gray-50 hover:bg-gray-100'
+                  : 'border border-slate-300 bg-slate-50 hover:bg-slate-100'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center text-white">
+                  <div className="w-8 h-8 bg-gradient-to-br from-slate-400 to-slate-500 rounded-full flex items-center justify-center text-white">
                     <UserIcon className="w-4 h-4" />
                   </div>
-                  <div className="font-medium text-sm text-gray-700">לא משובץ</div>
+                  <div className="font-medium text-sm text-slate-700">לא משובץ</div>
                 </div>
                 {selectedEmployeeId === null && <Check className="w-4 h-4 text-blue-600" />}
               </div>
@@ -262,14 +262,14 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
 
         {/* Extra Employees Section */}
         <div className="border-t px-4 py-3">
-          <div className="text-xs font-semibold text-gray-600 mb-2">
+          <div className="text-xs font-semibold text-slate-600 mb-2">
             עובדים נוספים למשמרת
             {selectedExtraEmployeeIds.length > 0 && (
               <span className="mr-1 text-green-600">({selectedExtraEmployeeIds.length} נבחרו)</span>
             )}
           </div>
           {availableForExtra.length === 0 ? (
-            <p className="text-xs text-gray-400">אין עובדים זמינים נוספים</p>
+            <p className="text-xs text-slate-400">אין עובדים זמינים נוספים</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {availableForExtra.map(emp => {
@@ -281,7 +281,7 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
                     className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs border transition-all ${
                       isSelected
                         ? 'bg-green-100 border-green-500 text-green-800 font-semibold'
-                        : 'bg-white border-gray-300 text-gray-700 hover:border-green-400'
+                        : 'bg-white border-slate-300 text-slate-700 hover:border-green-400'
                     }`}
                   >
                     <span className="w-4 h-4 rounded-full bg-green-500 text-white flex items-center justify-center text-[9px] font-bold flex-shrink-0">
@@ -308,7 +308,7 @@ const ShiftReplacementModal: React.FC<ShiftReplacementModalProps> = ({
         <div className="border-t p-2 flex justify-center gap-2">
           <button
             onClick={onClose}
-            className="bg-gray-600 text-white px-6 py-1 rounded text-xs hover:bg-gray-700 transition-colors"
+            className="bg-slate-600 text-white px-6 py-1 rounded text-xs hover:bg-slate-700 transition-colors"
           >
             ביטול
           </button>

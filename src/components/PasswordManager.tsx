@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Key, Eye, EyeOff, Save, RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -96,12 +96,12 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full modal-container">
         <div className="flex items-center mb-6">
           <Key className="w-6 h-6 text-blue-600 ml-2" />
-          <h3 className="text-lg font-semibold text-gray-900">שינוי סיסמה</h3>
+          <h3 className="text-lg font-semibold text-slate-900">שינוי סיסמה</h3>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="current-password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="current-password" className="block text-sm font-medium text-slate-700 mb-2">
               סיסמה נוכחית
             </label>
             <div className="relative">
@@ -110,14 +110,14 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
                 id="current-password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
                 required
                 disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -125,7 +125,7 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
           </div>
 
           <div>
-            <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="new-password" className="block text-sm font-medium text-slate-700 mb-2">
               סיסמה חדשה
             </label>
             <div className="relative">
@@ -134,7 +134,7 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
                 id="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
                 required
                 disabled={isLoading}
                 minLength={8}
@@ -142,7 +142,7 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -159,7 +159,7 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
           </div>
 
           <div>
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="confirm-password" className="block text-sm font-medium text-slate-700 mb-2">
               אישור סיסמה חדשה
             </label>
             <div className="relative">
@@ -168,7 +168,7 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
                 id="confirm-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
                 required
                 disabled={isLoading}
                 minLength={8}
@@ -176,7 +176,7 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -199,7 +199,7 @@ const PasswordManager: React.FC<PasswordManagerProps> = ({ onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors ml-3"
+              className="px-4 py-2 text-slate-600 hover:text-slate-800 transition-colors ml-3"
               disabled={isLoading}
             >
               ביטול

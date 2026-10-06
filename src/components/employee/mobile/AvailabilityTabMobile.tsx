@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { AlertCircle, LayoutGrid, Table2 } from 'lucide-react';
 import AvailabilityGrid from '../../AvailabilityGrid';
 import { Availability, AvailabilityStatus, Holiday, VacationDay } from '../../../types';
@@ -64,7 +64,7 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
             viewMode === 'cards'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
           <LayoutGrid className="w-4 h-4" />
@@ -75,7 +75,7 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all ${
             viewMode === 'table'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
           <Table2 className="w-4 h-4" />
@@ -97,27 +97,27 @@ export const AvailabilityTabMobile: React.FC<AvailabilityTabMobileProps> = ({
 
       {/* Legend */}
       <div className="bg-white rounded-lg shadow-sm border p-4 mt-4">
-        <h4 className="font-medium text-gray-900 mb-3">מקרא</h4>
+        <h4 className="font-medium text-slate-900 mb-3">מקרא</h4>
         <div className="space-y-2">
           <div className="flex items-center">
             <div className="w-4 h-4 bg-green-100 border border-green-200 rounded ml-2"></div>
-            <span className="text-sm text-gray-700">זמין</span>
+            <span className="text-sm text-slate-700">זמין</span>
           </div>
           <div className="flex items-center">
             <div className="w-4 h-4 bg-red-100 border border-red-200 rounded ml-2"></div>
-            <span className="text-sm text-gray-700">לא זמין</span>
+            <span className="text-sm text-slate-700">לא זמין</span>
           </div>
           <div className="flex items-center">
             <div className="w-4 h-4 bg-blue-100 border border-blue-200 rounded ml-2"></div>
-            <span className="text-sm text-gray-700">חופשה/מחלה</span>
+            <span className="text-sm text-slate-700">חופשה/מחלה</span>
           </div>
           <div className="flex items-center">
             <div className="w-4 h-4 bg-indigo-200 border border-indigo-300 rounded ml-2"></div>
-            <span className="text-sm text-gray-700">חג</span>
+            <span className="text-sm text-slate-700">חג</span>
           </div>
           <div className="flex items-center">
-            <div className="w-4 h-4 bg-gray-200 border border-gray-300 rounded ml-2"></div>
-            <span className="text-sm text-gray-700">סוף שבוע</span>
+            <div className="w-4 h-4 bg-slate-200 border border-slate-300 rounded ml-2"></div>
+            <span className="text-sm text-slate-700">סוף שבוע</span>
           </div>
         </div>
       </div>

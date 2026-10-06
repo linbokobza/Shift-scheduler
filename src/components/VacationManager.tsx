@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Plus, Trash2, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { VacationDay } from '../types';
 import { formatDate, formatDateStringHebrew, parseLocalDate } from '../utils/dateUtils';
@@ -105,7 +105,7 @@ const VacationManager: React.FC<VacationManagerProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="vacation-date" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="vacation-date" className="block text-sm font-medium text-slate-700 mb-2">
                   תאריך
                 </label>
                 <input
@@ -113,13 +113,13 @@ const VacationManager: React.FC<VacationManagerProps> = ({
                   id="vacation-date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
                 />
               </div>
 
    <div>
-  <label htmlFor="vacation-type" className="block text-sm font-medium text-gray-700 mb-2">
+  <label htmlFor="vacation-type" className="block text-sm font-medium text-slate-700 mb-2">
     סוג
   </label>
   <div className="relative">
@@ -127,14 +127,14 @@ const VacationManager: React.FC<VacationManagerProps> = ({
       id="vacation-type"
       value={selectedType}
       onChange={(e) => setSelectedType(e.target.value as 'vacation' | 'sick')}
-      className="w-full px-4 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white appearance-none cursor-pointer text-gray-900 font-medium transition-all hover:border-gray-400 focus:outline-none"
+      className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white appearance-none cursor-pointer text-slate-900 font-medium transition-all hover:border-slate-400 focus:outline-none"
     >
       <option value="vacation">🏖️ חופשה</option>
       <option value="sick">🤒 מחלה</option>
     </select>
     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
       <svg 
-        className="w-5 h-5 text-gray-400" 
+        className="w-5 h-5 text-slate-400" 
         fill="none" 
         stroke="currentColor" 
         viewBox="0 0 24 24"
@@ -164,20 +164,20 @@ const VacationManager: React.FC<VacationManagerProps> = ({
           <div className="space-y-2">
             <button
               onClick={() => setShowHistory(!showHistory)}
-              className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+              className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
             >
-              <span className="font-medium text-gray-900">ימי חופשה ומחלה מוגדרים</span>
+              <span className="font-medium text-slate-900">ימי חופשה ומחלה מוגדרים</span>
               {showHistory ? (
-                <ChevronUp className="w-5 h-5 text-gray-600" />
+                <ChevronUp className="w-5 h-5 text-slate-600" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-gray-600" />
+                <ChevronDown className="w-5 h-5 text-slate-600" />
               )}
             </button>
 
             {showHistory && (
               <div className="space-y-2 mt-2">
                 {displayVacations.length === 0 ? (
-                  <p className="text-gray-500 text-sm text-center py-4">
+                  <p className="text-slate-500 text-sm text-center py-4">
                     {readonly ? 'אין ימי חופשה או מחלה עתידיים' : 'אין ימי חופשה או מחלה'}
                   </p>
                 ) : (

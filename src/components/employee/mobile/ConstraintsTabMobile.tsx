@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { AlertTriangle, CheckCircle, XCircle, Plus, Trash2, Save } from 'lucide-react';
 import { Card } from '../../ui/Card';
 
@@ -86,8 +86,8 @@ export const ConstraintsTabMobile: React.FC<ConstraintsTabMobileProps> = ({ user
   return (
     <div className="p-4 pb-24">
       <div className="mb-4">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">אילוצים וכללים</h2>
-        <p className="text-sm text-gray-600">
+        <h2 className="text-xl font-bold text-slate-900 mb-2">אילוצים וכללים</h2>
+        <p className="text-sm text-slate-600">
           כללי המערכת וההגבלות עבור הגשת זמינות
         </p>
       </div>
@@ -100,10 +100,10 @@ export const ConstraintsTabMobile: React.FC<ConstraintsTabMobileProps> = ({ user
                 {constraint.icon}
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-1">
+                <h3 className="font-semibold text-slate-900 mb-1">
                   {constraint.title}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-slate-600">
                   {constraint.description}
                 </p>
               </div>
@@ -114,7 +114,7 @@ export const ConstraintsTabMobile: React.FC<ConstraintsTabMobileProps> = ({ user
 
       {/* Personal constraints */}
       <div className="mt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">אילוצים אישיים</h3>
+        <h3 className="text-lg font-semibold text-slate-900 mb-3">אילוצים אישיים</h3>
 
         {/* Add new constraint */}
         <Card padding="md" className="mb-4">
@@ -125,13 +125,13 @@ export const ConstraintsTabMobile: React.FC<ConstraintsTabMobileProps> = ({ user
               onChange={(e) => setNewConstraintText(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleAddConstraint()}
               placeholder="הוסף אילוץ אישי (למשל: לא זמין בימי שלישי)"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               dir="rtl"
             />
             <button
               onClick={handleAddConstraint}
               disabled={!newConstraintText.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="הוסף אילוץ"
             >
               <Plus className="w-5 h-5" />
@@ -146,7 +146,7 @@ export const ConstraintsTabMobile: React.FC<ConstraintsTabMobileProps> = ({ user
               <Card key={constraint.id} padding="md" className="border-r-4 border-r-green-500">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    <p className="text-sm text-gray-800">{constraint.text}</p>
+                    <p className="text-sm text-slate-800">{constraint.text}</p>
                   </div>
                   <button
                     onClick={() => handleRemoveConstraint(constraint.id)}
@@ -160,11 +160,11 @@ export const ConstraintsTabMobile: React.FC<ConstraintsTabMobileProps> = ({ user
             ))}
           </div>
         ) : (
-          <Card padding="md" className="bg-gray-50">
+          <Card padding="md" className="bg-slate-50">
             <div className="text-center py-6">
-              <XCircle className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-600 text-sm">אין אילוצים אישיים מוגדרים</p>
-              <p className="text-gray-500 text-xs mt-1">
+              <XCircle className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+              <p className="text-slate-600 text-sm">אין אילוצים אישיים מוגדרים</p>
+              <p className="text-slate-500 text-xs mt-1">
                 הוסף אילוצים אישיים כדי להודיע למנהל על העדפות שלך
               </p>
             </div>
@@ -177,7 +177,7 @@ export const ConstraintsTabMobile: React.FC<ConstraintsTabMobileProps> = ({ user
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 flex items-center justify-center gap-2 shadow-lg min-h-[44px]"
+              className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors disabled:bg-slate-400 flex items-center justify-center gap-2 shadow-lg min-h-[44px]"
             >
               {isSaving ? (
                 <>

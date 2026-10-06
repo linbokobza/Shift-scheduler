@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Users, Calendar, Zap, AlertTriangle, Send, CalendarDays } from 'lucide-react';
 import { User, Availability, VacationDay, Schedule, Holiday, ValidationError, ScheduleGenerationResult, AvailabilityStatus } from '../../types';
 import { formatDate, isSubmissionDeadlinePassed } from '../../utils/dateUtils';
@@ -520,8 +520,8 @@ const ManagerDashboard = () => {
           <div className="mb-6 bg-white rounded-lg shadow-sm border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">ניהול משמרות</h2>
-                <p className="text-gray-600">
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">ניהול משמרות</h2>
+                <p className="text-slate-600">
                   נהלו עובדים, צפו בזמינות וצרו סידורי עבודה
                 </p>
               </div>
@@ -546,8 +546,8 @@ const ManagerDashboard = () => {
               <div className="flex items-center">
                 <Users className="w-8 h-8 text-blue-600" />
                 <div className="mr-3">
-                  <div className="text-2xl font-bold text-gray-900">{activeEmployees.length}</div>
-                  <div className="text-sm text-gray-600">עובדים פעילים</div>
+                  <div className="text-2xl font-bold text-slate-900">{activeEmployees.length}</div>
+                  <div className="text-sm text-slate-600">עובדים פעילים</div>
                 </div>
               </div>
             </div>
@@ -560,13 +560,13 @@ const ManagerDashboard = () => {
                 />
                 <div className="mr-3">
                   <div
-                    className="text-2xl font-bold text-gray-900 cursor-pointer hover:text-green-600 transition-colors"
+                    className="text-2xl font-bold text-slate-900 cursor-pointer hover:text-green-600 transition-colors"
                     onClick={() => setShowSubmissionsModal(true)}
                   >
                     {stats.submitted}/{stats.total}
                   </div>
                   <div
-                    className="text-sm text-gray-600 cursor-pointer hover:text-green-600 transition-colors"
+                    className="text-sm text-slate-600 cursor-pointer hover:text-green-600 transition-colors"
                     onClick={() => setShowSubmissionsModal(true)}
                   >
                     הגשות זמינות
@@ -583,10 +583,10 @@ const ManagerDashboard = () => {
                   <Zap className="w-8 h-8 text-yellow-600" />
                 )}
                 <div className="mr-3">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-slate-900">
                     {isDeadlinePassed ? 'המועד עבר' : 'פתוח להגשה'}
                   </div>
-                  <div className="text-xs text-gray-600">מועד אחרון: שלישי 12:00</div>
+                  <div className="text-xs text-slate-600">מועד אחרון: שלישי 12:00</div>
                 </div>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Key, Eye, EyeOff, Save, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authAPI } from '../api/auth.api';
@@ -75,8 +75,8 @@ const ResetPasswordPage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
           <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">הסיסמה שונתה בהצלחה</h1>
-          <p className="text-gray-600 mb-6">
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">הסיסמה שונתה בהצלחה</h1>
+          <p className="text-slate-600 mb-6">
             הסיסמה שלכם הוחלפה בהצלחה. אתם תועברו לעמוד ההתחברות בעוד 3 שניות...
           </p>
           <button
@@ -97,13 +97,13 @@ const ResetPasswordPage: React.FC = () => {
           <div className="bg-blue-600 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
             <Key className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">איפוס סיסמה</h1>
-          <p className="text-gray-600">הכניסו סיסמה חדשה לחשבון שלכם</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">איפוס סיסמה</h1>
+          <p className="text-slate-600">הכניסו סיסמה חדשה לחשבון שלכם</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="new-password" className="block text-sm font-medium text-slate-700 mb-2">
               סיסמה חדשה
             </label>
             <div className="relative">
@@ -112,7 +112,7 @@ const ResetPasswordPage: React.FC = () => {
                 id="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
                 placeholder="••••••••"
                 required
                 disabled={isLoading || !token}
@@ -121,7 +121,7 @@ const ResetPasswordPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 disabled={!newPassword}
               >
                 {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -130,7 +130,7 @@ const ResetPasswordPage: React.FC = () => {
           </div>
 
           <div>
-            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="confirm-password" className="block text-sm font-medium text-slate-700 mb-2">
               אישור סיסמה חדשה
             </label>
             <div className="relative">
@@ -139,7 +139,7 @@ const ResetPasswordPage: React.FC = () => {
                 id="confirm-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-10"
                 placeholder="••••••••"
                 required
                 disabled={isLoading || !token}
@@ -148,7 +148,7 @@ const ResetPasswordPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 disabled={!confirmPassword}
               >
                 {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

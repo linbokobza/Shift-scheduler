@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Clock, Eye, Save, AlertCircle, CheckCircle, Calendar, CalendarDays } from 'lucide-react';
 import WeekNavigator from '../../WeekNavigator';
 import AvailabilityGrid from '../../AvailabilityGrid';
@@ -72,16 +72,16 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
       <div className="mb-6 bg-white rounded-lg shadow-sm border p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">
               הגשת זמינות למשמרות
             </h2>
-            <p className="text-gray-600">
+            <p className="text-slate-600">
               בחרו את הזמינות שלכם לכל משמרת בשבוע. ניתן להוסיף הערות לכל משמרת.
             </p>
           </div>
           <button
             onClick={() => setShowCalendar(true)}
-            className="flex items-center bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+            className="flex items-center bg-slate-100 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors border border-slate-200"
           >
             <CalendarDays className="w-5 h-5 ml-2" />
             לוח שנה
@@ -100,7 +100,7 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
 
       {/* Tab Toggle */}
       <div className="bg-white rounded-lg shadow-sm border mb-6">
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-slate-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
@@ -108,7 +108,7 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
                 className={`flex items-center px-4 py-2 rounded-lg transition-all ${
                   !showSchedule
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 <Clock className="w-4 h-4 ml-1" />
@@ -120,7 +120,7 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
                 className={`flex items-center px-4 py-2 rounded-lg transition-all ${
                   showSchedule
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 <Eye className="w-4 h-4 ml-1" />
@@ -139,12 +139,12 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
 
         {/* Status Bar for Availability Tab */}
         {!showSchedule && (
-          <div className="p-4 bg-gray-50 border-t">
+          <div className="p-4 bg-slate-50 border-t">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center">
                   <Clock className="w-5 h-5 text-blue-600 ml-2" />
-                  <span className="text-sm text-gray-700">
+                  <span className="text-sm text-slate-700">
                     מועד אחרון: {getDeadlineText()}
                   </span>
                 </div>
@@ -179,7 +179,7 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
             </div>
 
             {existingAvailability && (
-              <div className="mt-2 text-xs text-gray-500">
+              <div className="mt-2 text-xs text-slate-500">
                 נשמר לאחרונה: {new Date(existingAvailability.submittedAt).toLocaleTimeString('he-IL')}
               </div>
             )}
@@ -240,23 +240,23 @@ export const EmployeeDashboardDesktop: React.FC<EmployeeDashboardDesktopProps> =
 
             {/* Legend */}
             <div className="bg-white rounded-lg shadow-sm border p-4">
-              <h4 className="font-medium text-gray-900 mb-3">מקרא</h4>
+              <h4 className="font-medium text-slate-900 mb-3">מקרא</h4>
               <div className="space-y-2">
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-green-100 border border-green-200 rounded ml-2"></div>
-                  <span className="text-sm text-gray-700">זמין</span>
+                  <span className="text-sm text-slate-700">זמין</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-red-100 border border-red-200 rounded ml-2"></div>
-                  <span className="text-sm text-gray-700">לא זמין</span>
+                  <span className="text-sm text-slate-700">לא זמין</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-blue-100 border border-blue-200 rounded ml-2"></div>
-                  <span className="text-sm text-gray-700">חופשה/מחלה</span>
+                  <span className="text-sm text-slate-700">חופשה/מחלה</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-indigo-200 border border-indigo-300 rounded ml-2"></div>
-                  <span className="text-sm text-gray-700">חג</span>
+                  <span className="text-sm text-slate-700">חג</span>
                 </div>
               </div>
             </div>
