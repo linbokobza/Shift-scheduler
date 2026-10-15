@@ -238,9 +238,17 @@ export const deleteEmployee = async (req: AuthRequest, res: Response): Promise<v
     throw new AppError('Employee not found', 404);
   }
 
-  // Guard: prevent deleting manager accounts
+  // Guard: prevent deleting your own account
+  if (req.user && req.user._id.toString() === employee._id.toString()) {
+    throw new AppError('Cannot delete your own account', 400);
+  }
+
+  // Guard: prevent deleting the last manager
   if (employee.role === 'manager') {
-    throw new AppError('Cannot delete manager accounts', 400);
+    const managerCount = await User.countDocuments({ role: 'manager' });
+    if (managerCount <= 1) {
+      throw new AppError('Cannot delete the last manager', 400);
+    }
   }
 
   // 2. Check for future schedule assignments
