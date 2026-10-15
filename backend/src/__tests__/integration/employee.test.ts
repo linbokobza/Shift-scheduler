@@ -353,16 +353,29 @@ describe('Employee API', () => {
       expect(response.body.futureSchedules.length).toBeGreaterThan(0);
     });
 
-    it('should not delete manager accounts', async () => {
+    it('should allow a manager to delete another manager', async () => {
       const manager1 = await createTestManager();
       const manager2 = await createTestUser('Manager 2', 'manager2@test.com', 'Password123', 'manager');
 
       const response = await request(app)
         .delete(`/api/employees/${manager2.id}?confirm=true`)
         .set('Authorization', `Bearer ${manager1.token}`)
+        .expect(200);
+
+      expect(response.body.message).toBe('Employee deleted successfully');
+      expect(await User.findById(manager2.id)).toBeNull();
+    });
+
+    it('should not allow a manager to delete themselves', async () => {
+      const manager1 = await createTestManager();
+      await createTestUser('Manager 2', 'manager2@test.com', 'Password123', 'manager');
+
+      const response = await request(app)
+        .delete(`/api/employees/${manager1.id}?confirm=true`)
+        .set('Authorization', `Bearer ${manager1.token}`)
         .expect(400);
 
-      expect(response.body.error).toContain('Cannot delete manager');
+      expect(response.body.error).toContain('Cannot delete your own account');
     });
 
     it('should reject delete by non-manager', async () => {
