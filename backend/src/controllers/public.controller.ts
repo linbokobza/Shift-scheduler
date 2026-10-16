@@ -5,8 +5,9 @@ import { ScheduleService } from '../services/schedule.service';
 import { formatDate } from '../services/dateUtils.service';
 
 const fetchEmployees = async () => {
-  // Only expose id, name, and colorIndex on the public endpoint - no email addresses
-  const employees = await User.find({ isActive: true, role: 'employee' }).select('name colorIndex');
+  // Only expose id, name, and colorIndex on the public endpoint - no email addresses.
+  // Managers are included so manually assigned managers are shown by name in the schedule.
+  const employees = await User.find({ isActive: true }).select('name colorIndex');
   return employees.map(emp => ({
     id: emp._id.toString(),
     name: emp.name,

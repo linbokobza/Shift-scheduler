@@ -236,7 +236,12 @@ class ShiftSchedulingModel:
                                     sum(self.x[(e, day, shift)] for e in self.employee_ids) == 0
                                 )
                     else:
-                        print(f"⚠️  Day {day} {shift}: Frozen employee {frozen_emp_id} not found!", file=sys.stderr)
+                        # Not a schedulable employee (e.g. a manually assigned manager) -
+                        # the shift is covered, so no regular employee should be assigned
+                        self.model.Add(
+                            sum(self.x[(emp_id, day, shift)] for emp_id in self.employee_ids) == 0
+                        )
+                        print(f"🔒 Day {day} {shift}: Frozen to non-employee {frozen_emp_id}", file=sys.stderr)
             else:
                 # Not frozen - normal constraint
                 available_employees = [
