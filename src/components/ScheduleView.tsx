@@ -46,6 +46,8 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
   const weekDates = getWeekDates(weekStart);
   const weekStartString = formatDate(weekStart);
   const activeEmployees = employees.filter(emp => emp.role === 'employee' && emp.isActive);
+  // מנהלים לא משובצים אוטומטית, אך ניתן לשבץ אותם ידנית ממודל ההחלפה
+  const activeManagers = employees.filter(emp => emp.role === 'manager' && emp.isActive);
 
   // State לניהול רשימה נפתחת
   const [openDropdown, setOpenDropdown] = useState<{
@@ -557,6 +559,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({
           currentEmployeeId={getCurrentAssignment(replacementModal.day, replacementModal.shiftId)}
           currentExtraEmployeeIds={schedule?.extraAssignments?.[replacementModal.day]?.[replacementModal.shiftId] || []}
           allEmployees={activeEmployees}
+          managers={activeManagers}
           availableEmployeeIds={getAvailableEmployeesForShift(
             parseInt(replacementModal.day),
             replacementModal.shiftId
